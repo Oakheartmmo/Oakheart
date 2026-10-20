@@ -9,8 +9,10 @@ const http=require('http'),fs=require('fs'),path=require('path'),crypto=require(
 const {WebSocketServer}=require('ws');
 
 const PORT=process.env.PORT||3000;
-const SECRET=process.env.SESSION_SECRET||'';
-if(!SECRET)console.warn('WARNING: SESSION_SECRET is not set. Logins will reset whenever the server restarts.');
+// The key that signs log-ins: SESSION_SECRET if you set one, otherwise one made from the (already private)
+// database address, so players stay logged in across restarts without any extra setting.
+const SECRET=process.env.SESSION_SECRET||(process.env.DATABASE_URL?crypto.createHash('sha256').update('oakheart|'+process.env.DATABASE_URL).digest('hex'):'');
+if(!SECRET)console.warn('Note: no database is set, so log-ins reset whenever the server restarts.');
 const KEY=SECRET||crypto.randomBytes(32).toString('hex');
 const GAME=path.join(__dirname,'index.html');
 
