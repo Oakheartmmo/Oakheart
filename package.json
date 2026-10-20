@@ -1,0 +1,9 @@
+{
+  "name": "oakheart",
+  "version": "1.0.0",
+  "description": "Oakheart game server: accounts, saves and online play",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "pg": "^8.11.3", "ws": "^8.16.0" }
+}
