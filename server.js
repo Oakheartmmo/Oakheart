@@ -31,6 +31,9 @@ async function openStore(){
       async putSave(u,d){await pool.query('INSERT INTO saves(username,data,updated) VALUES($1,$2,now()) ON CONFLICT(username) DO UPDATE SET data=EXCLUDED.data, updated=now()',[u,d]);}
     };
   }
+  if(process.env.RENDER||process.env.NODE_ENV==='production'){   // online, a temporary file would lose every account: stop with a clear message instead
+    throw new Error('DATABASE_URL is not set. Add your Neon connection string in Render > Environment (Key: DATABASE_URL), then deploy again.');
+  }
   const file=path.join(__dirname,'data.json');
   let mem={accounts:{},saves:{}};
   try{mem=JSON.parse(fs.readFileSync(file,'utf8'));}catch(e){}
@@ -173,6 +176,7 @@ const server=http.createServer(async(req,res)=>{
     if(req.method==='POST'&&url.pathname==='/api/save'){
       const b=await body(req,450000),u=authUser(req,b);if(!u)return send(res,401,{error:'Please log in again.'});
       const next=cleanSave(b),prev=await db.getSave(u);
+      if(!next&&!b.reset)return send(res,200,{ok:true,ignored:true});   // an empty save only counts when the player chose New character
       const why=next&&next.save?checkSave(u,prev&&prev.save,next.save):null;
       if(why){console.log('Refused a save from '+u+': '+why);return send(res,409,{error:'The server refused this save: '+why+'.',refused:true});}
       await db.putSave(u,next);return send(res,200,{ok:true});
@@ -219,4 +223,4 @@ function noteDeal(id,me){
 }
 setInterval(()=>peers.forEach((p,id)=>{if(!p.alive){p.ws.terminate();return;}p.alive=false;try{p.ws.ping();}catch(e){}}),30000);   // drop players whose connection died
 
-openStore().then(s=>{db=s;server.listen(PORT,()=>console.log('Oakheart is running on port '+PORT));}).catch(e=>{console.error('Could not open the database:',e);process.exit(1);});
+openStore().then(s=>{db=s;server.listen(PORT,()=>console.log('Oakheart is running on port '+PORT));}).catch(e=>{console.error('\n*** Oakheart could not start: '+(e&&e.message||e)+' ***\n');process.exit(1);});

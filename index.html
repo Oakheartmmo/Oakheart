@@ -3316,7 +3316,7 @@ function create(){
   this.time.addEvent({delay:300,loop:true,callback:chgHudUp});
   // Messages show in the top bar (growing downward when long), above the night tint
   msgBg=this.add.rectangle(0,0,W*T,OY,0x1b2a1f,0.96).setOrigin(0).setDepth(396);
-  msgTxt=this.add.text(10,7,'Tap the ground to walk, a tree to chop, a ripple to fish.',{...font,wordWrap:{width:W*T-250},lineSpacing:3}).setOrigin(0,0).setResolution(2).setDepth(397);
+  msgTxt=this.add.text(10,7,'Tap the ground to walk, a tree to chop, a ripple to fish.',{...font,wordWrap:{width:W*T-130},lineSpacing:3}).setOrigin(0,0).setResolution(2).setDepth(397);
   msgFit=()=>{msgBg.setSize(W*T,Math.max(OY,msgTxt.height+14));};msgFit();
 
   // Inventory panel: 4 x 7 slots. Tap "Bag" (top right) to show or hide it.
@@ -3526,8 +3526,8 @@ function create(){
   });
   ftp.add(this.add.text(12,FTH-24,'Tap outside to close.',small).setResolution(2));
   FTWd=FTW;FTHt=FTH;
-  resetTxt=this.add.text(W*T-10,7,'Reset save',font).setOrigin(1,0).setResolution(2).setAlpha(0.6).setDepth(398);
-  logoutTxt=this.add.text(W*T-120,7,'Log out',font).setOrigin(1,0).setResolution(2).setAlpha(0.6).setDepth(398);
+  resetTxt=this.add.text(W*T-10,7,'',font).setOrigin(1,0).setVisible(false);   // the Reset save button is gone
+  logoutTxt=this.add.text(W*T-10,7,'Log out',font).setOrigin(1,0).setResolution(2).setAlpha(0.6).setDepth(398);
   if(load()&&(xp+fxp+coins+inv.length>0))msg('Welcome back! Progress loaded.');
   if(savedPos){
     let sx=savedPos.x,sy=savedPos.y,found=walkable(sx,sy)?[sx,sy]:null;
@@ -3822,7 +3822,7 @@ function create(){
     if(nb!==BX||force){BX=nb;const b=ent(bag);if(b){b.x=BX;b.y=BY;}if(!force)setZoom(zoomLv);}
   };
   rightHook=()=>rightLay(false);
-  // Bottom bar: six equal slots for the menu buttons. Top bar: message line, Log out, Reset save.
+  // Bottom bar: six equal slots for the menu buttons. Top bar: message line and Log out.
   const barLay=()=>{
     const sw=W*T/6,ty=Math.round(OY+H*T+11),put2=(o,x,y)=>{const u=ent(o);if(u){u.x=x;u.y=y;}};
     MMX=Math.round(W*T-MMPX-2);put2(miniBg,MMX-2,MMY-2);put2(miniImg,MMX,MMY);put2(clockTxt,MMX-2+MMPX,MMY-2+MMPY+3);
@@ -3830,8 +3830,8 @@ function create(){
     [hpTxt,statTxt,gtab,qTab,ctab,logTxt].forEach((o,i)=>put2(o,Math.round(sw*(i+0.5)),ty));
     tabDiv.forEach((d,i)=>put2(d,Math.round(sw*(i+1)),Math.round(OY+H*T+7)));
     put2(botBar,0,OY+H*T);put2(msgBg,0,0);put2(msgTxt,10,7);
-    msgBg.setSize(W*T,OY);msgTxt.setWordWrapWidth(W*T-250);msgFit();
-    put2(resetTxt,W*T-10,7);put2(logoutTxt,W*T-120,7);
+    msgBg.setSize(W*T,OY);msgTxt.setWordWrapWidth(W*T-130);msgFit();
+    put2(logoutTxt,W*T-10,7);
   };
   const relayout=()=>{
     const gs=this.scale.gameSize;
@@ -4041,10 +4041,10 @@ function create(){
       return;
     }
     if(p.y<OY){
-      if(p.x>W*T-110){
+      if(false){   // (Reset save was here; it has been removed)
         if(resetArm){frxp=0;cfxp=0;for(const k in farm)delete farm[k];xp=0;fxp=0;mxp=0;cxp=0;sxp=0;fmxp=0;ckxp=0;dxp=0;hxp=0;akxp=0;fkxp=0;ammo.t=-1;ammo.n=0;coins=0;quest=0;fq=0;bq=0;nq={f:0,m:0,g:0,k:0,t:0,s:0};axe=0;net=-1;pik=-1;gear.hd=gear.bd=gear.hn=gear.ft=gear.wp=gear.sh=gear.bw=gear.bk=gear.cp=gear.nk=-1;mgxp=0;pxp=0;pp=-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];inv.length=0;for(const k in stk)delete stk[k];inv.push('net0','pik0','kn0');for(const k in bank)delete bank[k];resetArm=false;stopChop();ui();msg('Progress erased.');}
         else{resetArm=true;msg('Tap Reset again to erase your progress.');scene.time.delayedCall(4000,()=>{resetArm=false;});}
-      }else if(p.x>W*T-200){
+      }else if(p.x>W*T-110){
         // log out: save, stop what you were doing, and go back to the start screen
         stopChop();closeMenu();save();openStart();
       }
@@ -4641,12 +4641,13 @@ function oakRefused(why){   // the server's cheat check turned this save down: t
 }
 function oakBeacon(){   // the page is closing: a last save that still gets through
   if(!OAK.on||!OAK.token)return;
-  const p=oakPayload();if(JSON.stringify(p)===OAK.last)return;
+  try{if(saveOK)save();}catch(e){}   // put the very latest progress in first
+  const p=oakPayload();if(!p.save&&!p.char)return;   // never send an empty save by accidentif(JSON.stringify(p)===OAK.last)return;
   try{navigator.sendBeacon('/api/save',new Blob([JSON.stringify(Object.assign({token:OAK.token},p))],{type:'application/json'}));}catch(e){}
 }
 function oakLogout(expired){
   try{if(!expired)oakBeacon();}catch(e){}
-  saveOK=false;
+  saveOK=false;OAK.token=null;   // logged out: nothing more is sent for this account
   try{localStorage.removeItem(AUTHKEY);localStorage.removeItem(KEY);localStorage.removeItem(CHKEY);}catch(e){}
   if(expired)alert('Please log in again.');
   location.reload();
@@ -4770,7 +4771,7 @@ hasChar=loadChar();
   const showMenu=()=>{
     pMake.hidden=true;pMenu.hidden=false;
     $('sHello').textContent=hasChar?'Welcome back, '+APP.name+'!':'Welcome! Make your character to begin.';
-    $('bPlay').hidden=!hasChar;$('bNew').hidden=!hasChar;
+    $('bPlay').hidden=!hasChar;$('bNew').hidden=true;   // no New character button: your character is for keeps
     $('bEdit').textContent=hasChar?'Edit character':'Create character';
     $('bEdit').className=hasChar?'sb':'sb primary';
     $('bNew').textContent='New character';$('bNew').className='sb';armed=false;
@@ -4814,7 +4815,7 @@ hasChar=loadChar();
     if(!armed){armed=true;$('bNew').textContent='Tap again: this erases your save';$('bNew').className='sb warn';clearTimeout(armT);armT=setTimeout(()=>{armed=false;$('bNew').textContent='New character';$('bNew').className='sb';},4000);return;}
     saveOK=false;
     try{localStorage.removeItem(KEY);localStorage.removeItem(CHKEY);}catch(e){}
-    if(OAK.on&&OAK.token){fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:OAK.token,save:null,char:null})}).finally(()=>location.reload());return;}
+    if(OAK.on&&OAK.token){fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:OAK.token,save:null,char:null,reset:true})}).finally(()=>location.reload());return;}
     location.reload();
   });
   $('bBack').addEventListener('click',()=>{hasChar=loadChar();showMenu();});
