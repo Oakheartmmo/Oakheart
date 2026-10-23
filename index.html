@@ -5889,9 +5889,16 @@ const anglerBoost=()=>1+(gear.hd===24?0.05:0)+(gear.bd===22?0.05:0);
 const FZ={on:false,end:0,pts:0,combo:0,last:0,spots:[],cands:null,next:0,fishing:null,catches:0,golden:0,
   box:[24,58,51,76],len:180000,
   shop:[['hd24',"Angler's hat",60,1],['bd22',"Angler's vest",90,1],['net1','Big net',25,1],['fs2','5 raw lobsters',12,5],['fs4','5 raw salmon',18,5],['fs6','3 raw swordfish',24,3]]};
-function fzCands(){   // lake water next to a spot you can stand on
-  if(FZ.cands)return FZ.cands;const o=[];const [x0,y0,x1,y1]=FZ.box;
-  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(grid[y][x]!=='~')continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>walkable(x+dx,y+dy)))o.push([x,y]);}
+function fzCands(){   // lake water right next to plain ground you can walk to from Fenn's shore (never the marsh island, never next to someone standing)
+  if(FZ.cands)return FZ.cands;
+  const [x0,y0,x1,y1]=FZ.box,M=4,inBox=(x,y)=>x>=x0-M&&x<=x1+M&&y>=y0-M&&y<=y1+M,ground=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH&&grid[y][x]==='.';
+  const fen=NPCS.find(q=>q.name==='Angler Fenn'),D4=[[1,0],[-1,0],[0,1],[0,-1]],seen=new Set(),q=[];
+  const seed=fen?D4.map(([dx,dy])=>[fen.x+dx,fen.y+dy]).filter(([x,y])=>ground(x,y)):[];
+  if(!seed.length)for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(ground(x,y)&&(x===x0||x===x1||y===y0||y===y1))seed.push([x,y]);   // no Fenn: start from the edges of the lake area
+  seed.forEach(([x,y])=>{seen.add(y*MW+x);q.push([x,y]);});
+  while(q.length){const [x,y]=q.shift();D4.forEach(([dx,dy])=>{const a=x+dx,b=y+dy,k=b*MW+a;if(!seen.has(k)&&inBox(a,b)&&ground(a,b)){seen.add(k);q.push([a,b]);}});}
+  const o=[];
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(grid[y][x]!=='~')continue;if(D4.some(([dx,dy])=>seen.has((y+dy)*MW+x+dx)))o.push([x,y]);}
   return FZ.cands=o;
 }
 function fzSpawn(){
