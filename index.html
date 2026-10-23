@@ -447,12 +447,12 @@ const ZMIN=0.75,ZMAX=2;let zoomLv=1,zoomSoft=false;const uiObjs=[];let menuScr={
 let gdIc,gdOff=0,gdFull='',gdHint,gdK=-1,gdTab=0,gdTabs=[],gd,gdTitle,gdBody,topBar,botBar,resetTxt,logoutTxt,smUp,smDn;
 let MAXHP=20;
 // Defense per equipped piece (head, body, hands, feet); each point cuts the slime's hit chance by 3%
-const DEF={cp0:1,cp1:2,cp2:1,cp3:1,cp4:0,hd0:1,hd1:1,hd2:2,bd0:2,bd1:2,bd2:3,hn0:1,hn1:2,ft0:1,ft1:2,hd3:2,hd4:3,hd5:4,bd3:3,bd4:5,bd5:7,sh0:1,sh1:3,sh2:5,hd6:5,hd7:6,hd8:0,hd9:7,hd10:1,hd11:1,hd12:2,hd13:2,hd14:3,bd10:2,bd11:2,bd12:3,bd13:4,bd14:5,bd6:9,bd7:11,sh3:7,sh4:9,sh5:6,hn2:3,hn3:4,ft2:3,ft3:4,hd15:2,bd15:3,hd16:1,hd17:1,hd22:1,hd23:4,bd21:1,hd18:2,hd19:2,hd20:3,hd21:4,bd16:2,bd17:3,bd18:4,bd19:6,bd20:8};
+const DEF={cp0:1,cp1:2,cp2:1,cp3:1,cp4:0,hd0:1,hd1:1,hd2:2,bd0:2,bd1:2,bd2:3,hn0:1,hn1:2,ft0:1,ft1:2,hd3:2,hd4:3,hd5:4,bd3:3,bd4:5,bd5:7,sh0:1,sh1:3,sh2:5,hd6:5,hd7:6,hd8:0,hd9:7,hd10:1,hd11:1,hd12:2,hd13:2,hd14:3,bd10:2,bd11:2,bd12:3,bd13:4,bd14:5,bd6:9,bd7:11,sh3:7,sh4:9,sh5:6,hn2:3,hn3:4,ft2:3,ft3:4,hd15:2,bd15:3,hd16:1,hd17:1,hd22:1,hd23:4,bd21:1,hd24:1,bd22:1,hd18:2,hd19:2,hd20:3,hd21:4,bd16:2,bd17:3,bd18:4,bd19:6,bd20:8};
 let fightMon=null;
 const dolls=[],gSl={},gear={hd:-1,bd:-1,hn:-1,ft:-1,wp:-1,wt:0,sh:-1,bw:-1,bk:-1,cp:-1,nk:-1,pt:-1},crT=[],shopIc=[],bkSlots=[],bank={},smT=[],smImgs=[];
 let bk,bkBtn,bkMode=0;
 const BK_AMT=[1,10,999],BK_LBL=['x1','x10','All'];
-const ITEM_OK=/^(kn0|ub[0-4]|bs|fx|ar[0-4]|bw[0-4]|cf[0-7]|sd[0-4]|vg[0-4]|pf[0-5]|gm[0-4]|nk[0-4]|fth|rch|rbf|rrm|rwm|rgm|crm|cwm|cgm|hid|coin|rbo|rve|rbe|cbo|cve|cbe|hbo|hde|hbe|hwf|cch|cbf|log|lg[1-4]|fish|fs[1-7]|ore|or[1-4]|bar|bar[1-4]|axe[0-4]|net[0-4]|pik[0-4]|hd([0-9]|1[0-9]|2[0-3])|bd([0-7]|1[0-9]|2[01])|hn[0-3]|ft[0-3]|wp[0-4]|sp[0-5]|fl[0-4]|tw[0-4]|wd[0-4]|st[0-5]|bk[0-4]|pt([0-9]|1[0-9]|20)|sc[0-4]|sh[0-5]|cp[0-4]|bn[0-2]|sr[0-2]|qi0|qi1)$/;
+const ITEM_OK=/^(kn0|ub[0-4]|bs|fx|ar[0-4]|bw[0-4]|cf[0-7]|sd[0-4]|vg[0-4]|pf[0-5]|gm[0-4]|nk[0-4]|fth|rch|rbf|rrm|rwm|rgm|crm|cwm|cgm|hid|coin|rbo|rve|rbe|cbo|cve|cbe|hbo|hde|hbe|hwf|cch|cbf|log|lg[1-4]|fish|fs[1-7]|ore|or[1-4]|bar|bar[1-4]|axe[0-4]|net[0-4]|pik[0-4]|hd([0-9]|1[0-9]|2[0-4])|bd([0-7]|1[0-9]|2[0-2])|hn[0-3]|ft[0-3]|wp[0-4]|sp[0-5]|fl[0-4]|tw[0-4]|wd[0-4]|st[0-5]|bk[0-4]|pt([0-9]|1[0-9]|20)|sc[0-4]|sh[0-5]|cp[0-4]|bn[0-2]|sr[0-2]|qi0|qi1)$/;
 // Anvil recipes: [item, bars needed, Smithing level needed, xp earned]
 const SMITH=[
   ['kn0',1,SL(1),15,0],['axe1',3,SL(10),40,0],['axe2',6,SL(20),90,0],['axe3',9,SL(30),150,0],['axe4',12,SL(40),220,0],
@@ -490,7 +490,7 @@ const petTex=t=>'ipt'+t;
 const icon=id=>isTool(id)?'i'+id:id;
 // Resource tiers: [normal, oak/trout/iron, yew/lobster/steel]
 const LOGS=['log','lg1','lg2','lg3','lg4'],FISHES=['fish','fs1','fs2'],ORES=['ore','or1','or2','or3','or4'],BARS=['bar','bar1','bar2','bar3','bar4'];
-const ITEMN={hd23:'eye patch',hd22:'demon mask',bd21:'demon armour',sp5:'red pitchfork',qi0:'cultist idol',qi1:'crown of the forgotten king',log:'log',lg1:'oak log',lg2:'maple log',lg3:'redwood log',lg4:'magic log',fish:'raw fish',fs1:'raw trout',fs2:'raw lobster',fs3:'raw perch',fs4:'raw salmon',fs5:'raw tuna',fs6:'raw swordfish',fs7:'raw elven lobster',sd0:'potato seed',sd1:'carrot seed',sd2:'cabbage seed',sd3:'tomato seed',sd4:'pumpkin seed',vg0:'potato',vg1:'carrot',vg2:'cabbage',vg3:'tomato',vg4:'pumpkin',gm0:'sapphire',gm1:'emerald',gm2:'ruby',gm3:'diamond',gm4:'dragonstone',pf0:'pint of ale',pf1:'dark stout',pf2:'bread loaf',pf3:'cheese wedge',pf4:'meat pie',pf5:'hearty stew',ore:'copper ore',or1:'iron ore',or2:'steel ore',bar:'bronze bar',bar1:'iron bar',bar2:'steel bar',or3:'mithril ore',or4:'adamant ore',bar3:'mithril bar',bar4:'adamant bar',kn0:'knife',ub0:'unstrung shortbow',ub1:'unstrung oak bow',ub2:'unstrung maple bow',ub3:'unstrung redwood bow',ub4:'unstrung magic bow',bs:'bowstring',fx:'flax',ar0:'arrows (20)',ar1:'oak arrows (20)',ar2:'maple arrows (20)',ar3:'redwood arrows (20)',ar4:'magic arrows (20)',cf0:'cooked fish',cf1:'cooked trout',cf2:'cooked lobster',cf3:'cooked perch',cf4:'cooked salmon',cf5:'cooked tuna',cf6:'cooked swordfish',cf7:'cooked elven lobster',fth:'feather',rch:'raw chicken',rbf:'raw beef',hid:'cowhide',coin:'coins',rbo:'raw boar meat',rve:'raw venison',rbe:'raw bear meat',cbo:'cooked boar meat',cve:'cooked venison',cbe:'cooked bear meat',hbo:'boar hide',hde:'deer hide',hbe:'bear hide',hwf:'wolf pelt',cch:'cooked chicken',cbf:'cooked beef',rrm:'raw rat meat',rwm:'raw wolf meat',rgm:'raw ogre steak',crm:'cooked rat meat',cwm:'cooked wolf meat',cgm:'cooked ogre steak',sc0:'minor recharge scroll',sc1:'recharge scroll',sc2:'greater recharge scroll',sc3:'major recharge scroll',sc4:'grand recharge scroll',bn0:'bones',bn1:'big bones',bn2:'ancient bones',sr0:'torn scripture',sr1:'holy scripture',sr2:'ancient scripture'};
+const ITEMN={hd24:"angler's hat",bd22:"angler's vest",hd23:'eye patch',hd22:'demon mask',bd21:'demon armour',sp5:'red pitchfork',qi0:'cultist idol',qi1:'crown of the forgotten king',log:'log',lg1:'oak log',lg2:'maple log',lg3:'redwood log',lg4:'magic log',fish:'raw fish',fs1:'raw trout',fs2:'raw lobster',fs3:'raw perch',fs4:'raw salmon',fs5:'raw tuna',fs6:'raw swordfish',fs7:'raw elven lobster',sd0:'potato seed',sd1:'carrot seed',sd2:'cabbage seed',sd3:'tomato seed',sd4:'pumpkin seed',vg0:'potato',vg1:'carrot',vg2:'cabbage',vg3:'tomato',vg4:'pumpkin',gm0:'sapphire',gm1:'emerald',gm2:'ruby',gm3:'diamond',gm4:'dragonstone',pf0:'pint of ale',pf1:'dark stout',pf2:'bread loaf',pf3:'cheese wedge',pf4:'meat pie',pf5:'hearty stew',ore:'copper ore',or1:'iron ore',or2:'steel ore',bar:'bronze bar',bar1:'iron bar',bar2:'steel bar',or3:'mithril ore',or4:'adamant ore',bar3:'mithril bar',bar4:'adamant bar',kn0:'knife',ub0:'unstrung shortbow',ub1:'unstrung oak bow',ub2:'unstrung maple bow',ub3:'unstrung redwood bow',ub4:'unstrung magic bow',bs:'bowstring',fx:'flax',ar0:'arrows (20)',ar1:'oak arrows (20)',ar2:'maple arrows (20)',ar3:'redwood arrows (20)',ar4:'magic arrows (20)',cf0:'cooked fish',cf1:'cooked trout',cf2:'cooked lobster',cf3:'cooked perch',cf4:'cooked salmon',cf5:'cooked tuna',cf6:'cooked swordfish',cf7:'cooked elven lobster',fth:'feather',rch:'raw chicken',rbf:'raw beef',hid:'cowhide',coin:'coins',rbo:'raw boar meat',rve:'raw venison',rbe:'raw bear meat',cbo:'cooked boar meat',cve:'cooked venison',cbe:'cooked bear meat',hbo:'boar hide',hde:'deer hide',hbe:'bear hide',hwf:'wolf pelt',cch:'cooked chicken',cbf:'cooked beef',rrm:'raw rat meat',rwm:'raw wolf meat',rgm:'raw ogre steak',crm:'cooked rat meat',cwm:'cooked wolf meat',cgm:'cooked ogre steak',sc0:'minor recharge scroll',sc1:'recharge scroll',sc2:'greater recharge scroll',sc3:'major recharge scroll',sc4:'grand recharge scroll',bn0:'bones',bn1:'big bones',bn2:'ancient bones',sr0:'torn scripture',sr1:'holy scripture',sr2:'ancient scripture'};
 const COOKED=['cf0','cf1','cf2','cch','cbf','crm','cwm','cgm','cf3','cf4','cf5','cf6','cbo','cve','cbe','cf7'],COOKP=[5,12,24],HEAL=[4,8,14,3,6,10,18,26,6,11,18,22,8,7,15,32],FMXP=[25,45,80,130,200],FIRET=[60000,90000,120000,150000,180000],CKXP=[30,55,95,20,35,70,130,200,42,75,115,150,40,32,75,260];
 const PUBF=['pf0','pf1','pf2','pf3','pf4','pf5'],PUBH=[2,3,3,4,6,9],PUBV=['drink','drink','eat','eat','eat','eat'];   // pub food and drink from the barkeep
 const RAW=FISHES.concat(['rch','rbf','rrm','rwm','rgm','fs3','fs4','fs5','fs6','rbo','rve','rbe','fs7']),NEEDC=[1,10,20,1,3,12,25,35,5,15,25,30,6,5,20,40].map(SL); // raw things you can cook, in the same order as COOKED
@@ -515,7 +515,7 @@ const SMOFF={kn:0,axe:0,pik:1,wp:0,sp:2,fl:4,tw:6,hd:3,sh:5,hn:7,ft:8,bd:10};
 SMITH.forEach(r=>{r[2]=SL([1,10,20,30,40][barTier(r[0])])+(SMOFF[kd(r[0])]||0);});
 SMITH.sort((a,b)=>a[4]-b[4]||a[2]-b[2]);
 const SELL_RATE=0.4,SMITH_BONUS=1.25;
-const VAL={hd23:800,cp4:1,hd22:1,bd21:1,sp5:1,sh5:400,cp0:60,cp1:140,cp2:220,cp3:260,log:5,lg1:15,lg2:35,lg3:70,lg4:130,fish:8,fs1:20,fs2:40,cf0:13,cf1:30,cf2:60,fs3:12,fs4:28,fs5:52,fs6:68,fs7:95,cf7:150,cf3:20,cf4:42,cf5:80,cf6:100,sd0:3,sd1:9,sd2:22,sd3:50,sd4:110,vg0:4,vg1:10,vg2:24,vg3:52,vg4:100,gm0:40,gm1:90,gm2:180,gm3:400,gm4:900,nk0:70,nk1:140,nk2:260,nk3:560,nk4:1200,pf0:8,pf1:13,pf2:6,pf3:11,pf4:24,pf5:36,
+const VAL={hd24:300,bd22:450,hd23:800,cp4:1,hd22:1,bd21:1,sp5:1,sh5:400,cp0:60,cp1:140,cp2:220,cp3:260,log:5,lg1:15,lg2:35,lg3:70,lg4:130,fish:8,fs1:20,fs2:40,cf0:13,cf1:30,cf2:60,fs3:12,fs4:28,fs5:52,fs6:68,fs7:95,cf7:150,cf3:20,cf4:42,cf5:80,cf6:100,sd0:3,sd1:9,sd2:22,sd3:50,sd4:110,vg0:4,vg1:10,vg2:24,vg3:52,vg4:100,gm0:40,gm1:90,gm2:180,gm3:400,gm4:900,nk0:70,nk1:140,nk2:260,nk3:560,nk4:1200,pf0:8,pf1:13,pf2:6,pf3:11,pf4:24,pf5:36,
   ore:13,or1:30,or2:65,or3:125,or4:225,bar:20,bar1:45,bar2:100,bar3:190,bar4:340,
   rbo:12,rve:10,rbe:22,cbo:20,cve:17,cbe:34,hbo:16,hde:14,hbe:30,hwf:22,kn0:20,fx:12,bs:15,fth:3,rch:6,rbf:8,rrm:12,rwm:24,rgm:40,crm:20,cwm:38,cgm:62,hid:12,cch:10,cbf:14,
   ub0:25,ub1:60,ub2:140,ub3:280,ub4:520,bw0:70,bw1:170,bw2:380,bw3:760,bw4:1400,ar0:50,ar1:120,ar2:260,ar3:520,ar4:960,
@@ -561,6 +561,7 @@ const SHOPSELL=goodList(SHOPCFG&&SHOPCFG.sell),SHOPBUY=goodList(SHOPCFG&&SHOPCFG
 const SHVIS=8,SHROW=44,SHY0=66;
 const NPCS=[],NPCAT={};
 const TUTNPC=[{"name": "Island Guide", "color": "#5b8bd8", "look": "", "x": 29, "y": 138, "say": ["Welcome to Oakheart!"]}, {"name": "Survival Expert", "color": "#4f8a34", "look": "", "x": 29, "y": 134, "say": ["The wilds can be harsh. Keep a full belly."]}, {"name": "Mining Instructor", "color": "#8a5a33", "look": "helm", "x": 37, "y": 134, "say": ["Rocks hold ore, and ore makes metal."]}, {"name": "Combat Instructor", "color": "#c0392b", "look": "helm", "x": 36, "y": 143, "say": ["Keep your guard up!"]}, {"name": "Island Banker", "color": "#e0b040", "look": "", "bank": 1, "x": 32, "y": 144, "say": ["This is the bank. Anything you store here is safe, and you can reach it from any banker in the world.", "Items in your bank are never lost, even if you get knocked out. Tap Bank below to look inside."]}, {"name": "Ferryman", "color": "#3b78b8", "look": "", "x": 28, "y": 148, "say": ["All aboard for the mainland!"]}];
+TUTNPC.push({"name":"Angler Fenn","color":"#3b78b8","look":"","x":25,"y":62,"say":["The fish are jumping today!"]});
 if(Array.isArray(NPCCFG))TUTNPC.forEach(t=>{if(!NPCCFG.some(o=>o&&o.name===t.name))NPCCFG.unshift(t);});
 (Array.isArray(NPCCFG)?NPCCFG:[]).slice(0,66).forEach(o=>{
   if(!o||typeof o!=='object'||!Number.isInteger(o.x)||!Number.isInteger(o.y))return;
@@ -613,10 +614,11 @@ let savedPos=null,saveOK=false;
 let tabIc=[],tabHi=[];   // the bottom menu: a picture and a highlight for each button
 let welSeen=false;
 let wbK=0,ttlCur='',ttlReset=false;
-let tut=99;   // tutorial island step (99 = done or never needed; saved)   // world bosses helped defeat, and the title you show (both saved)   // has this character seen the welcome box?
+let tut=99;
+let frT=0,frBest=0;   // Fishing Frenzy tokens and best round score (saved)   // tutorial island step (99 = done or never needed; saved)   // world bosses helped defeat, and the title you show (both saved)   // has this character seen the welcome box?
 function save(){
   try{if(typeof OAK!=='undefined'&&OAK.on){if(!OAK.token)return;setTimeout(()=>oakUpload(),0);}}catch(e){}   // on the Oakheart server, nothing is saved until you log in
-  try{localStorage.setItem(KEY,JSON.stringify({xp,fxp,mxp,cxp,sxp,coins,fmxp,ckxp,dxp,hxp,akxp,fkxp,cfxp,thxp,quest,fq,bq,nq,ammo,kn:1,inv,stk,axe,net,pik,gear,bank,mgxp,chg,pxp,frxp,farm,pp:Math.floor(ppGet()*10)/10,tb:{g:tbGen,t:tbTasks},x:px,y:py,wel:welSeen?1:0,esc:duelEscSave(),dw:duelW,dl:duelL,wbk:wbK,ttl:ttlCur,tut}));}catch(e){}
+  try{localStorage.setItem(KEY,JSON.stringify({xp,fxp,mxp,cxp,sxp,coins,fmxp,ckxp,dxp,hxp,akxp,fkxp,cfxp,thxp,quest,fq,bq,nq,ammo,kn:1,inv,stk,axe,net,pik,gear,bank,mgxp,chg,pxp,frxp,farm,pp:Math.floor(ppGet()*10)/10,tb:{g:tbGen,t:tbTasks},x:px,y:py,wel:welSeen?1:0,esc:duelEscSave(),dw:duelW,dl:duelL,wbk:wbK,ttl:ttlCur,tut,frt:frT,frb:frBest}));}catch(e){}
 }
 function load(){
   try{
@@ -636,7 +638,7 @@ function load(){
     if(gear.sh>=0)gear.bk=-1;
     if(gear.bw>=0)gear.sh=-1;
     gear.bw=Math.min(gear.bw,4);gear.cp=Math.min(gear.cp,4);gear.nk=Math.min(gear.nk,4);
-    gear.hd=Math.min(gear.hd,23);gear.hn=Math.min(gear.hn,3);gear.ft=Math.min(gear.ft,3);gear.wp=Math.min(gear.wp,WKS[gear.wt]==='sp'||WKS[gear.wt]==='st'?5:4);gear.sh=Math.min(gear.sh,5);
+    gear.hd=Math.min(gear.hd,24);gear.hn=Math.min(gear.hn,3);gear.ft=Math.min(gear.ft,3);gear.wp=Math.min(gear.wp,WKS[gear.wt]==='sp'||WKS[gear.wt]==='st'?5:4);gear.sh=Math.min(gear.sh,5);
 
     mgxp=+d.mgxp||0;pxp=Math.max(0,+d.pxp||0);frxp=Math.max(0,+d.frxp||0);cfxp=Math.max(0,+d.cfxp||0);thxp=Math.max(0,+d.thxp||0);for(const k in farm)delete farm[k];if(d.farm&&typeof d.farm==='object')for(const k in d.farm){const f=d.farm[k];if(/^\d+,\d+$/.test(k)&&Array.isArray(f)&&Number.isInteger(f[0])&&f[0]>=0&&f[0]<5&&Number.isFinite(+f[1]))farm[k]=[f[0],+f[1]];}pp=Number.isFinite(+d.pp)&&d.pp!==undefined?Math.max(0,+d.pp):-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];
     if(d.chg&&typeof d.chg==='object')Object.keys(d.chg).forEach(k=>{const n=Math.floor(+d.chg[k]);if(/^(wd|st|bk)[0-5]$/.test(k)&&n>=0)chg[k]=Math.min(n,maxCharges(k));});
@@ -644,6 +646,7 @@ function load(){
     if(d.bank&&typeof d.bank==='object')Object.keys(d.bank).forEach(k=>{const n=Math.floor(+d.bank[k]);if(ITEM_OK.test(k)&&n>0)bank[k]=Math.min(n,k==='coin'?2e9:99999);});
     if(d.esc)duelEscLoad(d.esc);
     wbK=Math.max(0,Math.min(1e6,Math.floor(+d.wbk)||0));ttlCur=typeof d.ttl==='string'&&/^[a-z]{1,16}$/.test(d.ttl)?d.ttl:'';ttlReset=true;   // checked against the title list once the game runs
+    frT=Math.max(0,Math.min(1e6,Math.floor(+d.frt)||0));frBest=Math.max(0,Math.min(1e7,Math.floor(+d.frb)||0));
     tut=Number.isInteger(d.tut)&&d.tut>=1&&d.tut<=99?d.tut:99;   // saves from before the island never go there
     duelW=Math.max(0,Math.floor(+d.dw)||0);duelL=Math.max(0,Math.floor(+d.dl)||0);   // a stake from a duel that never finished
     inv.length=0;for(const k in stk)delete stk[k];
@@ -837,7 +840,7 @@ function startFish(ti,tx,ty){
   chopEvt=scene.time.addEvent({delay:[1700,1400,1100,800,650,550][net+1]*(1-gspeed()),loop:true,callback:()=>{
     if(inv.length>=CAPN()){stopChop();msg('Your bag is full. Tap an item in your bag to drop it.');return;}
     if(Math.random()<Math.min(0.95,0.4+0.03*flvl()+boost('fish')-0.05*ti)){
-      const before=flvl(),pf=pickFish(ti);inv.push(pf[0]);fxp+=pf[2];taskEvt('fish',ti);if(gatherEvt&&gatherObjs[0])fxBurst(gatherObjs[0].x,gatherObjs[0].y,[0xcfeeff,0x6fb8e8,0xffffff],6,12,18);
+      const before=flvl(),pf=pickFish(ti);inv.push(pf[0]);fxp+=Math.round(pf[2]*anglerBoost());taskEvt('fish',ti);if(gatherEvt&&gatherObjs[0])fxBurst(gatherObjs[0].x,gatherObjs[0].y,[0xcfeeff,0x6fb8e8,0xffffff],6,12,18);
       msg(flvl()>before?'Level up! Fishing is now '+flvl()+'.'+(flvl()===3||flvl()===5?' New look unlocked!':''):'You catch a '+nm(pf[0]).replace('raw ','')+'.');
       ui();
     }
@@ -980,6 +983,7 @@ function desc(id){
   if(id==='hd8')return ' (+2 magic damage)';
   if(id==='cp4')return ' (cosmetic)';
   if(k==='cp')return ' (+'+DEF[id]+' defense'+(id==='cp2'?', +2 spell damage':id==='cp3'?', +8 faith points':'')+')';
+  if(id==='hd24'||id==='bd22')return ' (+'+DEF[id]+' defense, +5% Fishing XP)';
   if(id==='hd22'||id==='hd23'||id==='bd21')return ' (+'+DEF[id]+' defense)';
   if(id==='hd15'||id==='bd15')return ' (+'+DEF[id]+' defense, +'+mgb(id)+' spell damage, +'+(id==='hd15'?6:10)+' faith points)';
   if(isLeather(id))return ' (+'+DEF[id]+' defense, +'+(k==='hd'?RGH:RGB)[leatherT(id)]+' ranged damage)';
@@ -1351,7 +1355,7 @@ function reqLv(id){
   if(id==='st5')return SL(30);
   if((k==='hd'||k==='bd')&&t===15)return SL(30);
   if(id==='hd16')return SL(10);
-  if(id==='hd22'||id==='bd21'||id==='sp5'||id==='cp4')return 1;
+  if(id==='hd22'||id==='bd21'||id==='sp5'||id==='cp4'||id==='hd24'||id==='bd22')return 1;
   if(id==='hd23')return NEEDL[2];   // the Bandit Chief's eye patch: worn at the same Defense level as steel   // the demon costume: anyone can wear it
   if(id==='sh5')return NEEDL[2];   // the bone shield: worn at the same Defense level as steel
   if((k==='hd'||k==='bd')&&t>=10)return NEEDL[t-10];
@@ -1360,7 +1364,7 @@ function reqLv(id){
   return NEEDL[t]||1;
 }
 function reqMsg(id){
-  const k=kd(id),r=isLeather(id)?['Archery',()=>arlvl()]:((k==='hd'||k==='bd')&&tr(id)>=10&&id!=='hd22'&&id!=='hd23'&&id!=='bd21')?['Magic',()=>mglvl()]:REQSK[k];
+  const k=kd(id),r=isLeather(id)?['Archery',()=>arlvl()]:((k==='hd'||k==='bd')&&tr(id)>=10&&id!=='hd22'&&id!=='hd23'&&id!=='bd21'&&id!=='hd24'&&id!=='bd22')?['Magic',()=>mglvl()]:REQSK[k];
   if(!r)return '';
   const need=reqLv(id);
   return r[1]()>=need?'':'You need '+r[0]+' '+need+' to use the '+nm(id)+'.';
@@ -1549,6 +1553,7 @@ const isSmith=n=>!!n&&/^blacksmith\b/i.test(n.name);
 function npcOpen(c){
   let n=NPCS[c];if(!n)return;
   if(tutTalk(n))return;
+  if(n.name==='Angler Fenn'){fzMenu();return;}
   if(n.look==='frogchief'){chiefTalk(n);return;}
   if(isQuestSmith(n)){smithTalk(n);return;}
   if(n.look==='arenamaster'){   // the Arena Master knows your duel record
@@ -3048,6 +3053,11 @@ function create(){
     g.fillStyle(0x2a0808).fillRect(11,20,10,4);
     g.fillStyle(0xf4eedc).fillRect(12,20,2,2).fillRect(18,20,2,2).fillRect(14,23,1,1).fillRect(17,23,1,1);
   });
+  // the angler's outfit (Fishing Frenzy rewards): a floppy green hat with a lure, and a khaki vest with pockets
+  tex('hd24',()=>{g.fillStyle(0x3e5a2a).fillRect(7,6,18,2);g.fillStyle(0x5a7a3a).fillRect(10,1,12,6).fillRect(8,5,16,2);g.fillStyle(0x34401e).fillRect(10,5,12,1);g.fillStyle(0x7a9a52).fillRect(11,1,6,1);g.fillStyle(0xd83a2a).fillRect(20,2,2,2);g.fillStyle(0xf4f4f0).fillRect(21,2,1,1);g.fillStyle(0xc0c4cc).fillRect(22,4,1,2);});
+  tex('ihd24',()=>{g.fillStyle(0x3e5a2a).fillRect(3,18,26,5);g.fillStyle(0x5a7a3a).fillRect(8,7,16,12).fillRect(5,17,22,3);g.fillStyle(0x34401e).fillRect(8,15,16,2);g.fillStyle(0x7a9a52).fillRect(9,7,8,2);g.fillStyle(0xd83a2a).fillRect(19,9,4,4);g.fillStyle(0xf4f4f0).fillRect(21,9,2,2);g.fillStyle(0xc0c4cc).fillRect(23,13,1,3).fillRect(22,15,1,1);});
+  tex('bd22',()=>{g.fillStyle(0x8a7c44).fillRect(9,12,6,13).fillRect(17,12,6,13);g.fillStyle(0xa89a5a).fillRect(10,12,4,12).fillRect(18,12,4,12);g.fillStyle(0x6e6236).fillRect(10,17,4,3).fillRect(18,17,4,3).fillRect(10,21,4,2).fillRect(18,21,4,2);g.fillStyle(0xc9b27a).fillRect(11,17,2,1).fillRect(19,17,2,1);});
+  tex('ibd22',()=>{g.fillStyle(0x6e6236).fillRect(6,5,9,22).fillRect(17,5,9,22);g.fillStyle(0xa89a5a).fillRect(7,6,7,20).fillRect(18,6,7,20);g.fillStyle(0x6e6236).fillRect(8,13,5,4).fillRect(19,13,5,4).fillRect(8,20,5,3).fillRect(19,20,5,3);g.fillStyle(0xc9b27a).fillRect(9,13,3,1).fillRect(20,13,3,1);g.fillStyle(0x4aa3df).fillRect(20,8,4,2);g.fillStyle(0x2a6a9a).fillRect(24,8,1,2);});
   tex('hd21',()=>{g.fillStyle(0x4a3020).fillRect(9,1,14,6).fillRect(8,6,16,2);g.fillStyle(0x7a5a40).fillRect(9,5,14,1);});
   tex('ihd21',()=>{g.fillStyle(0x4a3020).fillRect(7,8,18,12).fillRect(5,18,22,4);g.fillStyle(0x7a5a40).fillRect(7,16,18,2);g.fillStyle(0x2a1c10).fillRect(14,10,4,2);});
   tex('bd20',()=>{g.fillStyle(0x4a3020).fillRect(8,12,16,15).fillRect(5,12,4,7).fillRect(23,12,4,7);g.fillStyle(0x7a5a40).fillRect(15,12,2,15).fillRect(8,20,16,1);});
@@ -4581,6 +4591,7 @@ function openWcGate(tx,ty){
   scene.time.delayedCall(30000,closeG);
 }
 function tileAct(tx,ty){
+  if(FZ.on){const sp=FZ.spots.find(q=>q.x===tx&&q.y===ty);if(sp){fzGo(sp);return;}}
   const mm=mons.find(o=>o.alive&&o.x===tx&&o.y===ty);
   if(mm){if(mm.t.person&&mm.t.talk)talkTo(mm);else attackMon(mm);return;}
   if(fireAt(tx,ty)){
@@ -4674,6 +4685,8 @@ const examineBase=id=>{
   if(id==='cp4')return 'A pair of leathery demon wings on a harness. They do nothing at all, but they look fantastic.';
   if(id==='bd21')return 'Blood-red demon armour with black spiked shoulders. Pure costume, but very dramatic (+1 defense).';
   if(id==='sp5')return 'A bright red pitchfork, the classic demon accessory. More for poking than fighting (+1 damage).';
+  if(id==='hd24')return "A floppy green fishing hat with a lucky lure tucked in the band. Wear it for +5% Fishing XP.";
+  if(id==='bd22')return "A many-pocketed angler's vest that smells faintly of trout. Wear it for +5% Fishing XP.";
   if(id==='hd22')return 'A grinning red demon mask with curled black horns. Cheap, spooky and a little bit warm inside (+1 defense).';
   if(id==='sh5')return 'A round shield of bleached bones bound with old leather, from the Forgotten King\'s tomb. Sturdier than steel (+6 defense).';
   if(id==='qi1')return 'A tarnished gold crown set with a cracked ruby, taken from the sarcophagus in the ruined temple. Bring it to the Innkeeper.';
@@ -5870,6 +5883,131 @@ const game=new Phaser.Game({
     else if(bgT){tick();clearInterval(bgT);bgT=null;bgEvt=null;try{if(OAK.on)oakUpload();}catch(e){}}
   });
 })();
+// ---- Fishing Frenzy at Mirror Lake: a 3-minute round. Glowing spots pop up and vanish; catches in a row build a combo. ----
+// Fish go into the frenzy basket (as points), so your bag never fills. Points become Fishing XP and Frenzy tokens.
+const anglerBoost=()=>1+(gear.hd===24?0.05:0)+(gear.bd===22?0.05:0);
+const FZ={on:false,end:0,pts:0,combo:0,last:0,spots:[],cands:null,next:0,fishing:null,catches:0,golden:0,
+  box:[24,58,51,76],len:180000,
+  shop:[['hd24',"Angler's hat",60,1],['bd22',"Angler's vest",90,1],['net1','Big net',25,1],['fs2','5 raw lobsters',12,5],['fs4','5 raw salmon',18,5],['fs6','3 raw swordfish',24,3]]};
+function fzCands(){   // lake water next to a spot you can stand on
+  if(FZ.cands)return FZ.cands;const o=[];const [x0,y0,x1,y1]=FZ.box;
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(grid[y][x]!=='~')continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>walkable(x+dx,y+dy)))o.push([x,y]);}
+  return FZ.cands=o;
+}
+function fzSpawn(){
+  const c=fzCands().filter(([x,y])=>!FZ.spots.some(q=>Math.abs(q.x-x)+Math.abs(q.y-y)<6));if(!c.length)return;
+  const [x,y]=c[Math.floor(Math.random()*c.length)],cx=x*T+T/2,cy=y*T+T/2+OY;
+  const img=scene.add.image(cx,cy,'spot').setTint(0xffd24a).setDepth(3);
+  const glow=scene.add.circle(cx,cy,13,0xffe066,0.25).setDepth(2);
+  scene.tweens.add({targets:img,scale:{from:0.85,to:1.2},duration:420,yoyo:true,repeat:-1});
+  scene.tweens.add({targets:glow,alpha:{from:0.15,to:0.45},duration:600,yoyo:true,repeat:-1});
+  FZ.spots.push({x,y,img,glow,until:Date.now()+12000+Math.random()*9000});
+}
+function fzKill(sp,scatter){
+  try{sp.img.destroy();sp.glow.destroy();}catch(e){}
+  FZ.spots=FZ.spots.filter(q=>q!==sp);
+  if(FZ.fishing===sp){FZ.fishing=null;stopChop();if(scatter)msg('The fish scatter! Find another glowing spot quickly to keep your combo.');}
+}
+function fzStart(){
+  if(FZ.on)return;
+  if(net<0){msg('Hold a net first: tap one in your bag. Fenn sells nets too.');return;}
+  FZ.on=true;FZ.end=Date.now()+FZ.len;FZ.pts=0;FZ.combo=0;FZ.last=0;FZ.catches=0;FZ.golden=0;FZ.next=0;
+  fzSpawn();fzSpawn();
+  msg('The Fishing Frenzy begins! Tap the glowing spots on the lake. Catches in a row build your combo.');
+  fzBar();
+}
+function fzStop(why){
+  if(!FZ.on)return;
+  FZ.on=false;[...FZ.spots].forEach(sp=>fzKill(sp,false));FZ.fishing=null;stopChop();
+  const tok=Math.floor(FZ.pts/100),bx=Math.floor(FZ.pts/10*anglerBoost()),b=flvl();
+  fxp+=bx;frT+=tok;const best=FZ.pts>frBest;if(best)frBest=FZ.pts;
+  const lu=flvl()>b?' Level up! Fishing is now '+flvl()+'.':'';
+  const s=(why?why+' ':'')+'Frenzy over! '+FZ.pts.toLocaleString()+' points from '+FZ.catches+' fish'+(FZ.golden?' ('+FZ.golden+' golden)':'')+': '+bx+' bonus Fishing XP and '+tok+' Frenzy token'+(tok===1?'':'s')+'.'+(best?' A new personal best!':'')+lu;
+  msg(s);try{wbBanner(s);}catch(e){}
+  fzBar();titleCheck();save();ui();
+}
+function fzGo(sp){   // walk next to a glowing spot and fish it
+  if(net<0){msg('Hold a net first: tap one in your bag.');return;}
+  const path=bfs((x,y)=>Math.abs(x-sp.x)+Math.abs(y-sp.y)===1);
+  if(!path){msg("You can't reach that spot.");return;}
+  go(path,()=>{
+    if(!FZ.on||!FZ.spots.includes(sp)){msg('That spot is gone. Try another!');return;}
+    stopChop();FZ.fishing=sp;
+    chopEvt=scene.time.addEvent({delay:[1050,950,850,750,650][Math.max(0,net)]*(1-gspeed()),loop:true,callback:()=>{
+      if(!FZ.on||!FZ.spots.includes(sp)){stopChop();return;}
+      if(Math.random()<Math.min(0.92,0.62+0.01*flvl()+boost('fish'))){
+        const now=Date.now();
+        if(now-FZ.last>6000)FZ.combo=0;
+        FZ.combo++;FZ.last=now;FZ.catches++;
+        const mult=1+Math.min(FZ.combo-1,20)*0.1,gold=Math.random()<0.04;
+        const got=Math.round((10+Math.floor(flvl()/3))*mult)+(gold?100:0);FZ.pts+=got;if(gold)FZ.golden++;
+        const b=flvl();fxp+=Math.round((8+flvl())*anglerBoost());taskEvt('fish',0);
+        pop(sp.img.x,sp.img.y-12,(gold?'GOLDEN! ':'')+'+'+got,gold?'#ffe066':'#cfeeff');
+        try{fxBurst(sp.img.x,sp.img.y,gold?[0xffe066,0xffd24a,0xffffff]:[0xcfeeff,0x6fb8e8,0xffffff],gold?12:6,12,18);}catch(e){}
+        if(flvl()>b)msg('Level up! Fishing is now '+flvl()+'.');
+        fzBar();ui();
+      }
+    }});
+    fzBar();
+  });
+}
+function fzTick(){
+  if(!FZ.on||!player)return;
+  const now=Date.now();
+  if(now>=FZ.end){fzStop();return;}
+  const [x0,y0,x1,y1]=FZ.box;
+  if(px<x0-8||px>x1+8||py<y0-8||py>y1+8||curD>=0){fzStop('You left the lake.');return;}
+  FZ.spots.forEach(sp=>{if(now>=sp.until)fzKill(sp,true);});
+  if(FZ.spots.length<2&&now>=FZ.next){fzSpawn();FZ.next=now+1200;}
+  if(FZ.combo&&now-FZ.last>6000){FZ.combo=0;}
+  fzBar();
+}
+setInterval(()=>{try{fzTick();}catch(e){}},250);
+function fzBar(){
+  let b=document.getElementById('fzBar');
+  if(!b){
+    const st=document.createElement('style');
+    st.textContent='#fzBar{position:fixed;left:50%;transform:translateX(-50%);z-index:29;display:none;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;width:min(460px,calc(100vw - 16px));padding:7px 12px;background:rgba(16,40,60,.94);border:1px solid #6fb8e8;border-radius:8px;font:13px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;box-shadow:0 4px 14px rgba(0,0,0,.4)}#fzBar b{color:#ffe066;font-weight:normal}';
+    document.head.appendChild(st);b=document.createElement('div');b.id='fzBar';b.setAttribute('role','status');document.body.appendChild(b);
+  }
+  if(!FZ.on||!player||startOpen){b.style.display='none';return;}
+  try{const c=game.canvas.getBoundingClientRect(),sc=c.height/game.scale.height,eb=document.getElementById('emBtn');b.style.top=(window.innerWidth>=720?c.top+OY*sc+6:Math.max(c.top+130*sc,eb&&eb.style.display!=='none'?eb.getBoundingClientRect().bottom+6:0))+'px';}catch(e){}
+  const left=Math.max(0,Math.ceil((FZ.end-Date.now())/1000)),mult=FZ.combo?1+Math.min(FZ.combo-1,20)*0.1:1;
+  b.style.display='flex';
+  b.innerHTML='<span>\u{1F3A3} <b>Fishing Frenzy</b></span><span>'+Math.floor(left/60)+':'+String(left%60).padStart(2,'0')+'</span><span><b>'+FZ.pts.toLocaleString()+'</b> pts</span><span>Combo <b>x'+mult.toFixed(1)+'</b></span>';
+}
+function fzMenu(){   // Angler Fenn: start a round, spend tokens, or hear how it works
+  let w=document.getElementById('fzWin');
+  if(!w){
+    const st=document.createElement('style');
+    st.textContent='#fzWin{position:fixed;inset:0;z-index:46;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45)}'
+     +'#fzWin .in{width:min(420px,100%);max-height:calc(100vh - 32px);overflow-y:auto;background:rgba(27,22,15,.97);border:1px solid #6fb8e8;border-radius:8px;padding:12px 14px;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;box-shadow:0 6px 20px rgba(0,0,0,.5)}'
+     +'#fzWin h2{margin:0 0 4px;font-size:16px;color:#ffe066}#fzWin p{margin:0 0 10px}#fzWin .sub{color:#c9b27a}'
+     +'#fzWin button{display:flex;justify-content:space-between;gap:8px;width:100%;margin:0 0 6px;padding:8px 10px;font:inherit;text-align:left;color:#f1e9c8;background:#3b3024;border:1px solid #6a5a3e;border-radius:6px;cursor:pointer}'
+     +'#fzWin button:disabled{opacity:.5;cursor:default}#fzWin button.go{justify-content:center;background:#2a6a9a;border-color:#6fb8e8}#fzWin button.close{justify-content:center;background:#e0b040;color:#1b1610;border:0}#fzWin small{color:#c9b27a}';
+    document.head.appendChild(st);w=document.createElement('div');w.id='fzWin';document.body.appendChild(w);
+    w.addEventListener('pointerdown',e=>{if(e.target===w)w.style.display='none';});
+  }
+  const in_=document.createElement('div');in_.className='in';in_.setAttribute('role','dialog');in_.setAttribute('aria-label','Angler Fenn');
+  const btn=(label,sub,cls,dis,fn)=>{const e=document.createElement('button');e.type='button';if(cls)e.className=cls;e.disabled=!!dis;const a=document.createElement('span');a.textContent=label;e.append(a);if(sub){const s2=document.createElement('small');s2.textContent=sub;e.append(s2);}e.addEventListener('click',fn);in_.append(e);return e;};
+  in_.innerHTML='<h2>Angler Fenn</h2><p>"The fish are going wild today! Fancy a Fishing Frenzy?"</p>'
+   +'<p class="sub">3 minutes. Tap the glowing spots on the lake before they vanish. Catch fish one after another for a combo (up to x3), and watch for golden fish. Your bag never fills: fish become points, then Fishing XP and Frenzy tokens.</p>'
+   +'<p>Tokens: <b style="color:#ffe066;font-weight:normal">'+frT+'</b>'+(frBest?' &middot; Best score: '+frBest.toLocaleString():'')+'</p>';
+  btn(FZ.on?'A Frenzy is already running!':'Start a Fishing Frenzy','','go',FZ.on,()=>{w.style.display='none';fzStart();});
+  FZ.shop.forEach(([id,label,cost,n])=>{
+    btn(label,cost+' tokens','',frT<cost,()=>{
+      if(frT<cost)return;
+      const st2=STACKS.test(id);
+      if(!st2&&inv.length+n>CAPN()){msg('You need '+n+' free bag slot'+(n===1?'':'s')+' for that.');return;}
+      frT-=cost;for(let i=0;i<(st2?1:n);i++)addItem(id,st2?n:1);
+      msg('Fenn hands you '+label.toLowerCase()+'. ('+frT+' tokens left)');save();ui();fzMenu();
+    });
+  });
+  btn('Done','','close',false,()=>{w.style.display='none';});
+  w.replaceChildren(in_);w.style.display='flex';
+  const f=in_.querySelector('button:not(:disabled)');if(f)f.focus({preventScroll:true});
+}
+
 // ---- Tutorial Island: brand-new characters learn the basics here, then sail to the mainland ----
 const TUT={box:[20,128,49,149],start:[28,139],did:{},arrow:null,skipArm:0,
   steps:[null,
@@ -6180,6 +6318,7 @@ const TITLES=[
   ['farmer','the Farmer','Farming level 30',()=>skLvOf(14)>=30],
   ['crafter','the Crafter','Crafting level 30',()=>skLvOf(15)>=30],
   ['thief','the Thief','Thieving level 30',()=>skLvOf(16)>=30],
+  ['frenzied','the Frenzied','Score 3,000 in one Fishing Frenzy',()=>frBest>=3000],
   ['adventurer','the Adventurer','Combat level 20',()=>clvl()>=20],
   ['champion','the Champion','Combat level 50',()=>clvl()>=50],
   ['hero','the Hero','Finish every quest',()=>QUESTS.every(q=>q.st()===2)],
