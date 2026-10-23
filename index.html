@@ -97,7 +97,12 @@ body{background:var(--bg);overflow:hidden;touch-action:manipulation;-webkit-user
   </div>
 </div>
 <script>
-const T=32,MW=240,WH=180,OY=32,BOT=60; // MW,WH = the world map (the dungeon is built below it, see MH)
+const T=32,MW=240,WH=180,OY=32,BOT=60;
+// The XP curve: XP needed for level L is d*(L-1)^2, made cheaper for the early levels (a third of the cost at level 2,
+// sliding up to the full cost at level 20). Saves hold XP, not levels, so a change here only ever moves players up.
+const XPEASE=L=>Math.min(1,0.35+0.65*(L-1)/19);
+const xpAt=(L,d)=>L<=1?0:Math.round(d*(L-1)*(L-1)*XPEASE(L));
+const lvOf=(x,d)=>{x=+x||0;let L=1+Math.floor(Math.sqrt(Math.max(0,x)/d));while(xpAt(L+1,d)<=x)L++;return L;}; // MW,WH = the world map (the dungeon is built below it, see MH)
 // The screen size follows the window: W,H = visible tiles (can be fractions)
 function viewSize(){
   const el=document.getElementById('game'),iw=Math.max(200,el.clientWidth||window.innerWidth||640),ih=Math.max(200,el.clientHeight||window.innerHeight||540);
@@ -240,25 +245,25 @@ const MAP=[
 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░.................................................................................................................YYOOOO.............d..O.",
 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaaa░░░░░............................................T.........................ŏ..........................................YOOOO.d......Ĥ.......OO.",
 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░...........................................................................T...................................YYOOO..............Ĥ..OO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░.....................................................................................T...............T........YYOOO......s...........OO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaaaaaae░░░░░░............................................................................................................YYOOOO..............OOOOOO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafee░░░░░..........................T......................T.............T............................................YOOOOOO............OOO.OOO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaafaaaaaaaaeee░░░░░.................................................T.........................................................YOOOOOO.................O.O.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeeee░░░░...........................................................................................................YOOO..O...................O.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeeeem░░░.........................................................................................................YYOOOO...................v..O.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeeee░░░░........................................................................................................YYOOOO.....ĤĤ..ő...YY........O.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeee░░░░░░.......................................................................................................YOOOOO......................OO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaaaaeee░░░░░░░.....................................................................................................YYOOOO..d................Ĥ...OO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaee░░░ŝ░░░.............................................................................Y......................YYOOOO..............~FŖ.......OO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaae░░░░░░░....................................................................................................YOOOOO.............~~~~ŖŖOOOOOOO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░j░░░.......................................T.............................................................OOOOO......Y...s...~~~~~~OOOO.OO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaa░░░░░░..................................................d..................................................YOOOO..............~Ń~~~......OO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░...................T.......T.................................................................T.......YOOOOOő..........Ĥ......v.....OO.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafaaaaaaaaaa░░░░░░...................................................................T.................................YOOOOO......v...........v......O.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaaaaaaaaaaa░░░░░░░░....................................................................................................YOOOO..............d........ő..O.",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░░░.........................................ƌƌƌžžƀž....Ő............................T..................YOOOO.........................OOO",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░░░░.......................................ƌƌžžŻƅŻŻžž....T.............................................Y.OOOO...........OO..OOOO..Ĥ..OOO",
-"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░░....................................ń..ƌžƎŻŻźŻŻŻŌžƃƎ...............................................Y.OOOOO.........OOOOOO.OO....OOOO",
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaFa░░░░░░░░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░.....................................................................................T...............T........YYOOO......s...........OO.",
+"aaaaaaaaaaaaaaaaaaaaaaaaaaFa░░░░.......░░░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaaaaaae░░░░░░............................................................................................................YYOOOO..............OOOOOO.",
+"aaaaaaaaaaaaaaaaaaaaaaaaaT░░░...........R.░░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafee░░░░░..........................T......................T.............T............................................YOOOOOO............OOO.OOO.",
+"aaaaaaaaaaaaaaaaaaaaaaaaa░░...............R.░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaafaaaaaaaaeee░░░░░.................................................T.........................................................YOOOOOO.................O.O.",
+"aaaaaaaaaaaaaaaaaaaaaaaaT░..,..........R.....░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeeee░░░░...........................................................................................................YOOO..O...................O.",
+"aaaaaaaaaaaaaaaaaaaaaaa░░...,.......,......R..░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeeeem░░░.........................................................................................................YYOOOO...................v..O.",
+"aaaaaaaaaaaaaaaaaaaaaaa░..T.,.......,..........░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeeee░░░░........................................................................................................YYOOOO.....ĤĤ..ő...YY........O.",
+"aaaaaaaaaaaaaaaaaaaaaa░T....,.......,.......U..░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaeee░░░░░░.......................................................................................................YOOOOO......................OO.",
+"aaaaaaaaaaaaaaaaaaaaaa░.....,.......,........A..░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaaaaeee░░░░░░░.....................................................................................................YYOOOO..d................Ĥ...OO.",
+"aaaaaaaaaaaaaaaaaaaaaa░.T...,,,,,,,,,...........░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaee░░░ŝ░░░.............................................................................Y......................YYOOOO..............~FŖ.......OO.",
+"aaaaaaaaaaaaaaaaaaaaaa░.....,.......,...........░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaae░░░░░░░....................................................................................................YOOOOO.............~~~~ŖŖOOOOOOO.",
+"aaaaaaaaaaaaaaaaaaaaaa░░....,.......,.||||||||.░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░j░░░.......................................T.............................................................OOOOO......Y...s...~~~~~~OOOO.OO.",
+"aaaaaaaaaaaaaaaaaaaaaaa░....,.......,.|...0..|.░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaa░░░░░░..................................................d..................................................YOOOO..............~Ń~~~......OO.",
+"aaaaaaaaaaaaaaaaaaaaaaa░░...,............0...|░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░...................T.......T.................................................................T.......YOOOOOő..........Ĥ......v.....OO.",
+"aaaaaaaaaaaaaaaaaaaaaaaa░░..,,,,......|....0.|░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafaaaaaaaaaa░░░░░░...................................................................T.................................YOOOOO......v...........v......O.",
+"aaaaaaaaaaaaaaaaaaaaaaaaa░░55.........|.0...░|aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaagaaaaaaaaaaaa░░░░░░░░....................................................................................................YOOOO..............d........ő..O.",
+"aaaaaaaaaaaaaaaaaaaaaaaaaa░55.........||||||||aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░░░.........................................ƌƌƌžžƀž....Ő............................T..................YOOOO.........................OOO",
+"aaaaaaaaaaaaaaaaaaaaaaaaaaa55░░░.......░░░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░░░░.......................................ƌƌžžŻƅŻŻžž....T.............................................Y.OOOO...........OO..OOOO..Ĥ..OOO",
+"aaaaaaaaaaaaaaaaaaaaaaaaaaa55aa░░░░░░░░░aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░░....................................ń..ƌžƎŻŻźŻŻŻŌžƃƎ...............................................Y.OOOOO.........OOOOOO.OO....OOOO",
 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░q░░░░.......................................ƌƀŻŌźŻźźźŻžƁƁƀƁ..............................................YOOO.OO...Ĥ.....OOOOOOOOO.OOOOOO",
 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░.......................................žƂŻƉźźźŻƉźƂžƏƏƁ..............................................YOOOO.O.........OOOOOOOOOOOOOOOO",
 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa░░░░░░......................T...........T...žŻŻŻż¶żżźŻŻžƏƏƁ..............................................YOOOOOO.......................O.",
@@ -302,7 +307,7 @@ const MONCFG={"slime":{"level":0,"aggro":0},"goblin":{"level":0,"aggro":0},"wolf
 const NPCCFG=[{"name":"Blacksmith Noah","title":"","color":"#8a5a33","bank":0,"look":"","sprite":"","say":["Hello there, traveller. Welcome to my shop, feel free to use my equipment as you please."],"shop":{"sell":[["axe0",5],["pik0",5],["wp0",50]],"buy":[["ore",1],["or1",5],["or2",20]],"name":""},"x":21,"y":15},{"name":"Art","title":"Toll guard","color":"#8a5a33","bank":0,"look":"helm","sprite":"","say":["Hello there, traveller. The toll is 150 coins to get to ocean arch town, if you dont want to pay take the long way around to the west."],"shop":null,"x":53,"y":70},{"name":"King Erik","title":"King of Ocean Arch","color":"#9a6ad8","bank":0,"look":"crown","sprite":"","say":["Welcome to my kingdom, traveller.","Keep the roads safe and the realm will prosper."],"shop":null,"x":82,"y":92},{"name":"Villager","title":"","color":"#5b8bd8","bank":0,"look":"","sprite":"","say":["Hello there, traveller."],"shop":null,"x":1,"y":29},{"name":"Garland","title":"","color":"#6fbf4a","bank":0,"look":"","sprite":"","say":["Hello there, Come to practice magic in all its glory?"],"shop":{"sell":[["sc1",50],["st0",200],["sc0",10]],"buy":[],"name":"Magic shop"},"x":13,"y":25},{"name":"Villager","title":"","color":"#5b8bd8","bank":0,"look":"","sprite":"","say":["Hello there, traveller."],"shop":null,"x":9,"y":32},{"name":"Guard","title":"","color":"#5b8bd8","bank":0,"look":"helm","sprite":"","say":["Halt! ... All clear. Move along.","Keep out of trouble and we will get along fine."],"shop":null,"x":9,"y":13},{"name":"Guard","title":"","color":"#5b8bd8","bank":0,"look":"helm","sprite":"","say":["Halt! ... All clear. Move along.","Keep out of trouble and we will get along fine."],"shop":null,"x":11,"y":13},{"name":"Villager","title":"","color":"#e8e8e8","bank":0,"look":"","sprite":"","say":["Haven't even felt a bite... "],"shop":null,"x":28,"y":27},{"name":"Queen","title":"","color":"#d8574a","bank":0,"look":"crown","sprite":"","say":["Welcome, traveller. I hope you find our kingdom pleasant.","Mind the monsters beyond the walls."],"shop":null,"x":null,"y":null},{"name":"Frogkin Shopkeeper","title":"","color":"#5b8bd8","bank":0,"look":"frogshop","sprite":"","say":["Brrrp! Welcome to the pond market.","Fresh from the marsh, fair prices for all."],"shop":{"sell":[["net0",5],["fx",12],["kn0",20],["hd15",600],["bd15",1200]],"buy":[["fish",4],["fs1",10],["fs2",20]],"name":"Frogkin market"},"x":120,"y":12},{"name":"Frogkin Chief","title":"","color":"#5b8bd8","bank":0,"look":"frogchief","sprite":"","say":["Ribbit... welcome, traveller. I am chief of the marsh folk.","Our people have kept this water since before the kingdom.","Be kind to the pond and the pond will be kind to you."],"shop":null,"x":132,"y":1},{"name":"Alex","title":"Wonderer","color":"#5b8bd8","bank":0,"look":"","sprite":"","say":["Hello there, traveller. Take a break at my camp if you'd like."],"shop":null,"x":105,"y":36},{"name":"Gnome King","title":"King of the Gnomes","color":"#c0392b","bank":0,"look":"gnomeking","sprite":"","say":["Welcome to the gnome halls, tall one! I am King Bramblebeard the Ninth.","My folk are small, but our hearts and beards are mighty.","Trade with my merchant, bank with my banker, and mind the crabs on the shore."],"shop":null,"x":8,"y":80},{"name":"Gnome Merchant","title":"Gnome market","color":"#2f7a3a","bank":0,"look":"gnomeshop","sprite":"","say":["Come, come! The finest wares in all the gnome halls.","Everything is priced fair. Mostly."],"shop":{"sell":[["kn0",20],["ar0",50],["fx",12],["fth",3],["sd0",6],["net0",5]],"buy":[["ore",5],["or1",12],["or2",26],["bar",20],["log",2],["lg1",6],["fish",3],["fs1",8]],"name":"Gnome market"},"x":5,"y":60},{"name":"Gnome Banker","title":"Gnome vault","color":"#2a3a5a","bank":1,"look":"gnomebank","sprite":"","say":["Welcome to the Gnome Vault. Every coin counted, every item kept.","Your things are safe with me, tall one."],"shop":null,"x":4,"y":70},{"name":"Elf King","title":"King of the Elves","color":"#5a3a8a","bank":0,"look":"elfking","sprite":"","say":["Greetings, short-lived friend. I am King Elarion of the silver wood.","Our forests were old before your kingdom had a name.","My shopkeeper sells fine arrows, and my banker keeps your treasures safe."],"shop":null,"x":218,"y":78},{"name":"Elf Shopkeeper","title":"Elven wares","color":"#4a8a4a","bank":0,"look":"elfshop","sprite":"","say":["Fine bows and straight arrows, crafted under the moon.","Leaves, feathers and logs bought at fair prices."],"shop":{"sell":[["ar0",50],["ar1",120],["bw0",70],["bw1",170],["fth",3],["fx",12],["sd0",6]],"buy":[["log",2],["lg1",6],["lg2",14],["fth",2],["hid",5],["fish",3],["fs1",8]],"name":"Elven wares"},"x":211,"y":100},{"name":"Elf Banker","title":"Moonlight vault","color":"#2a3a5a","bank":1,"look":"elfbank","sprite":"","say":["Welcome to the Moonlight Vault. Your treasures rest safely here.","Three hundred years and not one coin has gone missing."],"shop":null,"x":229,"y":89},{"name":"Villager","title":"","color":"#5b8bd8","bank":0,"look":"","sprite":"","say":["Hello there, traveller."],"shop":{"sell":[],"buy":[],"name":""},"x":72,"y":79},{"name":"Barkeep","title":"Innkeeper","color":"#5b8bd8","bank":0,"look":"barkeep","sprite":"","say":["Welcome in, friend! Pull up a stool.","A pint and a pie, the best cure for a long day of chopping.","Mind the darts, the locals have terrible aim."],"shop":{"sell":[["pf0",10],["pf1",16],["pf2",8],["pf3",14],["pf4",30],["pf5",45]],"buy":[["cf0",5],["cf1",12],["cf2",24],["vg0",3],["vg1",8],["vg2",20],["vg3",45],["vg4",90]],"name":"The Tankard"},"x":79,"y":97},{"name":"Blacksmith Titus","title":"Blacksmith Of Ocean Arch","color":"#5b8bd8","bank":0,"look":"","sprite":"","say":["Hello there, traveller."],"shop":{"sell":[],"buy":[],"name":""},"x":62,"y":78},{"name":"Elf Mage","title":"Moonlit magic","color":"#3a2f7a","bank":0,"look":"elfmage","sprite":"","say":["Magic flows through the silver wood like a river. Come, take a drink.","Scrolls to recharge your faith, and staves to focus your will.","Bring me gems and scripture, and I will pay you well."],"shop":{"sell":[["sc1",50],["sc2",140],["sc3",420],["st1",600],["st2",1500],["bs",8]],"buy":[["gm0",25],["gm1",50],["gm2",90],["gm3",150],["sr0",20],["sr1",60]],"name":"Elven magic"},"x":207,"y":85},{"name":"King Dolan","title":"King Of Nero","color":"#9a6ad8","bank":0,"look":"crown","sprite":"","say":["Welcome to my kingdom, traveller.","Keep the roads safe and the realm will prosper."],"shop":null,"x":16,"y":8},{"name":"Innkeeper","title":"Keeper of the inn","color":"#a8342a","bank":0,"look":"innkeeper","sprite":"","say":["Welcome to the inn, traveller! You look like you have walked a long road.","A warm bed and a hot meal will put you right. For 200 coins I will have you fully rested."],"shop":null,"heal":200,"x":144,"y":22},{"name":"Hilda","title":"General store","color":"#c98a3a","bank":0,"look":"","sprite":"","say":["Welcome, welcome! Tools, arrows, seeds and all sorts.","I buy logs, fish and anything else you drag in."],"shop":{"sell":[["hd22",1],["bd21",1],["sp5",1],["cp4",1],["kn0",20],["ar0",50],["fx",12],["net0",5],["log",1],["net3",300],["net4",700],["sd0",6],["sd1",18],["sd2",45],["sd3",100],["sd4",220]],"buy":[["log",2],["lg1",6],["lg2",14],["fish",3],["fs1",8],["fs2",16],["cf0",5],["cf1",12],["cf2",24],["ore",5],["or1",12],["or2",26],["or3",50],["or4",90],["fs3",5],["fs4",12],["fs5",22],["fs6",30],["cf3",9],["cf4",18],["cf5",34],["cf6",45],["vg0",3],["vg1",8],["vg2",20],["vg3",45],["vg4",90],["gm0",16],["gm1",36],["gm2",72],["gm3",160],["gm4",360]],"name":"Hilda's Goods"},"x":138,"y":41},{"name":"Osric","title":"Town banker","color":"#2a3a5a","bank":1,"look":"","sprite":"","say":["Good day. Your coins and goods are safe with me.","Same vault as every other bank in the land, so your things are here too."],"shop":null,"x":140,"y":49},{"name":"Barkeep Tom","title":"The Gilded Tankard","color":"#5b8bd8","bank":0,"look":"barkeep","sprite":"","say":["Come in, come in! Fighters drink half price. Only joking.","A pint and a pie, that is what this town runs on."],"shop":{"sell":[["pf0",10],["pf1",16],["pf2",8],["pf3",14],["pf4",30],["pf5",45]],"buy":[["cf0",5],["cf1",12],["cf2",24],["vg0",3],["vg1",8],["vg2",20],["vg3",45],["vg4",90]],"name":"The Gilded Tankard"},"x":150,"y":48}];
 const SIGNCFG=[[5,2,"Rat Kings lair. Beware!"],[131,2,"# The Song of the Twice-Born\n*As kept by the Reed Priests of Lowmarsh*\n\n**I. Of the Birth**\nBefore the rivers had names, Frogzor the Twice-Born crawled from the first tidepool. He breathed water and air alike, so he belonged to neither and to both. Where he stepped, the mud grew rich. Where he sang, the frogs answered. From the spawn of his song came the Mirefolk, who still call him Grandfather.\n\n**II. Of the Gifts**\nFrogzor taught us to weave reed-homes that float when the floods come. He taught us which waters heal and which waters drown. He gave us gills for the wet season and lungs for the dry. He gave us the Long Croak, so that kin may call to kin across any marsh.\n\n**III. Of the Listening**\nBut a god who hears two worlds hears too much. Frogzor listened to the deep water, where old things whisper, and to the high air, where storms argue. He tried to hold every voice at once. He did not sleep. He did not stop listening.\n\nIn the Year of Still Water, he dove into the Black Sounding to hear the bottom of the world. When he rose, his eyes no longer closed, and his song had no ending.\n\n**IV. Of the Madness**\nNow Frogzor wanders the Weeping Fen. He speaks to stones as if they were his children. He weeps over puddles. Some days he forgets his own name and asks travellers for theirs, so he might borrow one. Once, in a fit of grief, he swallowed the moon's reflection, and the marsh was dark for nine nights.\n\nOutsiders call him broken. They ask why we do not find a saner god.\n\n**V. Of Why We Love Him**\nBecause he went mad for us. Every voice he listened to was a danger he meant to warn us of. Every night he did not sleep, he kept watch. The madness is the price of his care, and he paid it gladly.\n\nAnd still, he remembers in his way. A Mirefolk child sinking in deep water will feel a great webbed hand beneath her, lifting. When drought cracks the earth, Frogzor weeps the pools full again, though he does not know why he weeps.\n\nSo we leave him offerings: river snails, song-stones, and a name carved on bark, so he never lacks one to borrow. We sing him the songs he once sang to us, so that someone remembers them whole.\n\n**VI. A Prayer of the Mirefolk**\n*Grandfather, you are lost, but we are not.*\n*You forgot us, but we did not forget.*\n*Listen to everything, if you must.*\n*But listen to us first.*\n\n*Here ends the Song of the Twice-Born.*"],[139,19,""],[221,78,""],[87,85,""],[152,151,""]];
 const LAMPCFG=[[6,7,0],[10,7,0],[19,10,0],[21,14,0],[0,16,0],[3,25,0],[15,26,4],[0,30,3],[0,34,3],[7,38,3],[10,33,3],[0,59,2],[6,59,2],[3,66,2],[4,73,2],[9,78,2],[5,78,2],[85,87,1],[84,94,1],[88,91,1],[73,78,1],[79,82,1],[67,93,1],[71,96,1],[74,99,1],[77,99,1],[80,96,1],[58,88,1],[217,77,4],[220,77,4],[231,90,4],[228,97,4],[228,104,4],[214,103,4],[211,103,4],[212,88,4],[206,86,4],[220,111,4],[217,111,4],[137,22,0],[140,18,0],[145,18,0],[149,22,0],[144,25,0]];
-const REGIONCFG=[["Bandit Camp",197,29,238,47],["Wayfarer's Rest",134,14,152,29],["Giant's Quarry",222,163,239,179],["The Old Grove",205,118,239,162],["The Silverwood",192,68,239,117],["The Barrow Fields",183,0,239,17],["Frogkin Marsh",100,0,148,13],["Kingdom of Nero",0,0,30,42],["The Gnome Halls",0,54,22,86],["Ocean Arch",52,70,96,100],["Mirror Lake",24,56,46,72],["Sunset Coast",0,87,51,99],["Sunset Coast",90,101,116,179],["The Southern Sea",0,100,89,179],["The Riverlands",31,0,99,55],["The Eastern Plains",100,14,200,179],["The Wilds",0,0,239,179]];
+const REGIONCFG=[["Tutorial Island",20,128,49,149],["Bandit Camp",197,29,238,47],["Wayfarer's Rest",134,14,152,29],["Giant's Quarry",222,163,239,179],["The Old Grove",205,118,239,162],["The Silverwood",192,68,239,117],["The Barrow Fields",183,0,239,17],["Frogkin Marsh",100,0,148,13],["Kingdom of Nero",0,0,30,42],["The Gnome Halls",0,54,22,86],["Ocean Arch",52,70,96,100],["Mirror Lake",24,56,46,72],["Sunset Coast",0,87,51,99],["Sunset Coast",90,101,116,179],["The Southern Sea",0,100,89,179],["The Riverlands",31,0,99,55],["The Eastern Plains",100,14,200,179],["The Wilds",0,0,239,179]];
 // Wall lanterns: drawn on top of a wall tile, the wall stays. [name, glow colour, flickers, body shapes, bright shapes that flicker]
 // shapes are [x,y,w,h,colour] or ['c',x,y,radius,colour] on a 32 by 32 tile
 const LANDEF=[
@@ -352,6 +357,7 @@ const dayName=f=>{const h=f*24;return h<5.5||h>=21?'Night':h<8?'Dawn':h<17?'Day'
 const clockStr=f=>{let m=Math.floor(f*1440),h=Math.floor(m/60)%24;m%=60;const ap=h>=12?'PM':'AM';return((h%12)||12)+':'+(m<10?'0':'')+m+' '+ap;};
 // things that give off light after dark: [radius px, colour, flickers]
 const LIGHTS={'\u00a4':[96,0xffd27a,0],'\u00bf':[104,0xff9a3c,1],'\u00d8':[84,0xff9a3c,1],'\u00eb':[92,0xff9a3c,1],'\u00ec':[104,0xff9a3c,1],'\u00f0':[72,0xa58cff,0],'\u00f9':[72,0xff9a3c,1],'\u00fe':[96,0xffd27a,0],'\u0110':[64,0x7affc0,0],'\u0118':[84,0xc8ffd8,0],'\u0124':[44,0x9affd0,0],'\u016e':[100,0xff9a3c,1],'\u0177':[56,0xffd27a,1],'\u018f':[60,0x7ad8ff,0],'\u0185':[44,0x7ad8ff,0]};
+if(Array.isArray(REGIONCFG)&&!REGIONCFG.some(e=>Array.isArray(e)&&e[0]==='Tutorial Island'))REGIONCFG.unshift(['Tutorial Island',20,128,49,149]);
 const REGIONS=(Array.isArray(REGIONCFG)?REGIONCFG:[]).filter(e=>Array.isArray(e)&&typeof e[0]==='string'&&e[0].trim()&&[1,2,3,4].every(k=>Number.isInteger(e[k]))).slice(0,200).map(e=>({n:e[0].trim().slice(0,32),x0:Math.min(e[1],e[3]),y0:Math.min(e[2],e[4]),x1:Math.max(e[1],e[3]),y1:Math.max(e[2],e[4])}));
 // the region you are standing in: the first one in the list that covers the square wins; in a dungeon it is the dungeon's name
 const regionAt=(x,y)=>{const d=dunAt(y);if(d>=0&&y>=DUNS[d].z0)return{n:DUNS[d].name,d:1};for(const r of REGIONS)if(x>=r.x0&&x<=r.x1&&y>=r.y0&&y<=r.y1)return r;return null;};
@@ -411,7 +417,7 @@ let bq=0,fq=0,quest=0,fxp=0,coins=0,pouchN,pouchL,pouchR,pouchI,shop,sellL,sellF
 const fires=[];
 // ===== Faith: bury bones and read scriptures for Faith xp; blessings are buffs that drain faith points =====
 let pxp=0,pp=-1;const prayOn={};   // pp -1 = full
-const PDIV=40,prlvl=()=>1+Math.floor(Math.sqrt(pxp/PDIV)),ppMax=()=>10+2*prlvl()+faithGear(),faithGear=()=>(gear.hd===15?6:0)+(gear.bd===15?10:0)+(gear.cp===3?8:0),ppGet=()=>{if(pp<0||pp>ppMax())pp=ppMax();return pp;},pOn=id=>!!prayOn[id];
+const PDIV=40,prlvl=()=>lvOf(pxp,PDIV),ppMax=()=>10+2*prlvl()+faithGear(),faithGear=()=>(gear.hd===15?6:0)+(gear.bd===15?10:0)+(gear.cp===3?8:0),ppGet=()=>{if(pp<0||pp>ppMax())pp=ppMax();return pp;},pOn=id=>!!prayOn[id];
 // Level requirements are stretched 20% (a bit more grind): SL turns an old level into the new one.
 const SL=l=>l<=1?1:Math.round(l*1.2);
 const PRAYERS=[
@@ -428,13 +434,13 @@ const BONEXP={bn0:20,bn1:60,bn2:250},SCRXP={sr0:150,sr1:500,sr2:2000};
 const NKD=['+1 damage','+8% gathering success','+6 max health','+2 defense','+1 damage, +4% gathering, +1 defense'];   // amulet powers
 const amDmg=()=>[1,0,0,0,1][gear.nk]||0,amGath=()=>[0,.08,0,0,.04][gear.nk]||0,amHp=()=>[0,0,6,0,0][gear.nk]||0,amDef=()=>[0,0,0,2,1][gear.nk]||0;
 const dmgPray=()=>amDmg()+(pOn('might')?2:0)+(pOn('piety')?3:0)+(Date.now()<mightUntil?3:0),spellPray=()=>amDmg()+(pOn('arcane')?2:0)+(pOn('piety')?3:0)+(Date.now()<focusUntil?4:0),defPray=()=>(pOn('skin')?2:0)+(pOn('piety')?3:0)+(Date.now()<skinUntil?3:0);
-const ammo={t:-1,n:0},skRows=[],SKCW=98,SKCH=75,SKGAP=6,SKX0=27,SKY0=44,SKW=SKX0*2+3*SKCW+2*SKGAP,SKH2=SKY0+5*SKCH+4*SKGAP+34;
+const ammo={t:-1,n:0},skRows=[],SKCW=98,SKCH=62,SKGAP=6,SKX0=27,SKY0=44,SKROWS=6,SKW=SKX0*2+3*SKCW+2*SKGAP,SKH2=SKY0+SKROWS*SKCH+(SKROWS-1)*SKGAP+34;
 // Skills window order: combat first, then gathering, then crafting (numbers are skill ids)
-const SKORD=[3,4,12,5,6,0,1,2,7,8,9,10,15,13,14];   // no Combat level tile: it shows on the Gear screen
-const SKCOL=[0x6fbf4a,0x4a9fd8,0xb0b4ba,0xd8574a,0xe0a030,0x5a8fd8,0xd84a8a,0xc0c4cc,0xff7a2a,0xc98a5a,0xb58a4a,0xffe066,0xb06be0,0xf0e6a0,0x8fd05a,0xc98a7a];
-const SKICON=['sk0','sk1','sk2','sk3','sk4','sk5','skhp','sk7','fire','sk9','sk10','skcb','sk12','sk13','sk14','sk15'];
+const SKORD=[3,4,12,5,6,0,1,2,7,8,9,10,15,13,14,16];   // no Combat level tile: it shows on the Gear screen
+const SKCOL=[0x6fbf4a,0x4a9fd8,0xb0b4ba,0xd8574a,0xe0a030,0x5a8fd8,0xd84a8a,0xc0c4cc,0xff7a2a,0xc98a5a,0xb58a4a,0xffe066,0xb06be0,0xf0e6a0,0x8fd05a,0xc98a7a,0x8a8aa8];
+const SKICON=['sk0','sk1','sk2','sk3','sk4','sk5','skhp','sk7','fire','sk9','sk10','skcb','sk12','sk13','sk14','sk15','sk16'];
 const skHi=[];
-const skXpAll=()=>[xp,fxp,mxp,cxp,akxp,dxp,hxp,sxp,fmxp,ckxp,fkxp,0,mgxp,pxp,frxp,cfxp],SKDIV=[50,50,50,100,100,100,40,50,50,50,50,1,50,PDIV,50,50];
+const skXpAll=()=>[xp,fxp,mxp,cxp,akxp,dxp,hxp,sxp,fmxp,ckxp,fkxp,0,mgxp,pxp,frxp,cfxp,thxp],SKDIV=[50,50,50,100,100,100,40,50,50,50,50,1,50,PDIV,50,50,50];
 let dlgQuestR,dlgQuestT,dlgExtra=0,dlgBY={t:0,q:0,h:0},dlgHealR=null,dlgHealT=null,shTrack=null,dlgPrevT,qp,qTab,qView=-1,qObjs=[],qTitle,dlgFull='',dlgOff=0,dlgHint,DLG_W=280,DLG_H=230,dlg,dlgName,dlgBody,dlgNextT,dlgTradeR,dlgTradeT,dlgNpc=null,dlgIdx=0,shTitle,shTab=0,shOff=0,shRows=[],shTabs=[],shBar,shUp,shDn,crOff=0,crRows=[],crUp,crDn,crBar,crDrag=null,ftp,ftRows=[],ammoTxt,FTWd=340,FTHt=480;
 const ranged=()=>gear.bw>=0&&ammo.n>0;
 const ZMIN=0.75,ZMAX=2;let zoomLv=1,zoomSoft=false;const uiObjs=[];let menuScr={x:0,y:0};
@@ -490,9 +496,10 @@ const PUBF=['pf0','pf1','pf2','pf3','pf4','pf5'],PUBH=[2,3,3,4,6,9],PUBV=['drink
 const RAW=FISHES.concat(['rch','rbf','rrm','rwm','rgm','fs3','fs4','fs5','fs6','rbo','rve','rbe','fs7']),NEEDC=[1,10,20,1,3,12,25,35,5,15,25,30,6,5,20,40].map(SL); // raw things you can cook, in the same order as COOKED
 // Farming: plant seeds in a farm patch, wait for them to grow (it keeps growing while you are away), then harvest.
 const SEEDS=['sd0','sd1','sd2','sd3','sd4'],CROPS=['vg0','vg1','vg2','vg3','vg4'],CROPN=['potato','carrot','cabbage','tomato','pumpkin'],CROPP=['potatoes','carrots','cabbages','tomatoes','pumpkins'],FRNEED=[1,10,20,30,40].map(SL),FRXP=[20,45,85,140,220],FRGROW=[120,180,270,390,540],FRHEAL=[3,5,8,12,18],PATCH='\u00aa';
-let cfxp=0;const cflvl=()=>1+Math.floor(Math.sqrt(cfxp/50));
+let cfxp=0;const cflvl=()=>lvOf(cfxp,50);
+let thxp=0;const thlvl=()=>lvOf(thxp,50);   // Thieving
 let frxp=0;const farm={},patchSpr={},patchTx={};
-const frlvl=()=>1+Math.floor(Math.sqrt(frxp/50));
+const frlvl=()=>lvOf(frxp,50);
 const LOGP=[2,6,14],FISHP=[3,8,16],OREP=[5,12,26,48,85];
 const NEEDL=[1,10,20,30,40].map(SL),WCXP=[25,50,90,150,260],FSXP=[20,40,75],MNXP=[30,60,110,170,250],SMXP=[15,28,50,80,120],SMREQ=[1,10,20,30,40].map(SL);
 const TREEC={T:0,O:1,Y:2,s:3,v:4},ROCKC={R:0,I:1,M:2,'(':3,')':4},FISHC={F:0,G:1,H:2,'Ń':4};
@@ -553,7 +560,9 @@ const goodList=a=>(Array.isArray(a)?a:[]).filter(e=>Array.isArray(e)&&goodId(e[0
 const SHOPSELL=goodList(SHOPCFG&&SHOPCFG.sell),SHOPBUY=goodList(SHOPCFG&&SHOPCFG.buy);
 const SHVIS=8,SHROW=44,SHY0=66;
 const NPCS=[],NPCAT={};
-(Array.isArray(NPCCFG)?NPCCFG:[]).slice(0,60).forEach(o=>{
+const TUTNPC=[{"name": "Island Guide", "color": "#5b8bd8", "look": "", "x": 29, "y": 138, "say": ["Welcome to Oakheart!"]}, {"name": "Survival Expert", "color": "#4f8a34", "look": "", "x": 29, "y": 134, "say": ["The wilds can be harsh. Keep a full belly."]}, {"name": "Mining Instructor", "color": "#8a5a33", "look": "helm", "x": 37, "y": 134, "say": ["Rocks hold ore, and ore makes metal."]}, {"name": "Combat Instructor", "color": "#c0392b", "look": "helm", "x": 36, "y": 143, "say": ["Keep your guard up!"]}, {"name": "Island Banker", "color": "#e0b040", "look": "", "bank": 1, "x": 32, "y": 144, "say": ["This is the bank. Anything you store here is safe, and you can reach it from any banker in the world.", "Items in your bank are never lost, even if you get knocked out. Tap Bank below to look inside."]}, {"name": "Ferryman", "color": "#3b78b8", "look": "", "x": 28, "y": 148, "say": ["All aboard for the mainland!"]}];
+if(Array.isArray(NPCCFG))TUTNPC.forEach(t=>{if(!NPCCFG.some(o=>o&&o.name===t.name))NPCCFG.unshift(t);});
+(Array.isArray(NPCCFG)?NPCCFG:[]).slice(0,66).forEach(o=>{
   if(!o||typeof o!=='object'||!Number.isInteger(o.x)||!Number.isInteger(o.y))return;
   if(o.x<0||o.y<0||o.x>=MW||o.y>=MH||grid[o.y][o.x]!=='.'||NPCAT[o.y*MW+o.x]!==undefined)return;
   const sh=o.shop&&typeof o.shop==='object'?{sell:goodList(o.shop.sell),buy:goodList(o.shop.buy),name:String(o.shop.name||'').slice(0,20)}:null;
@@ -603,10 +612,11 @@ const KEY='woodcutter-save-v1';
 let savedPos=null,saveOK=false;
 let tabIc=[],tabHi=[];   // the bottom menu: a picture and a highlight for each button
 let welSeen=false;
-let wbK=0,ttlCur='',ttlReset=false;   // world bosses helped defeat, and the title you show (both saved)   // has this character seen the welcome box?
+let wbK=0,ttlCur='',ttlReset=false;
+let tut=99;   // tutorial island step (99 = done or never needed; saved)   // world bosses helped defeat, and the title you show (both saved)   // has this character seen the welcome box?
 function save(){
   try{if(typeof OAK!=='undefined'&&OAK.on){if(!OAK.token)return;setTimeout(()=>oakUpload(),0);}}catch(e){}   // on the Oakheart server, nothing is saved until you log in
-  try{localStorage.setItem(KEY,JSON.stringify({xp,fxp,mxp,cxp,sxp,coins,fmxp,ckxp,dxp,hxp,akxp,fkxp,cfxp,quest,fq,bq,nq,ammo,kn:1,inv,stk,axe,net,pik,gear,bank,mgxp,chg,pxp,frxp,farm,pp:Math.floor(ppGet()*10)/10,tb:{g:tbGen,t:tbTasks},x:px,y:py,wel:welSeen?1:0,esc:duelEscSave(),dw:duelW,dl:duelL,wbk:wbK,ttl:ttlCur}));}catch(e){}
+  try{localStorage.setItem(KEY,JSON.stringify({xp,fxp,mxp,cxp,sxp,coins,fmxp,ckxp,dxp,hxp,akxp,fkxp,cfxp,thxp,quest,fq,bq,nq,ammo,kn:1,inv,stk,axe,net,pik,gear,bank,mgxp,chg,pxp,frxp,farm,pp:Math.floor(ppGet()*10)/10,tb:{g:tbGen,t:tbTasks},x:px,y:py,wel:welSeen?1:0,esc:duelEscSave(),dw:duelW,dl:duelL,wbk:wbK,ttl:ttlCur,tut}));}catch(e){}
 }
 function load(){
   try{
@@ -628,12 +638,13 @@ function load(){
     gear.bw=Math.min(gear.bw,4);gear.cp=Math.min(gear.cp,4);gear.nk=Math.min(gear.nk,4);
     gear.hd=Math.min(gear.hd,23);gear.hn=Math.min(gear.hn,3);gear.ft=Math.min(gear.ft,3);gear.wp=Math.min(gear.wp,WKS[gear.wt]==='sp'||WKS[gear.wt]==='st'?5:4);gear.sh=Math.min(gear.sh,5);
 
-    mgxp=+d.mgxp||0;pxp=Math.max(0,+d.pxp||0);frxp=Math.max(0,+d.frxp||0);cfxp=Math.max(0,+d.cfxp||0);for(const k in farm)delete farm[k];if(d.farm&&typeof d.farm==='object')for(const k in d.farm){const f=d.farm[k];if(/^\d+,\d+$/.test(k)&&Array.isArray(f)&&Number.isInteger(f[0])&&f[0]>=0&&f[0]<5&&Number.isFinite(+f[1]))farm[k]=[f[0],+f[1]];}pp=Number.isFinite(+d.pp)&&d.pp!==undefined?Math.max(0,+d.pp):-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];
+    mgxp=+d.mgxp||0;pxp=Math.max(0,+d.pxp||0);frxp=Math.max(0,+d.frxp||0);cfxp=Math.max(0,+d.cfxp||0);thxp=Math.max(0,+d.thxp||0);for(const k in farm)delete farm[k];if(d.farm&&typeof d.farm==='object')for(const k in d.farm){const f=d.farm[k];if(/^\d+,\d+$/.test(k)&&Array.isArray(f)&&Number.isInteger(f[0])&&f[0]>=0&&f[0]<5&&Number.isFinite(+f[1]))farm[k]=[f[0],+f[1]];}pp=Number.isFinite(+d.pp)&&d.pp!==undefined?Math.max(0,+d.pp):-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];
     if(d.chg&&typeof d.chg==='object')Object.keys(d.chg).forEach(k=>{const n=Math.floor(+d.chg[k]);if(/^(wd|st|bk)[0-5]$/.test(k)&&n>=0)chg[k]=Math.min(n,maxCharges(k));});
     for(const k in bank)delete bank[k];
     if(d.bank&&typeof d.bank==='object')Object.keys(d.bank).forEach(k=>{const n=Math.floor(+d.bank[k]);if(ITEM_OK.test(k)&&n>0)bank[k]=Math.min(n,k==='coin'?2e9:99999);});
     if(d.esc)duelEscLoad(d.esc);
     wbK=Math.max(0,Math.min(1e6,Math.floor(+d.wbk)||0));ttlCur=typeof d.ttl==='string'&&/^[a-z]{1,16}$/.test(d.ttl)?d.ttl:'';ttlReset=true;   // checked against the title list once the game runs
+    tut=Number.isInteger(d.tut)&&d.tut>=1&&d.tut<=99?d.tut:99;   // saves from before the island never go there
     duelW=Math.max(0,Math.floor(+d.dw)||0);duelL=Math.max(0,Math.floor(+d.dl)||0);   // a stake from a duel that never finished
     inv.length=0;for(const k in stk)delete stk[k];
     (Array.isArray(d.inv)?d.inv:[]).filter(i=>typeof i==='string'&&ITEM_OK.test(i)).forEach(i=>{
@@ -665,13 +676,13 @@ function load(){
     return true;
   }catch(e){return false;}
 }
-const flvl=()=>1+Math.floor(Math.sqrt(fxp/50));
-const mlvl=()=>1+Math.floor(Math.sqrt(mxp/50));
-const alvl=()=>1+Math.floor(Math.sqrt(cxp/100));
-const dflvl=()=>1+Math.floor(Math.sqrt(dxp/100));
-const hplvl=()=>1+Math.floor(Math.sqrt(hxp/40));
-const arlvl=()=>1+Math.floor(Math.sqrt(akxp/100));
-const fklvl=()=>1+Math.floor(Math.sqrt(fkxp/50));
+const flvl=()=>lvOf(fxp,50);
+const mlvl=()=>lvOf(mxp,50);
+const alvl=()=>lvOf(cxp,100);
+const dflvl=()=>lvOf(dxp,100);
+const hplvl=()=>lvOf(hxp,40);
+const arlvl=()=>lvOf(akxp,100);
+const fklvl=()=>lvOf(fkxp,50);
 const snap=()=>[alvl(),arlvl(),dflvl(),hplvl(),mglvl()];
 // Combat level: weighs Attack, Defense and Hitpoints together
 const clvl=()=>Math.max(1,Math.floor(0.25*(dflvl()+hplvl())+0.5*Math.max(alvl(),arlvl(),mglvl())));
@@ -680,12 +691,12 @@ function lvlUp(b){
   for(let i=0;i<5;i++)if(n[i][1]>b[i])return 'Level up! '+n[i][0]+' is now '+n[i][1]+'. Combat level '+clvl()+'.';
   return '';
 }
-const smlvl=()=>1+Math.floor(Math.sqrt(sxp/50));
-const fmlvl=()=>1+Math.floor(Math.sqrt(fmxp/50));
-const cklvl=()=>1+Math.floor(Math.sqrt(ckxp/50));
+const smlvl=()=>lvOf(sxp,50);
+const fmlvl=()=>lvOf(fmxp,50);
+const cklvl=()=>lvOf(ckxp,50);
 const def=()=>['hd','bd','hn','ft','sh','cp'].reduce((s,k)=>s+(gear[k]>=0?DEF[k+gear[k]]:0),0)+defPray()+amDef();
 const hitChance=t=>Math.max(.15,(t?t.acc:.6)-.03*def()-.01*(dflvl()-1))*(Date.now()<wardUntil?0.6:1)*(pOn('protect')?0.8:1);
-const lvl=()=>1+Math.floor(Math.sqrt(xp/50));
+const lvl=()=>lvOf(xp,50);
 // People and monsters do not block the way: you can walk straight through them
 const walkable=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH&&(grid[y][x]==='.'||grid[y][x]==='@'||grid[y][x]==='N'||grid[y][x]==='B'||(grid[y][x]==='~'&&pOn('water')));   // lit fires no longer block the way
 const msg=s=>{msgTxt.setText(s);if(msgFit)msgFit();};
@@ -1048,7 +1059,7 @@ function nextTier(kind){
 // Wands and staves go in the weapon slot (staves need both hands), spellbooks in their own off-hand slot.
 // Casting uses charges from the item that holds the spell; a recharge scroll refills the item you are holding.
 let mgxp=0,armedSpell=null,hasteUntil=0,boonUntil=0,wardUntil=0,skinUntil=0,mightUntil=0,focusUntil=0;
-const mglvl=()=>1+Math.floor(Math.sqrt(mgxp/50));
+const mglvl=()=>lvOf(mgxp,50);
 const chg={};                                   // charges left, kept for each kind of item (wd0, st2, bk1...)
 const MCAP={wd:30,st:60,bk:90},SCROLLCH=[10,25,50,100,200];
 const maxCharges=id=>(MCAP[kd(id)]||0)*(tr(id)+1);
@@ -1175,7 +1186,7 @@ let rightHook=null,spX=0,spw,spwInfo,spwRows=[],spwList=[],spwTitle,spwT2,spwTab
 const SPW=140,SPY0=36,SPST=44,SPBOX=40,SPH=SPY0+8*SPST+60;
 // ----- Faith actions -----
 // a small burst of sparkles around the character when any skill levels up
-const skLevels=()=>skXpAll().map((x,i)=>i===11?0:1+Math.floor(Math.sqrt(x/SKDIV[i])));
+const skLevels=()=>skXpAll().map((x,i)=>i===11?0:lvOf(x,SKDIV[i]));
 let lvSnap=null;
 function sparkle(){
   if(!scene||!player)return;
@@ -1402,9 +1413,9 @@ function unequip(kind){
 function updatePanels(){
   skRows.forEach((r,k)=>{
     if(k===11){r.num.setText(String(clvl()));r.f.setSize(0,6);return;}
-    const XPS=skXpAll(),d=SKDIV[k],l=1+Math.floor(Math.sqrt(XPS[k]/d));
+    const XPS=skXpAll(),d=SKDIV[k],l=lvOf(XPS[k],d);
     r.num.setText(String(l));
-    r.f.setSize(Math.max(0,(SKCW-16)*(XPS[k]-d*(l-1)*(l-1))/(d*(2*l-1))),6);
+    r.f.setSize(Math.max(0,Math.min(1,(XPS[k]-xpAt(l,d))/Math.max(1,xpAt(l+1,d)-xpAt(l,d))))*(SKCW-16),6);
   });
   ftTabs.forEach((t,i)=>t.setColor(i===ftCat?'#ffe066':'#f1e9c8'));
   ftRows.forEach((row,i)=>{
@@ -1537,6 +1548,7 @@ const isQuestSmith=n=>{const q=NPCS.find(m=>/^blacksmith\b/i.test(m.name));retur
 const isSmith=n=>!!n&&/^blacksmith\b/i.test(n.name);
 function npcOpen(c){
   let n=NPCS[c];if(!n)return;
+  if(tutTalk(n))return;
   if(n.look==='frogchief'){chiefTalk(n);return;}
   if(isQuestSmith(n)){smithTalk(n);return;}
   if(n.look==='arenamaster'){   // the Arena Master knows your duel record
@@ -1733,6 +1745,7 @@ function tbCheck(){
 }
 const tbLeft=()=>{const ms=Math.max(0,TASK_MS-(nowMs()-tbGen)),h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000);return h+'h '+m+'m';};
 function taskEvt(kind,key){
+  try{tutEvt(kind);}catch(e){}
   tbTasks.forEach(t=>{
     if(t.k!==kind||t.c||t.h>=t.n)return;
     if(t.t!==undefined&&t.t!==key)return;
@@ -3248,6 +3261,7 @@ function create(){
   tex('sk12',()=>{g.fillStyle(0x4a2a98).fillEllipse(16,25,29,8);g.fillStyle(0x6a4ad0).fillTriangle(17,2,8,24,25,24);g.fillStyle(0x4a2a98).fillTriangle(17,2,22,10,26,24);g.fillStyle(0xffd966).fillRect(10,19,13,3);g.fillStyle(0xffe066).fillTriangle(15,10,17,15,13,15).fillRect(14,13,3,1);g.fillStyle(0xffffff).fillRect(24,5,2,2).fillRect(5,12,2,2).fillRect(27,13,1,1);});
   tex('sk13',()=>{g.lineStyle(2,0xffd966).strokeCircle(16,16,13);g.fillStyle(0xf0e6a0).fillRect(14,6,4,20).fillRect(9,11,14,4);g.fillStyle(0xffffff).fillRect(15,7,1,18).fillRect(10,12,12,1);g.fillStyle(0xffd966).fillRect(3,15,1,3).fillRect(28,15,1,3);});
   tex('sk15',()=>{g.fillStyle(0x8a5a33).fillRect(5,8,22,16);g.fillStyle(0xa8703f).fillRect(6,9,20,5);g.fillStyle(0x6b4423).fillRect(5,22,22,2);g.fillStyle(0xf0e6a0).fillRect(8,16,3,1).fillRect(13,16,3,1).fillRect(18,16,3,1).fillRect(23,16,2,1);g.fillStyle(0xdfe3ea).fillRect(20,3,2,18).fillRect(19,3,4,1);g.fillStyle(0x7a808a).fillRect(21,4,1,2);g.fillStyle(0xc0392b).fillRect(21,20,1,6).fillRect(22,25,3,1);});
+  tex('sk16',()=>{g.fillStyle(0x1b1b22).fillRect(4,11,24,10).fillRect(2,13,2,4).fillRect(28,13,2,4);g.fillStyle(0x3a3a48).fillRect(4,11,24,2);g.fillStyle(0xf0c9a0).fillRect(8,14,5,4).fillRect(19,14,5,4);g.fillStyle(0x1b2a1f).fillRect(10,15,2,2).fillRect(21,15,2,2);g.fillStyle(0x1b1b22).fillRect(0,15,2,1).fillRect(1,17,2,1).fillRect(30,15,2,1).fillRect(29,17,2,1);g.fillStyle(0xe0b040).fillCircle(16,26,4);g.fillStyle(0xffe066).fillRect(15,24,2,4);});
   tex('sk14',()=>{g.fillStyle(0xe8801c).fillTriangle(8,12,24,12,16,30);g.fillStyle(0xf0a040).fillTriangle(9,13,16,13,13,22);g.fillStyle(0xc86a10).fillRect(11,17,5,1).fillRect(14,22,4,1);g.fillStyle(0x4fb840).fillTriangle(16,13,9,2,14,13).fillTriangle(16,13,16,1,19,13).fillTriangle(16,13,24,3,19,13);g.fillStyle(0x2f8a30).fillTriangle(16,13,16,1,17,13);g.fillStyle(0x6b4a2a).fillRect(4,29,24,2);});
   // Skill icons: enlarged copies drawn with smooth sampling, so the grid has no stripes when the screen scales
   SKICON.forEach((key,k)=>{
@@ -3561,15 +3575,15 @@ function create(){
   sk.add(skCmb);
   sk.add(this.add.rectangle(SKW-118,7,80,26,0x4a3c22).setOrigin(0).setStrokeStyle(2,0xb8892a));
   sk.add(this.add.text(SKW-78,20,'Titles',{...small,fontSize:'14px',color:'#ffe066'}).setOrigin(0.5).setResolution(2));
-  for(let k=0;k<16;k++){
+  for(let k=0;k<SKICON.length;k++){
     if(k===11){skRows.push({num:{setText(){}},f:{setSize(){}}});continue;}
     const sl=SKORD.indexOf(k),cx=SKX0+(sl%3)*(SKCW+SKGAP),cy=SKY0+Math.floor(sl/3)*(SKCH+SKGAP);
     sk.add(this.add.rectangle(cx,cy,SKCW,SKCH,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
-    sk.add(this.add.image(cx+30,cy+30,skHi[k]||SKICON[k]).setScale(skHi[k]&&skHi[k]!==SKICON[k]?0.66:1.3));
-    const num=this.add.text(cx+SKCW-10,cy+29,'',{...small,fontSize:'24px',color:'#ffe066',fontStyle:'bold'}).setOrigin(1,0.5).setResolution(2);
+    sk.add(this.add.image(cx+28,cy+26,skHi[k]||SKICON[k]).setScale(skHi[k]&&skHi[k]!==SKICON[k]?0.6:1.18));
+    const num=this.add.text(cx+SKCW-10,cy+26,'',{...small,fontSize:'24px',color:'#ffe066',fontStyle:'bold'}).setOrigin(1,0.5).setResolution(2);
     sk.add(num);
-    sk.add(this.add.rectangle(cx+8,cy+SKCH-12,SKCW-16,6,0x1c150d).setOrigin(0));
-    const f=this.add.rectangle(cx+8,cy+SKCH-12,0,6,SKCOL[k]).setOrigin(0);
+    sk.add(this.add.rectangle(cx+8,cy+SKCH-10,SKCW-16,6,0x1c150d).setOrigin(0));
+    const f=this.add.rectangle(cx+8,cy+SKCH-10,0,6,SKCOL[k]).setOrigin(0);
     sk.add(f);skRows.push({num,f});
   }
   sk.add(this.add.text(14,SKH2-26,'Tap a skill for its guide.',{...small,fontSize:'14px',color:'#a89a78'}).setResolution(2));
@@ -3687,7 +3701,9 @@ function create(){
   FTWd=FTW;FTHt=FTH;
   resetTxt=this.add.text(W*T-10,7,'',font).setOrigin(1,0).setVisible(false);   // the Reset save button is gone
   logoutTxt=this.add.text(W*T-10,7,'Log out',font).setOrigin(1,0).setResolution(2).setAlpha(0.6).setDepth(398);
-  if(load()&&(xp+fxp+coins+inv.length>0))msg('Welcome back! Progress loaded.');
+  const hadSave=load();
+  if(hadSave&&(xp+fxp+coins+inv.length>0))msg('Welcome back! Progress loaded.');
+  if(!hadSave&&tutIslandOk()){tut=1;savedPos={x:TUT.start[0],y:TUT.start[1]};}
   if(savedPos){
     let sx=savedPos.x,sy=savedPos.y,found=walkable(sx,sy)?[sx,sy]:null;
     for(let r=1;!found&&r<=12;r++)for(let dy=-r;dy<=r&&!found;dy++)for(let dx=-r;dx<=r;dx++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;if(walkable(sx+dx,sy+dy)){found=[sx+dx,sy+dy];break;}}
@@ -3875,9 +3891,9 @@ function create(){
       if(sk.visible&&!gd.visible){
         // hovering a skill in the Skills window names it
         const lx=p.x-CX-SKX0,ly=p.y-CY-SKY0,c=Math.floor(lx/(SKCW+SKGAP)),r=Math.floor(ly/(SKCH+SKGAP));
-        if(lx>=0&&ly>=0&&c>=0&&c<3&&r>=0&&r<5&&lx-c*(SKCW+SKGAP)<=SKCW&&ly-r*(SKCH+SKGAP)<=SKCH){
-          const k=SKORD[r*3+c],XPS=skXpAll(),lv=k===11?clvl():1+Math.floor(Math.sqrt(XPS[k]/SKDIV[k]));
-          tName.setText(['Woodcutting','Fishing','Mining','Attack','Archery','Defense','Hitpoints','Smithing','Firemaking','Cooking','Fletching','Combat level','Magic','Faith','Farming','Crafting'][k]).setColor('#ffe066');
+        if(lx>=0&&ly>=0&&c>=0&&c<3&&r>=0&&r<SKROWS&&lx-c*(SKCW+SKGAP)<=SKCW&&ly-r*(SKCH+SKGAP)<=SKCH&&SKORD[r*3+c]!==undefined){
+          const k=SKORD[r*3+c],XPS=skXpAll(),lv=k===11?clvl():lvOf(XPS[k],SKDIV[k]);
+          tName.setText(['Woodcutting','Fishing','Mining','Attack','Archery','Defense','Hitpoints','Smithing','Firemaking','Cooking','Fletching','Combat level','Magic','Faith','Farming','Crafting','Thieving'][k]).setColor('#ffe066');
           tInfo.setText('Level '+lv+'\nTap for its guide');
           const w=Math.max(tName.width,tInfo.width)+16,h=24+tInfo.height+8;
           tBg.setSize(w,h);
@@ -4149,7 +4165,7 @@ function create(){
     if(sk.visible&&p.x>=CX&&p.x<=CX+SKW&&p.y>=CY&&p.y<=CY+SKH2){
       if(p.x-CX>=SKW-120&&p.x-CX<=SKW-36&&p.y-CY<=36){titlesOpen();return;}
       const lx=p.x-CX-SKX0,ly=p.y-CY-SKY0,c=Math.floor(lx/(SKCW+SKGAP)),r=Math.floor(ly/(SKCH+SKGAP));
-      if(lx>=0&&ly>=0&&c>=0&&c<3&&r>=0&&r<5&&lx-c*(SKCW+SKGAP)<=SKCW&&ly-r*(SKCH+SKGAP)<=SKCH&&SKORD[r*3+c]!==undefined){sk.setVisible(false);openGuide(SKORD[r*3+c]);}
+      if(lx>=0&&ly>=0&&c>=0&&c<3&&r>=0&&r<SKROWS&&lx-c*(SKCW+SKGAP)<=SKCW&&ly-r*(SKCH+SKGAP)<=SKCH&&SKORD[r*3+c]!==undefined){sk.setVisible(false);openGuide(SKORD[r*3+c]);}
       return;
     }
     if(cr.visible){
@@ -4205,7 +4221,7 @@ function create(){
     }
     if(p.y<OY){
       if(false){   // (Reset save was here; it has been removed)
-        if(resetArm){frxp=0;cfxp=0;for(const k in farm)delete farm[k];xp=0;fxp=0;mxp=0;cxp=0;sxp=0;fmxp=0;ckxp=0;dxp=0;hxp=0;akxp=0;fkxp=0;ammo.t=-1;ammo.n=0;coins=0;quest=0;fq=0;bq=0;nq={f:0,m:0,g:0,k:0,t:0,s:0};axe=0;net=-1;pik=-1;gear.hd=gear.bd=gear.hn=gear.ft=gear.wp=gear.sh=gear.bw=gear.bk=gear.cp=gear.nk=-1;mgxp=0;pxp=0;pp=-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];inv.length=0;for(const k in stk)delete stk[k];inv.push('net0','pik0','kn0');for(const k in bank)delete bank[k];resetArm=false;stopChop();ui();msg('Progress erased.');}
+        if(resetArm){frxp=0;cfxp=0;thxp=0;for(const k in farm)delete farm[k];xp=0;fxp=0;mxp=0;cxp=0;sxp=0;fmxp=0;ckxp=0;dxp=0;hxp=0;akxp=0;fkxp=0;ammo.t=-1;ammo.n=0;coins=0;quest=0;fq=0;bq=0;nq={f:0,m:0,g:0,k:0,t:0,s:0};axe=0;net=-1;pik=-1;gear.hd=gear.bd=gear.hn=gear.ft=gear.wp=gear.sh=gear.bw=gear.bk=gear.cp=gear.nk=-1;mgxp=0;pxp=0;pp=-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];inv.length=0;for(const k in stk)delete stk[k];inv.push('net0','pik0','kn0');for(const k in bank)delete bank[k];resetArm=false;stopChop();ui();msg('Progress erased.');}
         else{resetArm=true;msg('Tap Reset again to erase your progress.');scene.time.delayedCall(4000,()=>{resetArm=false;});}
       }else if(p.x>W*T-110){
         // log out: save, stop what you were doing, and go back to the start screen
@@ -4291,8 +4307,8 @@ function gearGuide(k){
 }
 function openGuide(k,tab){
   gdK=k;gdTab=tab||0;
-  const NAMES=['Woodcutting','Fishing','Mining','Attack','Archery','Defense','Hitpoints','Smithing','Firemaking','Cooking','Fletching','Combat level','Magic','Faith','Farming','Crafting'];
-  const LV=[lvl(),flvl(),mlvl(),alvl(),arlvl(),dflvl(),hplvl(),smlvl(),fmlvl(),cklvl(),fklvl(),clvl(),mglvl(),prlvl(),frlvl(),cflvl()];
+  const NAMES=['Woodcutting','Fishing','Mining','Attack','Archery','Defense','Hitpoints','Smithing','Firemaking','Cooking','Fletching','Combat level','Magic','Faith','Farming','Crafting','Thieving'];
+  const LV=[lvl(),flvl(),mlvl(),alvl(),arlvl(),dflvl(),hplvl(),smlvl(),fmlvl(),cklvl(),fklvl(),clvl(),mglvl(),prlvl(),frlvl(),cflvl(),thlvl()];
   const L=[];
   const tier3=(f)=>[0,1,2].forEach(i=>L.push(f(i)));
   const tier5=(f)=>[0,1,2,3,4].forEach(i=>L.push(f(i)));
@@ -4326,6 +4342,11 @@ function openGuide(k,tab){
     SMITH.forEach(r=>E.push([r[2],1,(r[0]==='kn0'?'Knife':'Forge '+TOOLN[kd(r[0])][tr(r[0])])+' ('+r[1]+' '+['bronze','iron','steel','mithril','adamant'][barTier(r[0])]+' bar'+(r[1]>1?'s':'')+')']));
     E.sort((a,b)=>a[0]-b[0]||a[1]-b[1]).forEach(e=>L.push('Lv '+e[0]+'  '+e[2]));
   }
+  if(k===16){
+    L.push('Steal for coins and loot. Right-click (or press and hold) a person, a market stall or a pile of stolen loot to try.');
+    L.push('Fail and you are caught: you are stunned for a few seconds (people also give you a smack). Higher levels fail less.');
+    TH.list().forEach(e=>L.push('Lv '+e.lv+'  '+e.what+'\n   '+e.xp+' xp, '+e.get));
+  }
   if(k===15){
     L.push('Make armour and amulets at the crafting bench. Magic robes, wands, staves, spellbooks, scrolls, archery (leather) armour and amulets need a Crafting level; every item you craft gives Crafting xp.');
     L.push('Amulets are made from a gem and a bowstring. Gems come from mining rocks and from tougher monsters. Wands, staves, spellbooks and recharge scrolls give Crafting xp too: the higher the tier, the more xp.');
@@ -4358,7 +4379,7 @@ function openGuide(k,tab){
     Object.keys(MT).sort((a,b)=>monLvl(MT[a])-monLvl(MT[b])).forEach(n=>{const m=MT[n];L.push('Lv '+monLvl(m)+'  '+m.name+': '+m.hp+' HP, '+(m.passive?'harmless':'hits '+m.dmg[0]+'-'+m.dmg[1]));});
   }
   let xl='';
-  if(k!==11){const X=skXpAll()[k],d=SKDIV[k],l=1+Math.floor(Math.sqrt(X/d));xl=' ('+(d*l*l-X)+' xp to next)';}
+  if(k!==11){const X=skXpAll()[k],d=SKDIV[k],l=lvOf(X,d);xl=' ('+(xpAt(l+1,d)-X)+' xp to next)';}
   const tb=GDTABS[k];
   gdTabs.forEach((t,i)=>{t.setVisible(!!tb);if(tb){t.setText(tb[i]);t.setColor(i===gdTab?'#ffe066':'#f1e9c8');}});
   gdBody.setY(tb?100:66);
@@ -4699,12 +4720,14 @@ function worldOptions0(tx,ty){
   const mm=mons.find(q=>q.alive&&q.x===tx&&q.y===ty);
   if(mm&&mm.t.person&&!mm.t.fight){
     o.push(['Talk to '+mm.t.name,()=>talkTo(mm)]);
+    if(thPPOf(mm))o.push(['Pickpocket '+mm.t.name,()=>thPick(mm)]);
     o.push(['Examine '+mm.t.name,()=>msg('A '+mm.t.name+' going about their day. Harmless.')]);
     return o;
   }
   if(mm){
     if(mm.t.person&&mm.t.talk)o.push(['Talk to '+mm.t.name,()=>talkTo(mm)]);
     o.push(['Attack '+mm.t.name,()=>attackMon(mm)]);
+    if(thPPOf(mm))o.push(['Pickpocket '+mm.t.name,()=>thPick(mm)]);
     availSpells().filter(sp=>isAttackSpell(sp)&&mglvl()>=sp.lv).reverse().forEach(sp=>o.push(['Cast '+sp.n+' ('+sp.c+')',()=>{armedSpell=sp.id;ui();attackMon(mm);}]));
     o.push(['Drop table',()=>dropTable(mm.t)]);
     o.push(['Examine '+mm.t.name,()=>msg('A '+mm.t.name+' (level '+monLvl(mm.t)+'). It has '+mm.t.hp+' health.'+(mm.t.aggro?' It attacks on sight if you are weak.':''))]);
@@ -4722,6 +4745,7 @@ function worldOptions0(tx,ty){
     return o;
   }
   const ch=grid[ty][tx];
+  if(TH.st[ch]){const S=TH.st[ch];o.push([S.verb+' '+S.n,()=>thStall(tx,ty)]);}
   if(ch in TREEC){const i=TREEC[ch];o.push(['Chop down '+TREENM[i],act]);o.push(['Examine '+TREENM[i],()=>msg('A '+TREENM[i]+'.'+toolNeed(i,AXES))]);}
   else if(ch in ROCKC){const i=ROCKC[ch];o.push(['Mine '+ROCKNM[i],act]);o.push(['Examine '+ROCKNM[i],()=>msg('A '+ROCKNM[i]+'.'+toolNeed(i,PIKS.map((_,k)=>PIKS[pikNeed(k)])))]);}
   else if(ch in FISHC){const i=FISHC[ch];o.push(['Fish at '+SPOTNM[i],act]);o.push(['Examine '+SPOTNM[i],()=>msg('A '+SPOTNM[i]+'.'+toolNeed(i,NETS))]);}
@@ -5846,6 +5870,192 @@ const game=new Phaser.Game({
     else if(bgT){tick();clearInterval(bgT);bgT=null;bgEvt=null;try{if(OAK.on)oakUpload();}catch(e){}}
   });
 })();
+// ---- Tutorial Island: brand-new characters learn the basics here, then sail to the mainland ----
+const TUT={box:[20,128,49,149],start:[28,139],did:{},arrow:null,skipArm:0,
+  steps:[null,
+   {t:'Talk to the Island Guide',npc:'Island Guide'},
+   {t:'Talk to the Survival Expert (north-west)',npc:'Survival Expert'},
+   {t:'Chop a tree: tap one of the trees',ev:'chop',ok:()=>xp>0,at:'tree'},
+   {t:'Light a fire: open your Bag and tap the logs',ev:'fire',ok:()=>fmxp>0,at:'bag'},
+   {t:'Catch a fish: tap the net in your Bag to hold it, then tap the ripples by the shore',ev:'fish',ok:()=>fxp>0,at:'fish'},
+   {t:'Cook your fish: tap your fire',ev:'cook',ok:()=>ckxp>0,at:'fire'},
+   {t:'Talk to the Mining Instructor (north-east)',npc:'Mining Instructor'},
+   {t:'Mine some copper: tap the pickaxe in your Bag to hold it, then tap a rock',ev:'mine',ok:()=>mxp>0,at:'rock'},
+   {t:'Smelt a bronze bar: tap the furnace',ok:()=>sxp>0||cnt('bar')>0,at:'U'},
+   {t:'Forge a knife at the anvil: tap it',ev:'smith',at:'A'},
+   {t:'Talk to the Combat Instructor (south-east)',npc:'Combat Instructor'},
+   {t:'Defeat a chicken in the pen',ev:'kill',at:'chicken'},
+   {t:'Talk to the Island Banker',npc:'Island Banker'},
+   {t:'Talk to the Ferryman on the dock to sail to the mainland',npc:'Ferryman'}],
+  talk:{
+   'Island Guide':["Welcome to Oakheart! This little island is where every adventurer starts.","Tap the ground to walk. Tap people to talk to them, and right-click (or press and hold) anything to see everything you can do with it.","Your bag, skills, gear, quests and spells open from the buttons along the bottom.","Head north-west and talk to the Survival Expert. If you have played before, tap Skip at the top to sail straight to the mainland."],
+   'Survival Expert':["Out here you need to look after yourself. Let's start with wood.","Tap a tree to chop it with your axe. Then open your Bag and tap the logs to light a fire.","Next, catch a fish. Tools work from your hands: tap the net in your Bag to hold it, then tap the ripples by the shore.","Cook the fish on your fire. Cooked fish heals you when you eat it."],
+   'Mining Instructor':["Ah, a new face! Rocks hold ore, and ore makes metal.","Tap the pickaxe in your Bag to hold it, then tap one of the copper rocks to mine it.","Then tap the furnace to smelt your ore into a bronze bar, and tap the anvil to forge the bar into a knife."],
+   'Combat Instructor':["Time to learn to fight. Tap a chicken in the pen to attack it.","Your health is shown at the bottom left. If it gets low, walk away and eat some cooked food from your bag.","Stronger monsters live on the mainland. Train up before you take them on!"],
+   'Ferryman':["All aboard for the mainland! The Kingdom of Nero awaits.","Here are 50 coins to get you started. Good luck, adventurer!"]}};
+const tutOn=()=>tut>=1&&tut<TUT.steps.length;
+const tutIn=(x,y)=>x>=TUT.box[0]&&x<=TUT.box[2]&&y>=TUT.box[1]&&y<=TUT.box[3];
+function tutIslandOk(){   // the island is on the map and its helpers stand on it
+  try{const [x,y]=TUT.start;return grid[y][x]==='.'&&['Island Guide','Ferryman'].every(n=>NPCS.some(q=>q.name===n&&tutIn(q.x,q.y)));}catch(e){return false;}
+}
+function tutAdvance(){   // move past every step that is already done
+  let moved=false;
+  while(tutOn()){const st=TUT.steps[tut];if(st.npc)break;const done=(st.ev&&TUT.did[st.ev])||(st.ok&&st.ok());if(!done)break;tut++;moved=true;}
+  if(moved){const st=TUT.steps[tut];msg(tutOn()?'Well done! Next: '+st.t+'.':'');if(tutOn()&&st.at==='bag'&&bag)bag.setVisible(true);save();ui();}
+}
+function tutEvt(kind){if(!tutOn())return;TUT.did[kind]=1;setTimeout(tutAdvance,50);}
+function tutDialog(n,lines){
+  [bookW,qp,chr,sk,cr,bk,smc,gd,spw,ftp,shop].forEach(o=>o.setVisible(false));
+  dlgNpc=Object.assign({},n,{say:lines});dlgIdx=0;dlg.setVisible(true);dlgShow();ui();
+}
+function tutTalk(n){   // the island's helpers: returns true when it handled the conversation
+  if(!(n.name in TUT.talk)&&n.name!=='Island Banker')return false;
+  if(!tutOn()||!tutIn(n.x,n.y))return n.name!=='Island Banker'&&(tutDialog(n,n.name==='Ferryman'?["The ferry only runs from this island."]:["Good to see you again, adventurer."]),true);
+  const st=TUT.steps[tut];
+  if(st.npc===n.name){
+    if(n.name==='Ferryman'){tutDialog(n,TUT.talk.Ferryman);tutFinish(false);return true;}
+    tut++;save();
+    if(n.name==='Island Banker'){msg('Next: '+TUT.steps[tut].t+'.');return false;}   // the banker's own words, and the Bank button
+    tutDialog(n,TUT.talk[n.name]);msg('Next: '+TUT.steps[tut].t+'.');ui();return true;
+  }
+  if(n.name==='Island Banker')return false;
+  if(n.name==='Ferryman'){tutDialog(n,["I can't take you yet: finish your training first.","Or, if you have played before, tap Skip at the top and I'll take you right away."]);return true;}
+  tutDialog(n,["Hello there! Right now you should: "+st.t+"."]);return true;
+}
+function tutMove(x,y){
+  stopChop();px=x;py=y;walkId++;scene.tweens.killTweensOf(player);player.setPosition(px*T+T/2,py*T+T/2+OY);
+  try{if(stairHook)stairHook();}catch(e){}
+  try{scene.cameras.main.centerOn(player.x,player.y);}catch(e){}
+}
+function tutFinish(skipped){
+  const was=tut;tut=99;coins+=50;
+  tutMove(START.x,START.y);
+  msg(skipped?'You skip the tutorial and sail to the mainland with 50 coins. Welcome to the Kingdom of Nero!':'The ferry carries you to the mainland. Welcome to the Kingdom of Nero! (You got 50 coins.)');
+  tutBar();save();ui();
+}
+function tutTarget(){   // where the arrow points: [x,y] on the map, or null
+  const st=TUT.steps[tut];if(!st)return null;
+  if(st.npc){const q=NPCS.find(o=>o.name===st.npc);return q?[q.x,q.y]:null;}
+  const near=test=>{let b=null,bd=1e9;for(let y=TUT.box[1];y<=TUT.box[3];y++)for(let x=TUT.box[0];x<=TUT.box[2];x++){if(!test(grid[y][x],x,y))continue;const d=Math.abs(x-px)+Math.abs(y-py);if(d<bd){bd=d;b=[x,y];}}return b;};
+  if(st.at==='tree')return near(c=>c in TREEC);
+  if(st.at==='fish')return near(c=>c in FISHC);
+  if(st.at==='rock')return near(c=>c in ROCKC);
+  if(st.at==='U'||st.at==='A')return near(c=>c===st.at);
+  if(st.at==='fire')return near((c,x,y)=>fireAt(x,y));
+  if(st.at==='chicken'){let b=null,bd=1e9;mons.forEach(m=>{if(m.alive&&m.t.name==='chicken'&&tutIn(m.x,m.y)){const d=Math.abs(m.x-px)+Math.abs(m.y-py);if(d<bd){bd=d;b=[m.x,m.y];}}});return b;}
+  return null;
+}
+function tutBar(){   // the objective line at the top of the screen, with a Skip button
+  let b=document.getElementById('tutBar');
+  if(!b){
+    const st=document.createElement('style');
+    st.textContent='#tutBar{position:fixed;left:50%;transform:translateX(-50%);z-index:29;display:none;align-items:center;gap:10px;width:min(460px,calc(100vw - 16px));padding:7px 8px 7px 12px;background:rgba(27,22,15,.94);border:1px solid #b8892a;border-radius:8px;font:13px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;box-shadow:0 4px 14px rgba(0,0,0,.4)}'
+     +'#tutBar .tx{flex:1}#tutBar b{color:#ffe066;font-weight:normal}#tutBar button{flex:none;padding:6px 10px;min-height:32px;font:12px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;background:#3b3024;border:1px solid #6a5a3e;border-radius:6px;cursor:pointer}#tutBar button.arm{background:#7a2a1a;border-color:#e0b070}';
+    document.head.appendChild(st);
+    b=document.createElement('div');b.id='tutBar';b.setAttribute('role','status');
+    const tx=document.createElement('div');tx.className='tx';const sk2=document.createElement('button');sk2.type='button';sk2.textContent='Skip';
+    sk2.addEventListener('click',()=>{if(Date.now()<TUT.skipArm){TUT.skipArm=0;sk2.className='';sk2.textContent='Skip';tutFinish(true);return;}TUT.skipArm=Date.now()+4000;sk2.className='arm';sk2.textContent='Tap again to skip';setTimeout(()=>{if(Date.now()>=TUT.skipArm){sk2.className='';sk2.textContent='Skip';}},4100);});
+    b.append(tx,sk2);document.body.appendChild(b);
+  }
+  const show=tutOn()&&!!player&&!startOpen;
+  b.style.display=show?'flex':'none';
+  if(!show)return;
+  try{const c=game.canvas.getBoundingClientRect(),sc=c.height/game.scale.height,eb=document.getElementById('emBtn');b.style.top=(window.innerWidth>=720?c.top+OY*sc+6:Math.max(c.top+130*sc,eb&&eb.style.display!=='none'?eb.getBoundingClientRect().bottom+6:0))+'px';   /* wide screens: right under the top bar; phones: below the Emotes button */}catch(e){}
+  b.firstChild.innerHTML='<b>Tutorial '+tut+'/'+(TUT.steps.length-1)+':</b> ';b.firstChild.append(document.createTextNode(TUT.steps[tut].t));
+}
+function tutTick(){
+  if(!player||!scene)return;
+  if(tutOn()&&!tutIn(px,py)&&curD<0){tut=99;save();}   // somehow left the island (knocked out, an old save): the tutorial is over
+  if(tutOn())tutAdvance();
+  tutBar();
+  let a=TUT.arrow;
+  const tg=tutOn()&&!startOpen?tutTarget():null;
+  if(!tg){if(a)a.setVisible(false);return;}
+  if(!a){a=TUT.arrow=scene.add.text(0,0,'▼',{fontFamily:'sans-serif',fontSize:'22px',color:'#ffe066',stroke:'#000000',strokeThickness:4}).setOrigin(0.5,1).setDepth(395);scene.tweens.add({targets:a,scaleY:{from:1,to:0.75},duration:420,yoyo:true,repeat:-1});a.bob=0;}
+  a.setVisible(true).setPosition(tg[0]*T+T/2,tg[1]*T+OY-6+Math.sin(Date.now()/180)*3);
+}
+setInterval(()=>{try{tutTick();}catch(e){}},250);
+
+// ---- Thieving: pickpocket people, steal from market stalls, crack piles of stolen loot in the bandit camp ----
+// loot entries: [item, chance, min, max]
+const TH={
+  pp:{   // people, by monster type
+    man:{lv:1,xp:10,c:[4,12],l:[['pf2',.08,1,1]]},
+    woman:{lv:1,xp:10,c:[4,12],l:[['pf2',.08,1,1]]},
+    frogkin:{lv:10,xp:22,c:[8,20],l:[['fth',.25,3,6],['fs1',.1,1,1]]},
+    farmer:{lv:14,xp:28,c:[10,24],l:[['sd0',.2,1,2],['sd1',.12,1,2],['sd2',.06,1,1]]},
+    gnome:{lv:22,xp:42,c:[18,45],l:[['gm0',.08,1,1]]},
+    elf:{lv:35,xp:65,c:[35,80],l:[['gm1',.08,1,1],['gm2',.03,1,1]]}},
+  st:{   // map objects, by map letter
+    '§':{n:'vegetable stand',verb:'Steal from',lv:5,xp:18,c:[0,0],one:['vg0','vg1','vg2'],cd:15},
+    'ƥ':{n:'fruit stall',verb:'Steal from',lv:12,xp:28,c:[0,0],one:['vg3','vg4','pf2'],cd:20},
+    'Ƨ':{n:'fish stall',verb:'Steal from',lv:18,xp:38,c:[0,0],one:['fs1','fs3','fs4'],cd:25},
+    'ƨ':{n:'pottery stall',verb:'Steal from',lv:26,xp:50,c:[30,70],l:[['gm0',.05,1,1]],cd:30},
+    'Ʀ':{n:'cloth stall',verb:'Steal from',lv:32,xp:62,c:[10,30],one:['hid','bs'],cd:35},
+    'ƙ':{n:'pile of stolen loot',verb:'Crack',lv:40,xp:95,c:[80,200],l:[['bar2',.25,1,1],['bar3',.1,1,1],['gm1',.1,1,1],['gm2',.04,1,1]],cd:60,trap:[4,8]}},
+  cd:new Map(),stun:0,
+  list(){const o=[];
+    const P={man:'Townsperson',frogkin:'Frogkin',farmer:'Farmer',gnome:'Gnome',elf:'Elf'};
+    for(const k in P){const e=this.pp[k];o.push({lv:e.lv,what:'Pickpocket '+an(P[k].toLowerCase()),xp:e.xp,get:e.c[0]+'-'+e.c[1]+' coins'+(e.l.length?' and sometimes '+e.l.map(q=>nm(q[0])).join(', '):'')});}
+    for(const ch in this.st){const e=this.st[ch];o.push({lv:e.lv,what:e.verb+' '+an(e.n),xp:e.xp,get:(e.one?e.one.map(nm).join(' / '):'')+(e.c[1]?(e.one?' and ':'')+e.c[0]+'-'+e.c[1]+' coins':'')+(e.l?', sometimes '+e.l.map(q=>nm(q[0])).join(', '):'')+(e.trap?' (trapped!)':'')});}
+    return o.sort((a,b)=>a.lv-b.lv);}
+};
+const thPPOf=m=>m&&m.t&&(TH.pp[Object.keys(MT).find(k=>MT[k]===m.t)]||null);
+const thChance=lv=>Math.min(0.95,0.55+0.03*(thlvl()-lv));
+function thGive(e){   // hand over the loot: coins straight to the pouch, items to the bag
+  let got=[];
+  const c=e.c&&e.c[1]?Phaser.Math.Between(e.c[0],e.c[1]):0;if(c>0){coins+=c;got.push(c+' coins');}
+  const put=(id,n)=>{for(let j=0;j<(STACKS.test(id)?1:n);j++)if(!addItem(id,STACKS.test(id)?n:1)){dropAt(px,py,id,1);}got.push((n>1?n+' ':'')+nm(id));};
+  if(e.one)put(e.one[Math.floor(Math.random()*e.one.length)],1);
+  (e.l||[]).forEach(([id,ch,lo,hi])=>{if(Math.random()<ch)put(id,Phaser.Math.Between(lo,hi));});
+  return got;
+}
+function thReady(lv,what){
+  if(Date.now()<TH.stun){msg("You're still stunned! Wait a moment.");return false;}
+  if(thlvl()<lv){msg('You need Thieving level '+lv+' to '+what+'.');return false;}
+  if(inv.length>=CAPN()){msg('Your bag is full.');return false;}
+  return true;
+}
+function thCaught(dmg,text){
+  stopChop();TH.stun=Date.now()+3500;
+  if(dmg){const d=Phaser.Math.Between(dmg[0],dmg[1]);hp=Math.max(1,hp-d);pop(player.x,player.y-14,'-'+d,'#ff6b6b');}
+  pop(player.x,player.y-26,'stunned','#ffe066');
+  msg(text);ui();
+}
+function thXp(n){const b=thlvl();thxp+=n;const a=thlvl();return a>b?' Level up! Thieving is now '+a+'.':'';}
+function thPick(m){
+  const e=thPPOf(m)||TH.pp[m.t.tex];if(!e||!m.alive)return;
+  if(!thReady(e.lv,'pickpocket '+an(m.t.name)))return;
+  const path=bfs((x,y)=>Math.abs(x-m.x)+Math.abs(y-m.y)<=1&&!(x===m.x&&y===m.y));
+  if(!path){msg("You can't reach them.");return;}
+  msg('');go(path,()=>{
+    if(Math.abs(px-m.x)+Math.abs(py-m.y)>1||!m.alive){msg('The '+m.t.name+' wandered off.');return;}
+    msg('You reach into the '+m.t.name+"'s pocket...");
+    chopEvt=scene.time.delayedCall(1100,()=>{
+      chopEvt=null;
+      if(Math.abs(px-m.x)+Math.abs(py-m.y)>1){msg('The '+m.t.name+' wandered off.');return;}
+      if(Math.random()<thChance(e.lv)){const got=thGive(e),lu=thXp(e.xp);msg('You pick the '+m.t.name+"'s pocket: "+got.join(', ')+'.'+lu);ui();save();}
+      else thCaught([1,1+Math.floor(e.lv/10)],'The '+m.t.name+' catches you and gives you a smack! You are stunned.');
+    });
+  });
+}
+function thStall(tx,ty){
+  const ch=grid[ty][tx],e=TH.st[ch];if(!e)return;
+  if(!thReady(e.lv,(e.verb==='Crack'?'crack ':'steal from ')+an(e.n)))return;
+  const key=tx+','+ty,until=TH.cd.get(key)||0;
+  if(Date.now()<until){msg(e.trap?'Someone already emptied this pile. More loot will turn up soon.':'The '+e.n+' is bare right now. Come back in a moment.');return;}
+  const path=bfs((x,y)=>Math.abs(x-tx)+Math.abs(y-ty)===1);
+  if(!path){msg("You can't reach it.");return;}
+  msg('');go(path,()=>{
+    msg(e.trap?'You carefully search the pile for traps...':'You glance around and reach for the '+e.n+'...');
+    chopEvt=scene.time.delayedCall(e.trap?1600:1100,()=>{
+      chopEvt=null;
+      if(Math.random()<thChance(e.lv)){TH.cd.set(key,Date.now()+e.cd*1000);const got=thGive(e),lu=thXp(e.xp);msg((e.trap?'You crack the pile open: ':'You swipe ')+got.join(', ')+'.'+lu);ui();save();}
+      else thCaught(e.trap,e.trap?'A hidden trap snaps shut on your hand! You are stunned.':"\"Hey! Get away from my stall!\" You're caught and stunned.");
+    });
+  });
+}
+
 // ---- Emotes: a short animation and an emoji over your head, seen by everyone nearby ----
 const EMOTES=[['wave','Wave','\u{1F44B}'],['dance','Dance','\u{1F483}'],['bow','Bow','\u{1F647}'],['cheer','Cheer','\u{1F389}'],
   ['clap','Clap','\u{1F44F}'],['laugh','Laugh','\u{1F602}'],['cry','Cry','\u{1F622}'],['think','Think','\u{1F914}']];
@@ -5953,7 +6163,7 @@ function wbHeard(slot){
 }
 
 // ---- Titles: earned by playing, shown above your character for everyone to see ----
-const skLvOf=k=>1+Math.floor(Math.sqrt((skXpAll()[k]||0)/SKDIV[k]));
+const skLvOf=k=>lvOf((skXpAll()[k]||0),SKDIV[k]);
 const TITLES=[
   ['lumberjack','the Lumberjack','Woodcutting level 30',()=>skLvOf(0)>=30],
   ['angler','the Angler','Fishing level 30',()=>skLvOf(1)>=30],
@@ -5969,6 +6179,7 @@ const TITLES=[
   ['devout','the Devout','Faith level 30',()=>skLvOf(13)>=30],
   ['farmer','the Farmer','Farming level 30',()=>skLvOf(14)>=30],
   ['crafter','the Crafter','Crafting level 30',()=>skLvOf(15)>=30],
+  ['thief','the Thief','Thieving level 30',()=>skLvOf(16)>=30],
   ['adventurer','the Adventurer','Combat level 20',()=>clvl()>=20],
   ['champion','the Champion','Combat level 50',()=>clvl()>=50],
   ['hero','the Hero','Finish every quest',()=>QUESTS.every(q=>q.st()===2)],
@@ -6033,7 +6244,7 @@ function showWelcome(){
   document.head.appendChild(st);
   const box=document.createElement('div');box.id='welBox';
   box.innerHTML='<div class="in" role="dialog" aria-label="Welcome to Oakheart"><h2>Welcome to Oakheart!</h2>'
-   +'<p>A world to explore with friends: train your skills, take on quests and fight monsters.</p><ul>'
+   +'<p>A world to explore with friends: train your skills, take on quests and fight monsters.'+(tutOn()?' You start on Tutorial Island: follow the yellow arrow and the tips at the top to learn the basics.':'')+'</p><ul>'
    +'<li><b>Tap</b> the ground to walk. Tap trees, rocks, fishing spots and monsters to use them.</li>'
    +'<li><b>Train skills</b> like Woodcutting, Fishing, Mining, Cooking, Smithing, Crafting, Magic and combat.</li>'
    +'<li><b>Sell</b> what you gather at shops, and keep your best things in the <b>bank</b>.</li>'
