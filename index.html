@@ -894,7 +894,7 @@ const BALD=v=>v>=0&&v!==23;   // head items hide the hair, except the eye patch
 const ANIMK=['cape','player','body','feet','net','axe','pik','weapon','bow','gripL','gripR','hands','book','shield','head']   // the shield comes after the hands: it is held in front of them
 ,HELDK=['shield','book','net','axe','pik','weapon','bow','gripL','gripR'];
 // Held items are drawn at the edge of their picture; this moves each kind so its handle sits in the hand
-const HOFF={axe:[3,0],net:[3,0],pik:[3,0],wp:[5,-4],sp:[5,0],fl:[-1,0],tw:[0,-4],wd:[4,0],st:[3,0],bw:[5,1]};
+const HOFF={axe:[3,0],net:[3,0],pik:[1,0],wp:[5,-4],sp:[5,0],fl:[-1,0],tw:[0,-4],wd:[4,0],st:[3,0],bw:[5,1]};
 const CUSTOMHELD=new Set();   // held pictures that come from your own sprites: they keep the spot the editor gave them
 const hoffOf=key=>CUSTOMHELD.has(key)?[0,0]:HOFF[String(key||'').replace(/\d+$/,'')]||[0,0];
 // sets each held layer's resting spot and shows a fist over whatever the hands are holding
@@ -3354,6 +3354,8 @@ function create(){
   try{robesAndLeathers(this);}catch(e){console.warn(e);}
   try{wandsAndStaffs(this);}catch(e){console.warn(e);}
   try{meleeWeapons(this);}catch(e){console.warn(e);}
+  try{newTools(this);}catch(e){console.warn(e);}
+  try{capesAndHats(this);}catch(e){console.warn(e);}
   // one repeating sprite for all the plain grass, so a big map stays light
   // grass under the world, in pieces: one giant picture is too big for many phones and graphics cards
   {const CH=2048;for(let y0=0;y0<WH*T;y0+=CH)for(let x0=0;x0<MW*T;x0+=CH)this.add.tileSprite(x0,OY+y0,Math.min(CH,MW*T-x0),Math.min(CH,WH*T-y0),'grass').setOrigin(0,0);}
@@ -5208,6 +5210,115 @@ function posePlayerLayers(L,on,shirt,gripKey){
   try{if(L.body.visible)L.body.setTexture(poseTex(tk(L.body),'bd'));}catch(e){}
   try{if(L.hands.visible)L.hands.setTexture(poseTex(tk(L.hands),'hn'));}catch(e){}
   try{if(scene.textures.exists(gripKey+'2h'))L.gripL.setTexture(gripKey+'2h').setVisible(true);}catch(e){}
+}
+
+// ---------- Tools: Woodsman's Axe, Classic Pickaxe, Landing Net ----------
+const TL_NETRIM=['#c9b27a','#7ac85a','#f0c040','#3fd0b0','#b070f0'];
+function tlPal(t){const [b,tr,gm]=MW_METAL[t],r=TL_NETRIM[t];return {b,l:mix(b,0.35),d:mix(b,-0.3),k:mix(b,-0.55),t:tr,g:gm,rim:r,rl:mix(r,0.35),rd:mix(r,-0.35)};}
+const TL_DRAW={
+  axe:(P,c,t)=>{const LEATHER=MW_LEATHER,LEATHER2=MW_LEATHER2,WOODC='#7a4a25',WOODL='#a06a38';const haft=(P,y0,y1)=>{P(4,y0,2,y1-y0,WOODC);P(4,y0,1,y1-y0,WOODL);P(4,19,2,4,LEATHER);P(4,20,2,1,LEATHER2);P(4,y1,2,1,mix(WOODC,-0.35));};
+    haft(P,7,28);P(4,6,2,1,mix(WOODC,-0.35));
+    P(1,7,4,4,c.b);P(0,8,1,6,c.b);P(1,11,2,3,c.b);P(0,8,1,6,c.l);P(1,7,1,1,c.l);P(1,13,2,1,c.d);P(3,10,1,2,c.d);P(5,8,1,2,c.d);
+    if(t>=3)P(3,8,1,1,c.t);},
+  pik:(P,c,t)=>{const LEATHER=MW_LEATHER,LEATHER2=MW_LEATHER2,WOODC='#7a4a25',WOODL='#a06a38';const haft=(P,y0,y1)=>{P(4,y0,2,y1-y0,WOODC);P(4,y0,1,y1-y0,WOODL);P(4,19,2,4,LEATHER);P(4,20,2,1,LEATHER2);P(4,y1,2,1,mix(WOODC,-0.35));};
+    haft(P,9,28);
+    P(4,7,2,3,c.d);P(4,7,2,1,c.b);
+    P(1,7,3,2,c.b);P(-1,8,2,2,c.b);P(-2,10,2,2,c.b);P(1,7,3,1,c.l);P(-1,8,1,1,c.l);P(-2,10,1,2,c.l);
+    P(6,7,3,2,c.b);P(9,8,2,2,c.b);P(10,10,2,2,c.b);P(8,8,2,1,c.d);P(11,10,1,2,c.d);
+    if(t>=3)P(4,8,2,1,c.t);},
+  net:(P,c,t)=>{const LEATHER=MW_LEATHER,LEATHER2=MW_LEATHER2,WOODC='#7a4a25',WOODL='#a06a38';const haft=(P,y0,y1)=>{P(4,y0,2,y1-y0,WOODC);P(4,y0,1,y1-y0,WOODL);P(4,19,2,4,LEATHER);P(4,20,2,1,LEATHER2);P(4,y1,2,1,mix(WOODC,-0.35));};
+    haft(P,10,28);
+    P(2,1,6,1,c.rim);P(1,2,1,6,c.rim);P(8,2,1,6,c.rim);P(2,8,2,1,c.rim);P(6,8,2,1,c.rim);P(4,9,2,1,c.rim);P(1,2,1,6,c.rl);
+    for(let y=2;y<12;y++)for(let x=2;x<8;x++){if(y>=8&&(x<3+(y-8)||x>6-(y-8)))continue;P(x,y,1,1,(x+y)%2?'#eee4c8':'#143a46');}
+    P(0,4,2,2,'#e0583a');P(8,5,2,2,'#e0583a');P(0,4,1,1,'#f08a6a');
+    if(t>=2)P(2,1,6,1,c.rl);},
+};
+const TL_SHIFT={pik:2};   // the pickaxe head reaches 2 pixels left of the handle: drawn 2 in, and HOFF moves it back
+function newTools(sc){
+  const mine=k=>{try{return SPRITES.some(s=>sprKey(s[0])===k);}catch(e){return false;}};
+  const icon=src=>{const x=src.getContext('2d'),d=x.getImageData(0,0,src.width,src.height).data;let x0=99,y0=99,x1=-1,y1=-1;
+    for(let y=0;y<src.height;y++)for(let q=0;q<src.width;q++)if(d[(y*src.width+q)*4+3]>0){x0=Math.min(x0,q);y0=Math.min(y0,y);x1=Math.max(x1,q);y1=Math.max(y1,y);}
+    const c=document.createElement('canvas');c.width=c.height=T;if(x1<0)return c;
+    const w=x1-x0+1,h=y1-y0+1,k=Math.max(1,Math.min(4,Math.floor(30/Math.max(w,h)))),g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    g.drawImage(src,x0,y0,w,h,Math.floor((T-w*k)/2),Math.floor((T-h*k)/2),w*k,h*k);return c;};
+  const put=(k,c)=>{if(mine(k)||CUSTOMHELD.has(k))return;if(sc.textures.exists(k))sc.textures.remove(k);sc.textures.addCanvas(k,c);};
+  for(const kind in TL_DRAW)for(let t=0;t<5;t++){
+    if(CUSTOMHELD.has(kind+t)||mine('i'+kind+t))continue;   // your own picture for this tool stays
+    const c=document.createElement('canvas');c.width=c.height=T;const x=c.getContext('2d');x.translate(TL_SHIFT[kind]||0,0);
+    TL_DRAW[kind]((a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h);},tlPal(t),t);pxOutline(c);
+    put(kind+t,c);put('i'+kind+t,icon(c));
+  }
+}
+
+// ---------- Capes (all six) and the Halloween witch's hat and pumpkin head ----------
+function cloak(P,c,hem){
+  // collar / hood rolled behind the neck (shows above the shoulders)
+  P(11,10,10,3,c.d);P(12,9,8,1,c.d);P(12,10,8,1,c.b);
+  // body of the cloak, flaring out toward the hem
+  for(let y=12;y<=29;y++){const f=Math.floor((y-12)/5);P(6-f,y,20+2*f,1,c.b);}
+  // folds: lighter on the left, darker on the right, the lining between the legs
+  for(let y=13;y<=29;y++){const f=Math.floor((y-12)/5);P(6-f,y,1,1,c.l);P(25+f,y,1,1,c.d);P(8-f,y,1,1,y%3?c.b:c.l);P(23+f,y,1,1,c.d);}
+  P(15,21,2,8,c.in);P(14,24,4,5,c.in);
+  if(hem)hem(P,c);
+}
+const CAPE_LOOKS=[
+  {key:'cp0',name:'Traveller cloak',blurb:'A heavy brown wool cloak with a rolled hood behind the neck, deep folds and a lighter stitched hem, lined in a warm darker brown.',
+    c:{b:'#8a6a3a',l:'#a8844e',d:'#6b522d',in:'#4a3820',t:'#c9a77a'},hem:(P,c)=>{P(3,29,26,1,c.t);for(let x=4;x<28;x+=3)P(x,28,1,1,c.t);}},
+  {key:'cp1',name:'Hunter cape',blurb:'A forest-green cape whose hem is cut into leaf points, with a pale gold trim and a brown leather collar.',
+    c:{b:'#3f7a3a',l:'#5a9a4a',d:'#315f2d',in:'#22401f',t:'#d8d070'},hem:(P,c)=>{P(11,10,10,3,'#6b4423');P(12,10,8,1,'#8a5a32');for(let x=3;x<29;x+=4){P(x,29,2,1,c.t);P(x+1,30,1,1,c.b);}P(3,28,26,1,c.t);}},
+  {key:'cp2',name:'Mage cape',blurb:'A deep violet cape with a lilac trim, a high collar and little silver stars embroidered near the hem.',
+    c:{b:'#6a4aa8',l:'#8a6ac8',d:'#523983',in:'#2f2050',t:'#e8c8ff'},hem:(P,c)=>{P(10,8,12,2,c.d);P(10,8,1,5,c.d);P(21,8,1,5,c.d);P(3,29,26,1,c.t);[[5,25],[25,24],[7,21],[24,19],[4,18]].forEach(([x,y])=>{P(x,y,1,1,'#ffffff');P(x-1,y,1,1,c.t);P(x+1,y,1,1,c.t);});}},
+  {key:'cp3',name:'Faith cape',blurb:'A white cape with a wide gold border, gold crosses stitched at the hem corners, and a gold collar.',
+    c:{b:'#e8e4d4',l:'#ffffff',d:'#b5b2a5',in:'#8a8778',t:'#e6c23a'},hem:(P,c)=>{P(11,10,10,1,c.t);P(3,28,26,2,c.t);P(4,23,1,5,c.t);P(3,25,3,1,c.t);P(27,23,1,5,c.t);P(26,25,3,1,c.t);}},
+  {key:'cp5',name:'Spectral cape',blurb:'A ghostly cape that fades out toward a tattered, wispy hem, with a soft glowing edge and two faint ghost eyes in the folds.',
+    c:{b:'#bfe8e0',l:'#e8fff8',d:'#9dcfc7',in:'#7ab0a8',t:'#80efd1'},hem:(P,c)=>{for(let x=3;x<29;x+=3){P(x,29,1,2,c.t);}P(5,19,1,2,'#3a6a64');P(7,19,1,2,'#3a6a64');P(24,20,1,2,'#3a6a64');P(26,20,1,2,'#3a6a64');},ghost:true},
+];
+function wings(P){
+  const R='#8a1616',RD='#5a0c0c',RL='#b82a2a',B='#2a0a0a',C='#e8e4d8';
+  [0,1].forEach(side=>{
+    const Pp=(x,y,w,h,c)=>{if(side)P(48-x-w,y,w,h,c);else P(x,y,w,h,c);};
+    const armY=x=>Math.round(1+(x-2)*9/14);                       // the wing arm runs from the shoulder (16,10) up to the tip (2,1)
+    const bot=x=>x>=15?13:(x%5<2?21:18)-(x>11?2:0);               // a scalloped lower edge
+    for(let x=1;x<=16;x++){const t=Math.max(2,armY(x)+1),bt=bot(x);for(let y=t;y<=bt;y++)Pp(x,y,1,1,y<t+3?RL:(y>bt-2?RD:R));}
+    for(let x=2;x<=16;x++)Pp(x,armY(x),1,1,B);                    // the arm bone
+    [[5,3,3,19],[9,6,8,20],[13,8,13,16]].forEach(([x0,y0,x1,y1])=>{for(let y=y0;y<=y1;y++){const x=Math.round(x0+(x1-x0)*(y-y0)/(y1-y0));Pp(x,y,1,1,B);}});   // finger bones
+    Pp(1,0,2,2,C);Pp(0,0,1,1,C);                                  // a pale claw at the tip
+  });
+}
+
+function witchHatDraw(P){
+    const K='#2a2440',KL='#3e3660',KD='#18142a';
+    P(13,-6,7,3,K);P(12,-3,9,3,K);P(11,0,11,3,K);P(15,-9,4,3,K);P(18,-11,4,2,K);P(21,-10,3,2,K);P(23,-8,2,2,K);
+    P(13,-3,3,3,'#5a3a6a');P(18,-1,3,3,'#3a5a4a');P(16,-7,2,2,'#6a4a2a');
+    P(16,-3,1,1,'#c8c0a0');P(16,-1,1,1,'#c8c0a0');P(17,-5,1,1,'#c8c0a0');P(18,0,1,1,'#c8c0a0');P(20,-2,1,1,'#c8c0a0');
+    P(11,0,1,3,KL);P(21,0,1,3,KD);P(11,2,11,1,'#e07020');
+    P(5,3,22,2,K);P(5,3,22,1,KL);for(let x=5;x<27;x+=3)P(x,5,2,1,KD);
+    P(24,-6,1,4,'#c8c8d0');P(23,-2,3,2,'#1b1b22');P(22,-1,1,1,'#1b1b22');P(26,-1,1,1,'#1b1b22');P(24,-2,1,1,'#e04030');}
+function pumpkinDraw(P){
+    const O='#e07818',OL='#f0a040',OD='#b8580e',OK='#7a3008',G='#ffd24a',GY='#fff0a0';
+    P(10,-1,12,1,O);P(8,0,16,10,O);P(9,10,14,1,O);P(10,11,12,1,OD);P(7,1,18,8,O);
+    P(8,1,1,8,OL);P(12,0,1,10,OD);P(16,-1,1,12,OL);P(19,0,1,10,OD);P(23,1,1,8,OD);P(24,2,1,6,OK);
+    P(11,3,3,1,G);P(12,2,1,1,G);P(18,3,3,1,G);P(19,2,1,1,G);P(12,3,1,1,GY);P(19,3,1,1,GY);
+    P(10,6,12,2,G);P(11,8,10,1,G);P(12,6,1,1,OK);P(15,6,1,1,OK);P(18,6,1,1,OK);P(13,8,1,1,OK);P(17,8,1,1,OK);P(13,7,6,1,GY);
+    P(15,-3,2,2,'#4f8a34');P(16,-4,2,1,'#4f8a34');P(17,-2,3,1,'#6fbf4a');P(19,-3,1,1,'#6fbf4a');}
+function capesAndHats(sc){
+  const mine=k=>{try{return SPRITES.some(s=>sprKey(s[0])===k);}catch(e){return false;}};
+  const mk=(w,h,oy,fn)=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.translate(0,oy||0);fn((a,b,ww,hh,col)=>{x.fillStyle=col;x.fillRect(a,b,ww,hh);});return c;};
+  const icon=src=>{const x=src.getContext('2d'),d=x.getImageData(0,0,src.width,src.height).data;let x0=99,y0=99,x1=-1,y1=-1;
+    for(let y=0;y<src.height;y++)for(let q=0;q<src.width;q++)if(d[(y*src.width+q)*4+3]>0){x0=Math.min(x0,q);y0=Math.min(y0,y);x1=Math.max(x1,q);y1=Math.max(y1,y);}
+    const c=document.createElement('canvas');c.width=c.height=T;if(x1<0)return c;
+    const w=x1-x0+1,h=y1-y0+1,k=Math.max(1,Math.min(4,Math.floor(30/Math.max(w,h)))),g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    g.drawImage(src,x0,y0,w,h,Math.floor((T-w*k)/2),Math.floor((T-h*k)/2),w*k,h*k);return c;};
+  const put=(k,c)=>{if(mine(k))return;if(sc.textures.exists(k))sc.textures.remove(k);sc.textures.addCanvas(k,c);};
+  CAPE_LOOKS.forEach(C=>{
+    const cv=mk(T,T,0,P=>cloak(P,C.c,C.hem));
+    if(C.ghost){const x=cv.getContext('2d');for(let q=1;q<31;q+=4)x.clearRect(q,27,2,5);x.clearRect(0,29,1,3);pxOutline(cv,0x5a968c);
+      const id=x.getImageData(0,0,T,T),d=id.data;for(let y=15;y<T;y++)for(let q=0;q<T;q++){const i=(y*T+q)*4;if(d[i+3])d[i+3]=Math.max(120,255-(y-14)*8);}x.putImageData(id,0,0);}
+    else pxOutline(cv);
+    put(C.key,cv);put('i'+C.key,icon(cv));
+  });
+  {const cv=mk(48,T,0,P=>wings(P));pxOutline(cv);put('cp4',cv);put('icp4',icon(cv));}
+  [['hd26',witchHatDraw],['hd25',pumpkinDraw]].forEach(([k,fn])=>{const cv=mk(T,T+HDUP,HDUP,fn);pxOutline(cv);put(k,cv);put('i'+k,icon(cv));});
 }
 function knightArmour(sc){
   const mine=k=>{try{return SPRITES.some(s=>sprKey(s[0])===k);}catch(e){return false;}};
