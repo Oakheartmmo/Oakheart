@@ -891,10 +891,10 @@ function makeDoll(x,y,s){
 const HDUP=16,HDTALL=k=>/^hd\d+$/.test(k)||k==='band'||k==='hat'||k==='helm';
 const hdFit=im=>{try{const h=im.frame.height;im.setOrigin(0.5,h>T?(h-T/2)/h:0.5);}catch(e){}};
 const BALD=v=>v>=0&&v!==23;   // head items hide the hair, except the eye patch
-const ANIMK=['cape','player','body','feet','book','net','axe','pik','weapon','bow','gripL','gripR','hands','shield','head']   // the shield comes after the hands: it is held in front of them
+const ANIMK=['cape','player','body','feet','net','axe','pik','weapon','bow','gripL','gripR','hands','book','shield','head']   // the shield comes after the hands: it is held in front of them
 ,HELDK=['shield','book','net','axe','pik','weapon','bow','gripL','gripR'];
 // Held items are drawn at the edge of their picture; this moves each kind so its handle sits in the hand
-const HOFF={axe:[3,0],net:[3,0],pik:[3,0],wp:[5,-4],sp:[5,0],fl:[4,0],tw:[5,-4],wd:[4,0],st:[3,0],bw:[5,1]};
+const HOFF={axe:[3,0],net:[3,0],pik:[3,0],wp:[5,-4],sp:[5,0],fl:[-1,0],tw:[0,-4],wd:[4,0],st:[3,0],bw:[5,1]};
 const CUSTOMHELD=new Set();   // held pictures that come from your own sprites: they keep the spot the editor gave them
 const hoffOf=key=>CUSTOMHELD.has(key)?[0,0]:HOFF[String(key||'').replace(/\d+$/,'')]||[0,0];
 // sets each held layer's resting spot and shows a fist over whatever the hands are holding
@@ -949,6 +949,7 @@ function dress(){
     try{L.player.setTexture(BALD(gear.hd)&&scene.textures.exists('player_b')?'player_b':'player');}catch(e){}
     L.pik.setVisible(pik>=0);if(pik>=0)L.pik.setTexture('pik'+pik);[['head','hd'],['body','bd'],['hands','hn'],['feet','ft']].forEach(([l,k])=>{const v=gear[k];L[l].setVisible(v>=0);if(v>=0){L[l].setTexture(GT[k+v]||k+v);if(l==='head')hdFit(L[l]);}});try{if(player&&player.titleT)player.titleT.setY(player.L&&player.L.head.visible&&player.L.head.frame.height>T?-38:-24);}catch(e){}
     gripLayers(L,'grip');
+    posePlayerLayers(L,gear.wp>=0&&gear.wt===3&&L.weapon.visible,SHIRTC[APP.shirt],'grip');
   });
 }
 
@@ -3350,6 +3351,9 @@ function create(){
   buildPets(true);   // a custom monster picture carries over to its pet
   try{crispFolk(this);}catch(e){console.warn(e);}
   try{knightArmour(this);}catch(e){console.warn(e);}
+  try{robesAndLeathers(this);}catch(e){console.warn(e);}
+  try{wandsAndStaffs(this);}catch(e){console.warn(e);}
+  try{meleeWeapons(this);}catch(e){console.warn(e);}
   // one repeating sprite for all the plain grass, so a big map stays light
   // grass under the world, in pieces: one giant picture is too big for many phones and graphics cards
   {const CH=2048;for(let y0=0;y0<WH*T;y0+=CH)for(let x0=0;x0<MW*T;x0+=CH)this.add.tileSprite(x0,OY+y0,Math.min(CH,MW*T-x0),Math.min(CH,WH*T-y0),'grass').setOrigin(0,0);}
@@ -5016,6 +5020,195 @@ const ARM_KNIGHT={
     P(24,13,6,1,c.d);P(24,13,1,7,c.d);P(29,13,1,7,c.d);
     P(26,14,2,6,c.t);P(24,16,6,2,c.t);if(t>=3)P(26,16,2,2,c.g);},
 };
+
+// ---------- Magic robes (hoods, robes, spellbooks) and ranger leathers (caps, jerkins, bows), same style as Knight's Plate ----------
+const mix=armMix;
+const MAGE_T=[
+  {n:'Apprentice',c:'#5b6ea8',tr:'#a8b6ea',bk:'#9ad0ff'},
+  {n:'Adept',c:'#8a54c8',tr:'#c9a4f0',bk:'#7be07b'},
+  {n:'Expert',c:'#2f9e8f',tr:'#8ee0d2',bk:'#ffd24a'},
+  {n:'Master',c:'#c23b3b',tr:'#f0c060',bk:'#ff7a6a'},
+  {n:'Archmage',c:'#e6c23a',tr:'#ffffff',bk:'#c88bff'},
+];
+const mage={
+  hd:(P,c,t)=>{
+    if(t>=2){P(15,-2,2,2,c.b);P(16,-3,2,1,c.d);}                                   // a pointed tip for the higher tiers
+    P(13,0,6,1,c.b);P(12,1,8,1,c.b);P(11,2,10,3,c.b);P(10,4,2,7,c.b);P(20,4,2,7,c.b);
+    P(11,2,1,3,c.l);P(10,4,1,7,c.l);P(19,2,2,3,c.d);P(21,4,1,7,c.d);P(13,1,3,1,c.l);
+    P(12,5,8,1,c.k);P(12,5,1,5,c.k);P(19,5,1,5,c.k);                               // shadow under the hood
+    P(11,4,10,1,c.tr);P(11,5,1,6,c.tr);P(20,5,1,6,c.tr);                           // trim around the face
+    P(10,11,12,2,c.b);P(10,11,12,1,c.l);P(14,12,4,1,c.tr);                          // the mantle over the shoulders
+    if(t>=3)P(15,3,2,1,t===4?'#c0392b':'#ffe066');},
+  bd:(P,c,t)=>{
+    P(10,12,12,9,c.b);P(9,21,14,7,c.b);P(10,12,1,9,c.l);P(9,21,1,7,c.l);P(20,12,2,9,c.d);P(21,21,2,7,c.d);   // robe, flaring at the hem
+    P(6,12,4,6,c.b);P(5,17,5,3,c.b);P(6,12,1,6,c.l);P(5,17,1,3,c.l);P(22,12,4,6,c.b);P(22,17,5,3,c.b);P(25,12,1,6,c.d);P(26,17,1,3,c.d);   // bell sleeves
+    P(5,19,5,1,c.tr);P(22,19,5,1,c.tr);
+    P(15,13,2,15,c.tr);P(9,27,14,1,c.tr);                                          // trim down the front and at the hem
+    P(10,19,12,1,t>=3?'#e0b040':c.k);P(14,19,4,1,t>=3?'#ffe066':c.d);P(13,20,1,3,t>=3?'#e0b040':c.k);   // sash
+    if(t>=2){P(11,25,1,1,c.tr);P(13,24,1,2,c.tr);P(18,24,1,2,c.tr);P(20,25,1,1,c.tr);}                  // runes on the hem
+    if(t===4){P(15,15,2,2,'#ffffff');P(14,16,1,1,'#ffffff');P(17,16,1,1,'#ffffff');}},
+  bk:(P,c,t)=>{   // held in front of the right hand
+    P(23,15,7,10,'#4a2c5e');P(23,15,1,10,'#6a4a80');P(29,16,1,9,'#f2e8c8');P(24,24,6,1,'#f2e8c8');P(29,24,1,1,'#d8ccaa');
+    P(25,17,3,4,c.bk);P(26,16,1,6,c.bk);P(24,18,5,2,c.bk);P(26,18,1,2,'#ffffff');
+    P(23,15,2,1,'#e0b040');P(23,24,2,1,'#e0b040');if(t>=3){P(28,15,1,1,'#e0b040');P(25,22,3,1,'#e0b040');}},
+};
+const RANGER_T=[
+  {n:'Cowhide',c:'#a8794a',bow:'#9a6a33'},
+  {n:'Deerskin',c:'#c08a52',bow:'#c08a3e'},
+  {n:'Boarhide',c:'#6a5444',bow:'#d9b05a'},
+  {n:'Wolfskin',c:'#8a8d96',bow:'#e0c878'},
+  {n:'Bearskin',c:'#5a3a24',bow:'#a070e0'},
+];
+const BOWN=['Shortbow','Oak bow','Maple bow','Redwood bow','Magic bow'];
+const ranger={
+  hd:(P,c,t)=>{
+    if(t===3){P(11,-1,2,3,c.b);P(19,-1,2,3,c.b);P(11,-1,1,3,c.l);P(12,0,1,2,'#e8a0a0');P(20,0,1,2,'#e8a0a0');}   // wolf ears
+    if(t===4){P(10,0,3,3,c.b);P(19,0,3,3,c.b);P(11,1,1,1,c.k);P(20,1,1,1,c.k);}                                    // bear ears
+    if(t===2){P(13,0,1,1,c.k);P(15,-1,1,2,c.k);P(17,0,1,1,c.k);}                                                     // boar bristles
+    P(12,1,8,1,c.b);P(11,2,10,3,c.b);P(11,2,1,3,c.l);P(19,2,2,3,c.d);P(13,1,3,1,c.l);
+    P(10,5,12,1,c.d);P(10,5,2,4,c.b);P(20,5,2,4,c.b);P(10,5,1,4,c.l);P(21,5,1,4,c.d);                               // band and ear flaps
+    P(12,3,1,1,c.k);P(14,3,1,1,c.k);P(16,3,1,1,c.k);P(18,3,1,1,c.k);                                                // stitching
+    if(t===0){P(13,2,2,1,'#f0e8d8');P(18,3,1,1,'#f0e8d8');}                                                          // cow spots
+    if(t===1){P(20,-2,1,5,'#e8e4d8');P(21,-3,1,3,'#c0392b');P(21,0,1,1,'#e8e4d8');}                                 // a feather
+    if(t>=3){P(10,8,2,1,mix(c.b,0.45));P(20,8,2,1,mix(c.b,0.45));}},
+  bd:(P,c,t)=>{
+    P(10,12,12,9,c.b);P(10,12,1,9,c.l);P(20,12,2,9,c.d);
+    P(8,11,3,3,c.b);P(8,11,3,1,c.l);P(21,11,3,3,c.b);P(21,11,3,1,c.l);                                              // shoulder pads
+    for(let y=13;y<=18;y++)P(15+(y%2),y,1,1,c.k);P(14,13,1,1,c.k);P(17,13,1,1,c.k);                                  // laces
+    P(10,19,12,2,'#4a2c18');P(15,19,2,2,'#c8c8c8');P(18,19,3,3,mix(c.b,-0.2));P(18,19,3,1,c.k);                     // belt and pouch
+    P(11,13,1,1,'#4a2c18');P(12,14,1,1,'#4a2c18');P(13,15,1,1,'#4a2c18');                                            // quiver strap
+    P(21,8,1,4,'#c0392b');P(22,8,1,4,'#f2f2ee');P(23,9,1,3,'#c0392b');P(21,12,3,2,'#6b4423');                        // arrows over the shoulder
+    if(t>=3){P(10,11,12,2,mix(c.b,0.45));P(10,12,12,1,mix(c.b,0.25));}                                               // fur collar
+    P(11,21,10,2,c.d);P(11,21,1,2,c.b);P(15,21,2,2,c.k);},                                                          // short skirt flaps
+  bw:(P,c,t)=>{   // held in the left hand (the game moves it 5 right, 1 down)
+    const w=c.bow,wl=mix(w,0.3),wd=mix(w,-0.35);
+    P(4,10,2,1,w);P(3,11,1,1,w);P(2,12,1,2,w);P(1,14,1,8,w);P(2,22,1,2,w);P(3,24,1,1,w);P(4,25,2,1,w);
+    P(2,14,1,8,wd);P(1,16,2,4,'#4a2c18');P(1,17,2,1,'#6b4423');
+    P(5,9,1,1,wl);P(5,26,1,1,wl);
+    P(6,10,1,16,'#e8dcb0');
+    if(t===4){P(1,13,1,1,'#ffffff');P(1,22,1,1,'#ffffff');P(4,9,1,1,'#e0c8ff');P(4,26,1,1,'#e0c8ff');}
+    if(t>=2){P(3,11,1,1,wl);P(3,24,1,1,wl);}},
+};
+
+
+function robesAndLeathers(sc){
+  const mine=k=>{try{return SPRITES.some(s=>sprKey(s[0])===k);}catch(e){return false;}};
+  const draw=(h,fn)=>{const c=document.createElement('canvas');c.width=T;c.height=h;const x=c.getContext('2d');if(h>T)x.translate(0,h-T);fn((a,b,w,hh,col)=>{x.fillStyle=col;x.fillRect(a,b,w,hh);});pxOutline(c);return c;};
+  const icon=src=>{const x=src.getContext('2d'),d=x.getImageData(0,0,src.width,src.height).data;let x0=99,y0=99,x1=-1,y1=-1;
+    for(let y=0;y<src.height;y++)for(let q=0;q<src.width;q++)if(d[(y*src.width+q)*4+3]>0){x0=Math.min(x0,q);y0=Math.min(y0,y);x1=Math.max(x1,q);y1=Math.max(y1,y);}
+    const c=document.createElement('canvas');c.width=c.height=T;if(x1<0)return c;
+    const w=x1-x0+1,h=y1-y0+1,k=Math.max(1,Math.min(4,Math.floor(28/Math.max(w,h)))),g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    g.drawImage(src,x0,y0,w,h,Math.floor((T-w*k)/2),Math.floor((T-h*k)/2),w*k,h*k);return c;};
+  const put=(k,c)=>{if(mine(k)||CUSTOMHELD.has(k))return;if(sc.textures.exists(k))sc.textures.remove(k);sc.textures.addCanvas(k,c);};
+  for(let t=0;t<5;t++){
+    const m=MAGE_T[t],mc=Object.assign({b:m.c,l:mix(m.c,0.3),d:mix(m.c,-0.3),k:mix(m.c,-0.55)},{tr:m.tr,bk:m.bk});
+    const r=RANGER_T[t],rc=Object.assign({b:r.c,l:mix(r.c,0.3),d:mix(r.c,-0.3),k:mix(r.c,-0.55)},{bow:r.bow});
+    [['hd'+(10+t),T+HDUP,P=>mage.hd(P,mc,t)],['bd'+(10+t),T,P=>mage.bd(P,mc,t)],['bk'+t,T,P=>mage.bk(P,mc,t)],
+     ['hd'+(17+t),T+HDUP,P=>ranger.hd(P,rc,t)],['bd'+(16+t),T,P=>ranger.bd(P,rc,t)],['bw'+t,T,P=>ranger.bw(P,rc,t)]].forEach(([k,h,fn])=>{
+      const cv=draw(h,fn);put(k,cv);put('i'+k,icon(cv));});
+  }
+}
+
+// ---------- Wands (Ornate Rod) and staffs (Crystal Cluster), same style as the robes ----------
+const WS_GEM=['#9ad0ff','#7be07b','#ffd24a','#ff7a6a','#c88bff'];
+const WS_WOOD=['#6b4423','#7a4a28','#5a3a2a','#4a2c1e','#e8dcc0'];
+const WS_METAL=['#b87333','#b87333','#c8ccd2','#c8ccd2','#e0b040'];
+const wsSparkle=(P,g,pts)=>pts.forEach(([x,y])=>P(x,y,1,1,mix(g,0.6)));
+function wandDraw(P,t){const GEM=WS_GEM,WOOD=WS_WOOD,METAL=WS_METAL,sparkle=wsSparkle;
+    const g=GEM[t],m=METAL[t],md=mix(m,-0.35),ml=mix(m,0.35);
+    P(4,9,2,16,m);P(5,9,1,16,md);for(let y=10;y<24;y+=3)P(4,y,2,1,ml);P(3,24,4,2,m);P(3,24,1,2,ml);P(4,26,2,1,md);
+    P(3,5,4,4,g);P(3,5,1,4,mix(g,0.4));P(6,5,1,4,mix(g,-0.3));P(4,5,1,1,'#ffffff');
+    P(2,4,1,4,m);P(7,4,1,4,md);P(3,3,1,1,m);P(6,3,1,1,md);P(3,9,4,1,m);
+    if(t>=3)sparkle(P,g,[[1,2],[8,3],[0,7]]);}
+function staffDraw(P,t){const GEM=WS_GEM,WOOD=WS_WOOD,METAL=WS_METAL,sparkle=wsSparkle;
+    const g=GEM[t],w=WOOD[t],wd=mix(w,-0.3);
+    [[5,31],[5,30],[4,29],[5,28],[5,27],[6,26],[5,25],[5,24],[5,23],[5,22],[5,21],[4,20],[4,19],[5,18],[5,17],[5,16],[6,15],[5,14],[5,13],[5,12],[5,11],[5,10]].forEach(([x,y])=>{P(x,y,2,1,w);P(x+1,y,1,1,wd);});
+    P(3,30,1,1,wd);P(8,31,1,1,wd);P(3,8,2,2,w);P(7,8,2,2,w);P(2,6,2,2,w);P(8,6,2,2,w);P(4,9,4,1,w);
+    const sp=[[5,2,6],[3,4,4],[8,3,5]].slice(0,t>=3?3:t>=1?2:1);
+    sp.forEach(([x,y,h])=>{P(x,y,2,h,g);P(x,y,1,h,mix(g,0.4));P(x,y-1,1,1,mix(g,0.3));});P(5,3,1,1,'#ffffff');
+    if(t===4)sparkle(P,g,[[1,1],[10,1],[0,4],[11,5]]);}
+function wandsAndStaffs(sc){
+  const mine=k=>{try{return SPRITES.some(s=>sprKey(s[0])===k);}catch(e){return false;}};
+  const draw=fn=>{const c=document.createElement('canvas');c.width=c.height=T;const x=c.getContext('2d');fn((a,b,w,hh,col)=>{x.fillStyle=col;x.fillRect(a,b,w,hh);});pxOutline(c);return c;};
+  const icon=src=>{const x=src.getContext('2d'),d=x.getImageData(0,0,src.width,src.height).data;let x0=99,y0=99,x1=-1,y1=-1;
+    for(let y=0;y<src.height;y++)for(let q=0;q<src.width;q++)if(d[(y*src.width+q)*4+3]>0){x0=Math.min(x0,q);y0=Math.min(y0,y);x1=Math.max(x1,q);y1=Math.max(y1,y);}
+    const c=document.createElement('canvas');c.width=c.height=T;if(x1<0)return c;
+    const w=x1-x0+1,h=y1-y0+1,k=Math.max(1,Math.min(4,Math.floor(30/Math.max(w,h)))),g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    g.drawImage(src,x0,y0,w,h,Math.floor((T-w*k)/2),Math.floor((T-h*k)/2),w*k,h*k);return c;};
+  const put=(k,c)=>{if(mine(k)||CUSTOMHELD.has(k))return;if(sc.textures.exists(k))sc.textures.remove(k);sc.textures.addCanvas(k,c);};
+  for(let t=0;t<5;t++){
+    const w=draw(P=>wandDraw(P,t)),st=draw(P=>staffDraw(P,t));
+    put('wd'+t,w);put('iwd'+t,icon(w));put('st'+t,st);put('ist'+t,icon(st));
+  }
+}
+
+// ---------- Melee weapons: Arming Sword, Winged Spear, Morning Star (hanging), Greatsword (held in both hands) ----------
+const MW_LEATHER='#4a2c18',MW_LEATHER2='#6b4423',MW_WOOD='#6b4423';
+const MW_METAL=[['#b87333','#f0d060','#3a7ad8'],['#b7c4cc','#e0b040','#c0392b'],['#4aa3df','#e0b040','#c0392b'],['#3fd0b0','#f4f0e0','#b070f0'],['#b070f0','#ffe066','#3fd0b0']];
+function mwPal(t){const [b,tr,gm]=MW_METAL[t];return {b,l:mix(b,0.35),d:mix(b,-0.3),k:mix(b,-0.55),t:tr,g:gm};}
+const MW_DRAW={
+  wp:(P,c,t)=>{const LEATHER=MW_LEATHER,LEATHER2=MW_LEATHER2,WOODC=MW_WOOD;
+    P(2,5,2,16,c.b);P(2,5,1,16,c.l);P(3,7,1,13,c.d);P(2,4,2,1,c.l);P(2,3,1,1,c.l);
+    P(0,21,6,1,c.d);P(0,21,6,1,c.k);P(0,20,1,1,c.d);P(5,20,1,1,c.d);
+    P(2,22,2,5,LEATHER);P(2,23,2,1,LEATHER2);P(2,25,2,1,LEATHER2);P(1,27,4,2,c.b);P(1,27,1,1,c.l);if(t>=3)P(2,27,2,1,c.g);},
+  sp:(P,c,t)=>{const LEATHER=MW_LEATHER,LEATHER2=MW_LEATHER2,WOODC=MW_WOOD;
+    P(2,8,2,22,WOODC);P(3,8,1,22,mix(WOODC,-0.3));P(2,14,2,1,c.b);P(2,24,2,1,c.b);P(2,18,2,4,LEATHER);P(2,29,2,2,c.d);
+    P(2,0,1,1,c.l);P(2,1,2,5,c.b);P(2,1,1,5,c.l);P(0,6,6,1,c.b);P(0,5,1,1,c.b);P(5,5,1,1,c.d);P(2,7,2,1,c.d);
+    P(4,8,1,4,'#c0392b');P(5,9,1,3,'#e0584a');},
+  fl:(P,c,t)=>{const LEATHER=MW_LEATHER,LEATHER2=MW_LEATHER2,WOODC=MW_WOOD;
+    P(3,12,2,14,WOODC);P(4,12,1,14,mix(WOODC,-0.3));P(3,18,2,5,LEATHER);P(3,19,2,1,LEATHER2);P(3,26,2,1,c.d);P(3,11,2,1,c.d);P(2,10,1,2,'#8a8f96');
+    [[1,11],[0,12],[-1,13],[-1,14],[-1,15],[-1,16],[-1,17],[-1,18],[-1,19]].forEach(([x,y],i)=>P(x,y,1,1,i%2?'#6a7078':'#a9afb6'));
+    P(-3,21,5,5,c.b);P(-2,20,3,7,c.b);P(-4,22,7,3,c.b);P(-3,21,1,4,c.l);P(-2,21,2,1,c.l);P(1,22,1,4,c.d);P(-2,26,3,1,c.d);
+    P(-1,18,1,2,c.l);P(-5,23,1,1,c.b);P(3,23,1,1,c.d);P(-1,27,1,2,c.d);P(-4,20,1,1,c.l);P(2,20,1,1,c.b);P(-4,26,1,1,c.d);P(2,26,1,1,c.d);},
+  tw:(P,c,t)=>{const LEATHER=MW_LEATHER,LEATHER2=MW_LEATHER2,WOODC=MW_WOOD;
+    P(3,1,4,17,c.b);P(3,1,1,17,c.l);P(6,1,1,17,c.d);P(4,3,2,13,c.k);P(4,3,1,13,c.d);P(4,0,2,1,c.b);
+    P(0,18,10,2,c.d);P(0,18,10,1,c.b);P(0,18,1,1,c.l);
+    P(4,20,2,7,LEATHER);P(4,21,2,1,LEATHER2);P(4,25,2,1,LEATHER2);P(3,27,4,2,c.b);P(3,27,1,1,c.l);if(t>=3)P(4,27,2,1,c.g);},
+};
+const MW_SHIFT={fl:5};   // the flail head hangs left of the grip: drawn 5 pixels in, and HOFF moves it back
+function meleeWeapons(sc){
+  const mine=k=>{try{return SPRITES.some(s=>sprKey(s[0])===k);}catch(e){return false;}};
+  const icon=src=>{const x=src.getContext('2d'),d=x.getImageData(0,0,src.width,src.height).data;let x0=99,y0=99,x1=-1,y1=-1;
+    for(let y=0;y<src.height;y++)for(let q=0;q<src.width;q++)if(d[(y*src.width+q)*4+3]>0){x0=Math.min(x0,q);y0=Math.min(y0,y);x1=Math.max(x1,q);y1=Math.max(y1,y);}
+    const c=document.createElement('canvas');c.width=c.height=T;if(x1<0)return c;
+    const w=x1-x0+1,h=y1-y0+1,k=Math.max(1,Math.min(4,Math.floor(30/Math.max(w,h)))),g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    g.drawImage(src,x0,y0,w,h,Math.floor((T-w*k)/2),Math.floor((T-h*k)/2),w*k,h*k);return c;};
+  const put=(k,c)=>{if(mine(k)||CUSTOMHELD.has(k))return;if(sc.textures.exists(k))sc.textures.remove(k);sc.textures.addCanvas(k,c);};
+  for(const kind in MW_DRAW)for(let t=0;t<5;t++){
+    const c=document.createElement('canvas');c.width=c.height=T;const x=c.getContext('2d');x.translate(MW_SHIFT[kind]||0,0);
+    MW_DRAW[kind]((a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h);},mwPal(t),t);pxOutline(c);
+    put(kind+t,c);put('i'+kind+t,icon(c));
+  }
+}
+// ---------- The two-hand pose: while a two-handed sword is held, the right arm reaches across the chest and both fists hold the grip ----------
+function poseArms(x,col){
+  const P=(a,b,w,h,c)=>{x.fillStyle=c;x.fillRect(a,b,w,h);},lt=mix(col,0.25),dk=mix(col,-0.3),kk=mix(col,-0.55);
+  P(7,14,3,3,col);P(7,14,1,3,lt);P(5,17,4,2,col);P(5,17,4,1,lt);P(10,14,12,1,kk);P(7,15,15,2,col);P(7,15,15,1,lt);P(7,16,15,1,dk);P(10,17,12,1,kk);P(21,14,3,1,col);
+}
+function poseTex(key,kind,col){   // kind: 'base' (your body; col = shirt colour), 'bd' (armour or robe; its own colour), 'hn' (gloves)
+  const k=key+'_2h';if(!scene||!scene.textures.exists(key))return key;if(scene.textures.exists(k))return k;
+  try{
+    const src=scene.textures.get(key).getSourceImage(),c=document.createElement('canvas');c.width=c.height=T;const x=c.getContext('2d');
+    const s=document.createElement('canvas');s.width=s.height=T;const sx=s.getContext('2d');sx.drawImage(src,0,0,T,T);
+    const px=(a,b)=>{const d=sx.getImageData(a,b,1,1).data;return d[3]>100?'#'+[d[0],d[1],d[2]].map(v=>('0'+v.toString(16)).slice(-2)).join(''):null;};
+    if(kind==='hn'){const gc=px(8,20)||px(23,20)||'#6b4423';x.fillStyle=gc;x.fillRect(3,15,4,2);x.fillRect(3,19,4,2);x.fillStyle=mix(gc,-0.3);x.fillRect(3,16,4,1);x.fillRect(3,20,4,1);}
+    else{
+      x.drawImage(s,0,0);x.clearRect(21,14,8,10);x.clearRect(3,16,7,8);
+      if(kind==='base')x.clearRect(6,14,4,2);
+      const c0=kind==='base'?(typeof col==='number'?'#'+('000000'+col.toString(16)).slice(-6):col):(px(12,13)||px(11,14)||px(13,15));
+      if(c0)poseArms(x,c0);
+    }
+    pxOutline(c);scene.textures.addCanvas(k,c);return k;
+  }catch(e){return key;}
+}
+function posePlayerLayers(L,on,shirt,gripKey){
+  if(!on)return;
+  const tk=l=>l&&l.texture?l.texture.key:null;
+  try{L.player.setTexture(poseTex(tk(L.player),'base',shirt));}catch(e){}
+  try{if(L.body.visible)L.body.setTexture(poseTex(tk(L.body),'bd'));}catch(e){}
+  try{if(L.hands.visible)L.hands.setTexture(poseTex(tk(L.hands),'hn'));}catch(e){}
+  try{if(scene.textures.exists(gripKey+'2h'))L.gripL.setTexture(gripKey+'2h').setVisible(true);}catch(e){}
+}
 function knightArmour(sc){
   const mine=k=>{try{return SPRITES.some(s=>sprKey(s[0])===k);}catch(e){return false;}};
   const draw=(h,fn)=>{const c=document.createElement('canvas');c.width=T;c.height=h;const x=c.getContext('2d');if(h>T)x.translate(0,h-T);fn((a,b,w,hh,col)=>{x.fillStyle=col;x.fillRect(a,b,w,hh);});pxOutline(c);return c;};
@@ -5090,6 +5283,9 @@ function crispFolk(sc){
 function makeGrips(sc,key,skin){
   try{
     const sk=SKINS[Math.min(Math.max(0,skin|0),SKINS.length-1)];
+    {const c=document.createElement('canvas');c.width=c.height=T;const g=ctxG(c.getContext('2d'));   // both fists on a two-handed grip
+      g.fillStyle(sk).fillRect(3,15,4,2).fillRect(3,19,4,2);g.fillStyle(shade(sk,0.72)).fillRect(3,16,4,1).fillRect(3,20,4,1);pxOutline(c);
+      if(sc.textures.exists(key+'2h'))sc.textures.remove(key+'2h');sc.textures.addCanvas(key+'2h',c);}
     [['L',6],['R',22]].forEach(([s,x])=>{
       const c=document.createElement('canvas');c.width=c.height=T;const g=ctxG(c.getContext('2d'));
       g.fillStyle(sk).fillRect(x+1,20,3,2);g.fillStyle(shade(sk,0.72)).fillRect(x+1,21,3,1);
@@ -5102,6 +5298,7 @@ function makeGrips(sc,key,skin){
 function buildPlayer(sc){
   const c=document.createElement('canvas');c.width=c.height=T;
   drawPlayer(ctxG(c.getContext('2d')),APP);pxOutline(c);
+  ['player_2h','player_b_2h'].forEach(k=>{if(sc.textures.exists(k))sc.textures.remove(k);});
   if(sc.textures.exists('player'))sc.textures.remove('player');
   sc.textures.addCanvas('player',c);
   const cb=document.createElement('canvas');cb.width=cb.height=T;
@@ -5257,7 +5454,7 @@ function mpPaint(id,app,bald){
   try{
     const a={skin:Math.min(Math.max(0,app.skin|0),SKINS.length-1),hs:Math.min(Math.max(0,app.hs|0),HAIRS.length-1),hc:Math.min(Math.max(0,app.hc|0),HAIRC.length-1),shirt:Math.min(Math.max(0,app.shirt|0),SHIRTC.length-1),pants:Math.min(Math.max(0,app.pants|0),PANTC.length-1)};
     const c=document.createElement('canvas');c.width=c.height=T;drawPlayer(ctxG(c.getContext('2d')),a,bald);pxOutline(c);
-    const k=mpTexKey(id)+(bald?'b':'');if(scene.textures.exists(k))scene.textures.remove(k);scene.textures.addCanvas(k,c);return k;
+    const k=mpTexKey(id)+(bald?'b':'');if(scene.textures.exists(k+'_2h'))scene.textures.remove(k+'_2h');if(scene.textures.exists(k))scene.textures.remove(k);scene.textures.addCanvas(k,c);return k;
   }catch(e){return 'player';}
 }
 function mpDress(o,look){
@@ -5270,6 +5467,7 @@ function mpDress(o,look){
   {const tall=L.head.visible&&L.head.frame.height>T;o.c.tallHat=tall;if(o.c.label)o.c.label.setY(tall?-38:-24);if(o.c.titleT)o.c.titleT.setY(tall?-49:-35);}   // a tall hat pushes the name tag up
   L.player.setTexture(mpPaint(o.id,look.app||{},BALD(g.hd)));
   const gk=mpTexKey(o.id)+'g';makeGrips(scene,gk,(look.app||{}).skin);gripLayers(L,gk);
+  posePlayerLayers(L,g.wp>=0&&g.wt===3&&L.weapon.visible,SHIRTC[Math.min(Math.max(0,(look.app||{}).shirt|0),SHIRTC.length-1)],gk);
 }
 function mpAdd(p){
   if(!p||MP.others.has(p.id)||p.id===MP.id)return;
