@@ -462,11 +462,12 @@ let fightMon=null;
 const dolls=[],gSl={},gear={hd:-1,bd:-1,hn:-1,ft:-1,wp:-1,wt:0,sh:-1,bw:-1,bk:-1,cp:-1,nk:-1,pt:-1},crT=[],shopIc=[],bkSlots=[],bank={},smT=[],smImgs=[];
 let bk,bkBtn,bkMode=0;
 const BK_AMT=[1,10,999],BK_LBL=['x1','x10','All'];
-const ITEM_OK=/^(kn0|ub[0-4]|bs|fx|ar[0-4]|bw[0-4]|cf[0-7]|sd[0-4]|vg[0-4]|pf[0-5]|gm[0-4]|nk[0-4]|fth|rch|rbf|rrm|rwm|rgm|crm|cwm|cgm|hid|coin|rbo|rve|rbe|cbo|cve|cbe|hbo|hde|hbe|hwf|cch|cbf|log|lg[1-4]|fish|fs[1-7]|ore|or[1-4]|bar|bar[1-4]|axe[0-4]|net[0-4]|pik[0-4]|hd([0-9]|1[0-9]|2[0-6])|bd([0-7]|1[0-9]|2[0-2])|hn[0-3]|ft[0-3]|wp[0-4]|sp[0-5]|fl[0-4]|tw[0-4]|wd[0-4]|st[0-5]|bk[0-4]|pt([0-9]|1[0-9]|20)|sc[0-4]|sh[0-5]|cp[0-5]|bn[0-2]|sr[0-2]|qi0|qi1)$/;
+const ITEM_OK=/^(kn0|ub[0-4]|bs|fx|ar[0-9]|at[0-4]|bw[0-4]|cf[0-7]|sd[0-4]|vg[0-4]|pf[0-5]|gm[0-4]|nk[0-4]|fth|rch|rbf|rrm|rwm|rgm|crm|cwm|cgm|hid|coin|rbo|rve|rbe|cbo|cve|cbe|hbo|hde|hbe|hwf|cch|cbf|log|lg[1-4]|fish|fs[1-7]|ore|or[1-4]|bar|bar[1-4]|axe[0-4]|net[0-4]|pik[0-4]|hd([0-9]|1[0-9]|2[0-6])|bd([0-7]|1[0-9]|2[0-2])|hn[0-3]|ft[0-3]|wp[0-4]|sp[0-5]|fl[0-4]|tw[0-4]|wd[0-4]|st[0-5]|bk[0-4]|pt([0-9]|1[0-9]|20)|sc[0-4]|sh[0-5]|cp[0-5]|bn[0-2]|sr[0-2]|qi0|qi1)$/;
 // Anvil recipes: [item, bars needed, Smithing level needed, xp earned]
 const SMITH=[
   ['kn0',1,SL(1),15,0],['axe0',2,SL(1),20,0],['pik0',2,SL(1),20,0],['axe1',3,SL(10),40,0],['axe2',6,SL(20),90,0],['axe3',9,SL(30),150,0],['axe4',12,SL(40),220,0],
   ['pik1',3,SL(10),40,0],['pik2',6,SL(20),90,0],['pik3',9,SL(30),150,0],['pik4',12,SL(40),220,0],
+  ['at0',1,SL(5),18,1],['at1',1,SL(15),38,1],['at2',1,SL(25),65,1],['at3',1,SL(35),100,1],['at4',1,SL(45),150,1],
   ['wp0',2,SL(1),20,1],['wp1',4,SL(10),45,1],['wp2',7,SL(20),100,1],['wp3',10,SL(30),170,1],['wp4',14,SL(40),250,1],
   ['sp0',3,SL(1),25,1],['sp1',5,SL(10),50,1],['sp2',8,SL(20),105,1],['sp3',11,SL(30),180,1],['sp4',15,SL(40),260,1],
   ['fl0',5,SL(1),35,1],['fl1',8,SL(10),65,1],['fl2',12,SL(20),125,1],['fl3',16,SL(30),210,1],['fl4',21,SL(40),300,1],
@@ -492,7 +493,7 @@ const isLeather=id=>{const k=kd(id),t=tr(id);return (k==='hd'&&t>=17&&t<=21)||(k
 const RGH=[1, 1, 2, 2, 3],RGB=[1, 2, 3, 4, 5];   // ranged damage from a leather cap / jerkin
 const rangedGear=()=>(gear.hd>=17?RGH[gear.hd-17]||0:0)+(gear.bd>=16?RGB[gear.bd-16]||0:0);   // hd15 / bd15: magic frog robes (Magic 30, spell damage and faith points)
 TOOLN.cp=['Traveller cloak','Hunter cape','Mage cape','Faith cape','Demon wings'];
-TOOLN.kn=['Knife'];TOOLN.nk=["Sapphire amulet", "Emerald amulet", "Ruby amulet", "Diamond amulet", "Dragonstone amulet"];TOOLN.bw=['Shortbow','Oak bow','Maple bow','Redwood bow','Magic bow'];TOOLN.ar=['Arrows','Oak arrows','Maple arrows','Redwood arrows','Magic arrows'];
+TOOLN.kn=['Knife'];TOOLN.nk=["Sapphire amulet", "Emerald amulet", "Ruby amulet", "Diamond amulet", "Dragonstone amulet"];TOOLN.bw=['Shortbow','Oak bow','Maple bow','Redwood bow','Magic bow'];TOOLN.ar=['Arrows','Oak arrows','Maple arrows','Redwood arrows','Magic arrows','Bronze-tipped arrows','Iron-tipped oak arrows','Steel-tipped maple arrows','Mithril-tipped redwood arrows','Adamant-tipped magic arrows'];TOOLN.at=['Bronze arrowtips','Iron arrowtips','Steel arrowtips','Mithril arrowtips','Adamant arrowtips'];
 const isTool=id=>/^(axe|net|pik|hd|bd|hn|ft|wp|sp|fl|tw|wd|st|bk|pt|sh|bw|ar|cp|nk)\d+$/.test(id);
 // Pets: a rare drop from a monster. Equip one in the Pet slot and it follows you around (it does nothing else).
 const PETS=[['slime','Baby groblin',.003],['goblin','Goblin pup',.003],['wolf','Wolf pup',.003],['ogre','Baby ogre',.0025],['chicken','Chick',.0025],['cow','Calf',.0025],['rat','Pet rat',.003],['boar','Piglet',.003],['deer','Fawn',.003],['snake','Garden snake',.003],['spider','Spiderling',.003],['bear','Bear cub',.002],['wizard','Mini wizard',.002],['warlord','Mini Warlord',.01],['ratking','Mini Rat King',.01],['frogking','Mini Frogking',.01],['crab','Baby crab',.003],['sandmonster','Sand sprite',.0025],['gnome','Gnome child',.003],['elf','Elf child',.003],['farmer','Mini scarecrow',.003]];
@@ -500,7 +501,7 @@ const petTex=t=>'ipt'+t;
 const icon=id=>isTool(id)?'i'+id:id;
 // Resource tiers: [normal, oak/trout/iron, yew/lobster/steel]
 const LOGS=['log','lg1','lg2','lg3','lg4'],FISHES=['fish','fs1','fs2'],ORES=['ore','or1','or2','or3','or4'],BARS=['bar','bar1','bar2','bar3','bar4'];
-const ITEMN={hd25:'pumpkin head',hd26:'witch hat',cp5:'spectral cape',hd24:"angler's hat",bd22:"angler's vest",hd23:'eye patch',hd22:'demon mask',bd21:'demon armour',sp5:'red pitchfork',qi0:'cultist idol',qi1:'crown of the forgotten king',log:'log',lg1:'oak log',lg2:'maple log',lg3:'redwood log',lg4:'magic log',fish:'raw fish',fs1:'raw trout',fs2:'raw lobster',fs3:'raw perch',fs4:'raw salmon',fs5:'raw tuna',fs6:'raw swordfish',fs7:'raw elven lobster',sd0:'potato seed',sd1:'carrot seed',sd2:'cabbage seed',sd3:'tomato seed',sd4:'pumpkin seed',vg0:'potato',vg1:'carrot',vg2:'cabbage',vg3:'tomato',vg4:'pumpkin',gm0:'sapphire',gm1:'emerald',gm2:'ruby',gm3:'diamond',gm4:'dragonstone',pf0:'pint of ale',pf1:'dark stout',pf2:'bread loaf',pf3:'cheese wedge',pf4:'meat pie',pf5:'hearty stew',ore:'copper ore',or1:'iron ore',or2:'steel ore',bar:'bronze bar',bar1:'iron bar',bar2:'steel bar',or3:'mithril ore',or4:'adamant ore',bar3:'mithril bar',bar4:'adamant bar',kn0:'knife',ub0:'unstrung shortbow',ub1:'unstrung oak bow',ub2:'unstrung maple bow',ub3:'unstrung redwood bow',ub4:'unstrung magic bow',bs:'bowstring',fx:'flax',ar0:'arrows (20)',ar1:'oak arrows (20)',ar2:'maple arrows (20)',ar3:'redwood arrows (20)',ar4:'magic arrows (20)',cf0:'cooked fish',cf1:'cooked trout',cf2:'cooked lobster',cf3:'cooked perch',cf4:'cooked salmon',cf5:'cooked tuna',cf6:'cooked swordfish',cf7:'cooked elven lobster',fth:'feather',rch:'raw chicken',rbf:'raw beef',hid:'cowhide',coin:'coins',rbo:'raw boar meat',rve:'raw venison',rbe:'raw bear meat',cbo:'cooked boar meat',cve:'cooked venison',cbe:'cooked bear meat',hbo:'boar hide',hde:'deer hide',hbe:'bear hide',hwf:'wolf pelt',cch:'cooked chicken',cbf:'cooked beef',rrm:'raw rat meat',rwm:'raw wolf meat',rgm:'raw ogre steak',crm:'cooked rat meat',cwm:'cooked wolf meat',cgm:'cooked ogre steak',sc0:'minor recharge scroll',sc1:'recharge scroll',sc2:'greater recharge scroll',sc3:'major recharge scroll',sc4:'grand recharge scroll',bn0:'bones',bn1:'big bones',bn2:'ancient bones',sr0:'torn scripture',sr1:'holy scripture',sr2:'ancient scripture'};
+const ITEMN={hd25:'pumpkin head',hd26:'witch hat',cp5:'spectral cape',hd24:"angler's hat",bd22:"angler's vest",hd23:'eye patch',hd22:'demon mask',bd21:'demon armour',sp5:'red pitchfork',qi0:'cultist idol',qi1:'crown of the forgotten king',log:'log',lg1:'oak log',lg2:'maple log',lg3:'redwood log',lg4:'magic log',fish:'raw fish',fs1:'raw trout',fs2:'raw lobster',fs3:'raw perch',fs4:'raw salmon',fs5:'raw tuna',fs6:'raw swordfish',fs7:'raw elven lobster',sd0:'potato seed',sd1:'carrot seed',sd2:'cabbage seed',sd3:'tomato seed',sd4:'pumpkin seed',vg0:'potato',vg1:'carrot',vg2:'cabbage',vg3:'tomato',vg4:'pumpkin',gm0:'sapphire',gm1:'emerald',gm2:'ruby',gm3:'diamond',gm4:'dragonstone',pf0:'pint of ale',pf1:'dark stout',pf2:'bread loaf',pf3:'cheese wedge',pf4:'meat pie',pf5:'hearty stew',ore:'copper ore',or1:'iron ore',or2:'steel ore',bar:'bronze bar',bar1:'iron bar',bar2:'steel bar',or3:'mithril ore',or4:'adamant ore',bar3:'mithril bar',bar4:'adamant bar',kn0:'knife',ub0:'unstrung shortbow',ub1:'unstrung oak bow',ub2:'unstrung maple bow',ub3:'unstrung redwood bow',ub4:'unstrung magic bow',bs:'bowstring',fx:'flax',ar0:'arrows (20)',ar1:'oak arrows (20)',ar2:'maple arrows (20)',ar3:'redwood arrows (20)',ar4:'magic arrows (20)',ar5:'bronze-tipped arrows (20)',ar6:'iron-tipped oak arrows (20)',ar7:'steel-tipped maple arrows (20)',ar8:'mithril-tipped redwood arrows (20)',ar9:'adamant-tipped magic arrows (20)',at0:'bronze arrowtips',at1:'iron arrowtips',at2:'steel arrowtips',at3:'mithril arrowtips',at4:'adamant arrowtips',cf0:'cooked fish',cf1:'cooked trout',cf2:'cooked lobster',cf3:'cooked perch',cf4:'cooked salmon',cf5:'cooked tuna',cf6:'cooked swordfish',cf7:'cooked elven lobster',fth:'feather',rch:'raw chicken',rbf:'raw beef',hid:'cowhide',coin:'coins',rbo:'raw boar meat',rve:'raw venison',rbe:'raw bear meat',cbo:'cooked boar meat',cve:'cooked venison',cbe:'cooked bear meat',hbo:'boar hide',hde:'deer hide',hbe:'bear hide',hwf:'wolf pelt',cch:'cooked chicken',cbf:'cooked beef',rrm:'raw rat meat',rwm:'raw wolf meat',rgm:'raw ogre steak',crm:'cooked rat meat',cwm:'cooked wolf meat',cgm:'cooked ogre steak',sc0:'minor recharge scroll',sc1:'recharge scroll',sc2:'greater recharge scroll',sc3:'major recharge scroll',sc4:'grand recharge scroll',bn0:'bones',bn1:'big bones',bn2:'ancient bones',sr0:'torn scripture',sr1:'holy scripture',sr2:'ancient scripture'};
 const COOKED=['cf0','cf1','cf2','cch','cbf','crm','cwm','cgm','cf3','cf4','cf5','cf6','cbo','cve','cbe','cf7'],COOKP=[5,12,24],HEAL=[4,8,14,3,6,10,18,26,6,11,18,22,8,7,15,32],FMXP=[25,45,80,130,200],FIRET=[60000,90000,120000,150000,180000],CKXP=[30,55,95,20,35,70,130,200,42,75,115,150,40,32,75,260];
 const PUBF=['pf0','pf1','pf2','pf3','pf4','pf5'],PUBH=[2,3,3,4,6,9],PUBV=['drink','drink','eat','eat','eat','eat'];   // pub food and drink from the barkeep
 const RAW=FISHES.concat(['rch','rbf','rrm','rwm','rgm','fs3','fs4','fs5','fs6','rbo','rve','rbe','fs7']),NEEDC=[1,10,20,1,3,12,25,35,5,15,25,30,6,5,20,40].map(SL); // raw things you can cook, in the same order as COOKED
@@ -523,13 +524,14 @@ const barTier=id=>{const k=kd(id),t=tr(id);return (k==='hd'||k==='bd')?Math.max(
 // Smithing levels: each metal opens up one item at a time instead of the whole set at once. Base level of the metal plus an offset for the kind of item.
 const SMOFF={kn:0,axe:0,pik:1,wp:0,sp:2,fl:4,tw:6,hd:3,sh:5,hn:7,ft:8,bd:10};
 SMITH.forEach(r=>{r[2]=SL([1,10,20,30,40][barTier(r[0])])+(SMOFF[kd(r[0])]||0);});
-SMITH.forEach(r=>{if(r[0]==='axe0'||r[0]==='pik0')r[2]=1;});   // bronze tools: anyone can forge them at the anvil
+SMITH.forEach(r=>{if(r[0]==='axe0'||r[0]==='pik0')r[2]=1;});
+SMITH.forEach(r=>{if(kd(r[0])==='at')r[2]=SL(5+10*tr(r[0]));});   // arrowtips sit halfway between the metal tiers: 6, 18, 30, 42, 54   // bronze tools: anyone can forge them at the anvil
 SMITH.sort((a,b)=>a[4]-b[4]||a[2]-b[2]);
 const SELL_RATE=0.4,SMITH_BONUS=1.25;
 const VAL={hd25:25,hd26:25,cp5:50,hd24:300,bd22:450,hd23:800,cp4:1,hd22:1,bd21:1,sp5:1,sh5:400,cp0:60,cp1:140,cp2:220,cp3:260,log:5,lg1:15,lg2:35,lg3:70,lg4:130,fish:8,fs1:20,fs2:40,cf0:13,cf1:30,cf2:60,fs3:12,fs4:28,fs5:52,fs6:68,fs7:95,cf7:150,cf3:20,cf4:42,cf5:80,cf6:100,sd0:3,sd1:9,sd2:22,sd3:50,sd4:110,vg0:4,vg1:10,vg2:24,vg3:52,vg4:100,gm0:40,gm1:90,gm2:180,gm3:400,gm4:900,nk0:70,nk1:140,nk2:260,nk3:560,nk4:1200,pf0:8,pf1:13,pf2:6,pf3:11,pf4:24,pf5:36,
   ore:13,or1:30,or2:65,or3:125,or4:225,bar:20,bar1:45,bar2:100,bar3:190,bar4:340,
   rbo:12,rve:10,rbe:22,cbo:20,cve:17,cbe:34,hbo:16,hde:14,hbe:30,hwf:22,kn0:20,fx:12,bs:15,fth:3,rch:6,rbf:8,rrm:12,rwm:24,rgm:40,crm:20,cwm:38,cgm:62,hid:12,cch:10,cbf:14,
-  ub0:25,ub1:60,ub2:140,ub3:280,ub4:520,bw0:70,bw1:170,bw2:380,bw3:760,bw4:1400,ar0:50,ar1:120,ar2:260,ar3:520,ar4:960,
+  ub0:25,ub1:60,ub2:140,ub3:280,ub4:520,bw0:70,bw1:170,bw2:380,bw3:760,bw4:1400,ar0:50,ar1:120,ar2:260,ar3:520,ar4:960,ar5:80,ar6:170,ar7:360,ar8:700,ar9:1300,at0:12,at1:28,at2:62,at3:118,at4:210,
   bn0:8,bn1:30,bn2:130,sr0:120,sr1:400,sr2:1500,sc0:10,sc1:50,sc2:150,sc3:450,sc4:1200,
   axe0:5,pik0:5,net0:5,net1:40,net2:120,net3:300,net4:700,
   hd0:15,hd1:15,hd2:30,bd0:20,bd1:20,bd2:35,hn0:15,ft0:15,
@@ -642,7 +644,7 @@ function load(){
     welSeen=!!d.wel||(+d.xp||0)+(+d.fxp||0)+(+d.mxp||0)+(+d.akxp||0)>0;   // players from before the welcome box already know the game
     xp=+d.xp||0;fxp=+d.fxp||0;coins=+d.coins||0;quest=(d.quest===1||d.quest===2)?d.quest:0;fq=(d.fq===1||d.fq===2)?d.fq:0;bq=(Number.isInteger(d.bq)&&d.bq>=1&&d.bq<=3)?d.bq:0;{const o=d.nq||{},c2=v=>(v===1||v===2)?v:0;nq={f:c2(o.f),m:c2(o.m),g:c2(o.g),k:Math.max(0,Math.min(NQ_WOLVES,Math.floor(+o.k||0))),t:c2(o.t),s:Math.max(0,Math.min(NQ_SKEL,Math.floor(+o.s||0)))};}
     const ct=v=>(Number.isInteger(v)&&v>=-1&&v<=4)?v:0;axe=ct(d.axe);net=ct(d.net);pik=ct(d.pik);mxp=+d.mxp||0;cxp=+d.cxp||0;sxp=+d.sxp||0;fmxp=+d.fmxp||0;ckxp=+d.ckxp||0;dxp=+d.dxp||0;hxp=+d.hxp||0;akxp=+d.akxp||0;fkxp=+d.fkxp||0;
-    ammo.t=-1;ammo.n=0;if(d.ammo&&Number.isInteger(d.ammo.t)&&d.ammo.t>=0&&d.ammo.t<=2&&d.ammo.n>0){ammo.t=d.ammo.t;ammo.n=Math.min(9999,Math.floor(d.ammo.n));}
+    ammo.t=-1;ammo.n=0;if(d.ammo&&Number.isInteger(d.ammo.t)&&d.ammo.t>=0&&d.ammo.t<=9&&d.ammo.n>0){ammo.t=d.ammo.t;ammo.n=Math.min(9999,Math.floor(d.ammo.n));}
     const cg=v=>(Number.isInteger(v)&&v>=-1&&v<=31)?v:-1;
     ['hd','bd','hn','ft','wp','sh','bw','cp','nk'].forEach(k=>{gear[k]=cg(d.gear&&d.gear[k]);});
     gear.wt=(d.gear&&Number.isInteger(d.gear.wt)&&d.gear.wt>=0&&d.gear.wt<=5)?d.gear.wt:0;
@@ -987,7 +989,8 @@ const setT=(k,v)=>{if(WKS.includes(k)){if(v>=0){gear.wp=v;gear.wt=WKS.indexOf(k)
 const GB={hd0:['wc',.05],hd1:['fish',.05],hd2:['mine',.05],bd0:['wc',.08],bd1:['fish',.08],bd2:['mine',.08]};
 const SKN=['Woodcutting','Fishing','Mining','Attack','Archery','Defense','Hitpoints','Smithing','Firemaking','Cooking','Fletching'];
 // Fletching: [result, materials, level, xp, needs knife]
-const FL=[['ub0',{log:1},SL(1),20,1],['ub1',{lg1:1},SL(10),40,1],['ub2',{lg2:1},SL(20),70,1],['ub3',{lg3:1},SL(30),100,1],['ub4',{lg4:1},SL(40),140,1],['bw0',{ub0:1,bs:1},SL(1),20,0],['bw1',{ub1:1,bs:1},SL(10),40,0],['bw2',{ub2:1,bs:1},SL(20),70,0],['bw3',{ub3:1,bs:1},SL(30),100,0],['bw4',{ub4:1,bs:1},SL(40),140,0],['ar0',{log:1},SL(1),15,1],['ar1',{lg1:1},SL(10),30,1],['ar2',{lg2:1},SL(20),50,1],['ar3',{lg3:1},SL(30),75,1],['ar4',{lg4:1},SL(40),110,1]];
+const FL=[['ub0',{log:1},SL(1),20,1],['ub1',{lg1:1},SL(10),40,1],['ub2',{lg2:1},SL(20),70,1],['ub3',{lg3:1},SL(30),100,1],['ub4',{lg4:1},SL(40),140,1],['bw0',{ub0:1,bs:1},SL(1),20,0],['bw1',{ub1:1,bs:1},SL(10),40,0],['bw2',{ub2:1,bs:1},SL(20),70,0],['bw3',{ub3:1,bs:1},SL(30),100,0],['bw4',{ub4:1,bs:1},SL(40),140,0],['ar0',{log:1},SL(1),15,1],['ar1',{lg1:1},SL(10),30,1],['ar2',{lg2:1},SL(20),50,1],['ar3',{lg3:1},SL(30),75,1],['ar4',{lg4:1},SL(40),110,1],
+  ['ar5',{ar0:1,at0:1},SL(5),25,0],['ar6',{ar1:1,at1:1},SL(15),45,0],['ar7',{ar2:1,at2:1},SL(25),75,0],['ar8',{ar3:1,at3:1},SL(35),110,0],['ar9',{ar4:1,at4:1},SL(45),160,0]];
 const pc=x=>Math.round(x*100);
 const gspeed=()=>[0,.08,.16,.22,.28][gear.hn+1];
 const walkMs=()=>[240,205,170,150,132][gear.ft+1]*(Date.now()<hasteUntil?0.7:1);
@@ -999,12 +1002,14 @@ function boost(s){
   if(pOn('industry'))c+=0.10;
   return c;
 }
+// arrow damage: plain arrows add their tier; tipped arrows add half a point more (an extra 1 on every other shot, on average)
+const arB=()=>ammo.t>=5?ammo.t-5+(Math.random()<0.5?1:0):ammo.t;
 function desc(id){
   const k=kd(id),t=tr(id);
   if(k==='pt')return ' (a pet that follows you)';
   if(k==='nk')return ' ('+NKD[t]+')';
   if(k==='bw')return ' (+'+2*(t+1)+' ranged damage)';
-  if(k==='ar')return ' (20 arrows, +'+t+' damage)';
+  if(k==='ar')return ' (20 arrows, +'+(t>=5?(t-5)+'.5':t)+' damage)';
   if(k==='wp')return ' (+'+wBonus(k,t)+' damage)';
   if(k==='sp')return ' (+'+wBonus(k,t)+' damage, hits from 2 tiles away)';
   if(k==='fl')return ' (+'+wBonus(k,t)+' damage, slow swing)';
@@ -1057,7 +1062,7 @@ const crLv=id=>{const a=armT(id);return a>=0&&a<5?NEEDL[a]:recLv(id);};   // mag
 const lvXp=L=>{const P=[[1,30],[12,60],[24,100],[36,160],[48,260]];if(L<=1)return 30;for(let i=1;i<5;i++)if(L<=P[i][0]){const a=P[i-1],b=P[i];return Math.round(a[1]+(b[1]-a[1])*(L-a[0])/(b[0]-a[0]));}return 260+(L-48)*8;};
 const crXp=id=>{const a=armT(id);if(a>=0&&a<5)return CRFX[a]*(kd(id)==='bd'?2:1);if(/^(hd|bd)[0-2]$/.test(id))return kd(id)==='bd'?16:8;if(/^(wd|st|bk)\d$/.test(id))return lvXp(recLv(id));if(/^sc\d$/.test(id))return Math.round(lvXp(recLv(id))/2);if(id==='cp2')return lvXp(recLv(id));if(/^(cp\d|bs)$/.test(id))return 10;return 0;};
 for(let t=0;t<5;t++)RECIPES.push(['nk'+t,{['gm'+t]:1,bs:1},5]);   // amulets: a gem and a bowstring
-const CRCATS=['Head','Body','Other','Magic','Armor','Amulet'],CRSHOW=[2,3,4,5],FTCATS=['Unstrung','Bows','Arrows'];
+const CRCATS=['Head','Body','Other','Magic','Armor','Amulet'],CRSHOW=[2,3,4,5],FTCATS=['Unstrung','Bows','Arrows','Tipped'];
 let crCat=2,ftCat=0,crTabs=[],ftTabs=[];
 const crList=()=>RECIPES.filter(r=>r[2]===crCat);
 function openCraft(){
@@ -1393,6 +1398,7 @@ function reqLv(id){
   if((k==='hd'||k==='bd')&&t>=10)return NEEDL[t-10];
   if(k==='hd'||k==='bd')return t>=3&&t<8?NEEDL[t-3]:1;
   if(k==='hn'||k==='ft')return [1,10,30,40].map(SL)[t]||1;
+  if(k==='ar'&&t>=5)return SL(5+10*(t-5));   // tipped arrows: Archery 6, 18, 30, 42, 54
   return NEEDL[t]||1;
 }
 function reqMsg(id){
@@ -2384,7 +2390,7 @@ function startFight(m){
       if(sp.t==='drain'){const hl=Math.max(1,Math.floor(d/2));if(hp<MAXHP){hp=Math.min(MAXHP,hp+hl);hpUi();pop(player.x,player.y-14,'+'+hl,'#7be07b');}}
       if(chargeOf(src)<sp.c)note=' Your '+nm(src)+' is out of charges!';
     }else if(bow){
-      d=Phaser.Math.Between(1,3+Math.floor(arlvl()/2)+2*(gear.bw+1)+ammo.t+dmgPray()+rangedGear());
+      d=Phaser.Math.Between(1,3+Math.floor(arlvl()/2)+2*(gear.bw+1)+arB()+dmgPray()+rangedGear());
       ammo.n--;akxp+=d*4;shootArrow(m);
       if(ammo.n<=0){ammo.n=0;ammo.t=-1;note=' You are out of arrows!';}
     }else{
@@ -3302,6 +3308,12 @@ function create(){
     tex('ub'+i,()=>{arcBow(12,8,1);});
     tex('iar'+i,()=>{g.fillStyle(0x6b4423).fillRect(8,6,2,22).fillRect(14,4,2,24).fillRect(20,6,2,22).fillStyle(ARC[i]).fillRect(7,3,4,4).fillRect(13,1,4,4).fillRect(19,3,4,4).fillStyle(0xdddddd).fillRect(8,26,2,3).fillRect(14,26,2,3).fillRect(20,26,2,3);});
   }
+  {const MET=[0xb87333,0xb7c4cc,0x4aa3df,0x3fd0b0,0xb070f0],SH=[0x8a5a2a,0xa0743a,0xc08a3e,0x8a3a2a,0x6a44a8],FTH=[0xf2f2f2,0xe05040,0x40a0e0,0xf0d040,0xc080f0];
+  for(let i=0;i<5;i++){const m=MET[i];
+    tex('iar'+(5+i),()=>{[[8,7],[14,5],[20,7]].forEach(([x,y])=>{g.fillStyle(SH[i]).fillRect(x,y+3,2,22-(y-5));g.fillStyle(m).fillTriangle(x-2,y+4,x+4,y+4,x+1,y-2);g.fillStyle(0xffffff,0.45).fillRect(x,y,1,2);g.fillStyle(FTH[i]).fillRect(x-1,26,1,3).fillRect(x+2,26,1,3);});});
+    tex('at'+i,()=>{[[6,10],[14,6],[22,10],[10,18],[18,18]].forEach(([x,y])=>{g.fillStyle(m).fillTriangle(x-3,y+6,x+5,y+6,x+1,y-2);g.fillStyle(0xffffff,0.4).fillTriangle(x-1,y+4,x+1,y+4,x+1,y);g.fillStyle(0x3a3a3a).fillRect(x,y+6,2,2);});});
+  }
+  }
 
   tex('sk0',()=>{g.fillStyle(0x7a4a22).fillRect(5,20,18,9);g.fillStyle(0x5a3416).fillRect(5,26,18,3);g.fillStyle(0xc89a5a).fillEllipse(14,20,18,7);g.fillStyle(0xa8743a).fillEllipse(14,20,11,4);g.fillStyle(0xc89a5a).fillEllipse(14,20,5,2);g.lineStyle(3,0x6b4423).lineBetween(26,29,14,6);g.fillStyle(0xcfd6dc).fillTriangle(14,3,5,4,9,14).fillTriangle(14,3,9,14,16,11);g.fillStyle(0xffffff).fillRect(7,5,2,3);});
   tex('sk1',()=>{g.fillStyle(0x3f8ad0).fillTriangle(22,16,30,8,30,24);g.fillStyle(0x4fa8e0).fillEllipse(14,16,22,13);g.fillStyle(0x2f6fb0).fillTriangle(10,10,19,10,15,4);g.fillStyle(0x9ad8f8).fillEllipse(13,20,15,5);g.fillStyle(0xffffff).fillCircle(7,14,3);g.fillStyle(0x10203a).fillCircle(6,14,1.5);g.fillStyle(0x2f6fb0).fillRect(18,12,1,8).fillRect(15,12,1,8);g.fillStyle(0xcfeeff).fillCircle(3,22,1.5).fillCircle(5,26,1);});
@@ -3759,7 +3771,7 @@ function create(){
   ftp=this.add.container(CX,CY).setDepth(950).setVisible(false);
   ftp.add(this.add.rectangle(0,0,FTW,FTH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
   ftp.add(this.add.text(12,8,'Fletching: tap to make',small).setResolution(2));
-  ftTabs=FTCATS.map((nmz,i)=>{const t=this.add.text([12,110,190][i],30,nmz,small).setResolution(2);ftp.add(t);return t;});
+  ftTabs=FTCATS.map((nmz,i)=>{const t=this.add.text([12,110,190,290][i],30,nmz,small).setResolution(2);ftp.add(t);return t;});
   FL.slice(0,5).forEach(([out],i)=>{
     const by=58+i*FTP;
     ftp.add(this.add.rectangle(12,by,FTW-24,FTB,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
@@ -4199,7 +4211,7 @@ function create(){
     if(ftp.visible){
       if(p.x>=CX&&p.x<=CX+FTWd&&p.y>=CY&&p.y<=CY+FTHt){
         const fy=p.y-CY,fx=p.x-CX;
-        if(fy>=28&&fy<56){ftCat=fx<104?0:fx<184?1:2;ui();return;}
+        if(fy>=28&&fy<56){ftCat=fx<104?0:fx<184?1:fx<280?2:3;ui();return;}
         const i=Math.floor((fy-58)/FTP);
         if(i>=0&&i<5&&fy-58-i*FTP<=FTB)fletch(ftCat*5+i);
         return;
@@ -4359,7 +4371,7 @@ function gearGuide(k){
   const L=[],lines=ids=>ids.map(id=>'Lv '+reqLv(id)+'  '+nm(id)+desc(id));
   if(k<=2){const kk=['axe','net','pik'][k];L.push('Your '+REQSK[kk][0]+' level decides which '+['axes','nets','pickaxes'][k]+' you can equip.');L.push(...lines([0,1,2,3,4].map(i=>kk+i)));}
   if(k===3){L.push('Your Attack level decides which weapons you can equip. Spears hit from 2 tiles away, flails hit hard but swing slowly, and two-handed swords hit hardest but need both hands (no shield).');['wp','sp','fl','tw'].forEach(q=>L.push(...lines([0,1,2,3,4].map(i=>q+i))));}
-  if(k===4){L.push('Your Archery level decides which bows and arrows you can use.');L.push(...lines([0,1,2,3,4].map(i=>'bw'+i)));L.push(...lines([0,1,2,3,4].map(i=>'ar'+i)));L.push('Leather armor (made at the bench from animal hides, Armor tab):');L.push(...[0,1,2,3,4].map(i=>'Lv '+NEEDL[i]+'  '+nm('hd'+(17+i))+' and '+nm('bd'+(16+i))+' (+'+RGH[i]+' and +'+RGB[i]+' ranged damage)'));}
+  if(k===4){L.push('Your Archery level decides which bows and arrows you can use.');L.push(...lines([0,1,2,3,4].map(i=>'bw'+i)));L.push(...lines([0,5,1,6,2,7,3,8,4,9].map(i=>'ar'+i)));L.push('Leather armor (made at the bench from animal hides, Armor tab):');L.push(...[0,1,2,3,4].map(i=>'Lv '+NEEDL[i]+'  '+nm('hd'+(17+i))+' and '+nm('bd'+(16+i))+' (+'+RGH[i]+' and +'+RGB[i]+' ranged damage)'));}
   if(k===5){
     L.push('Your Defense level decides which armor and shields you can wear.');
     const ids=[];['hd','bd','hn','ft','sh'].forEach(q=>{for(let t=0;t<8;t++){const id=q+t;if(TOOLN[q]&&TOOLN[q][t]&&(DEF[id]||q==='hn'||q==='ft')&&!((q==='hd'||q==='bd')&&t<3)&&!(q==='hn'&&t===0)&&!(q==='ft'&&t===0))ids.push(id);}});
@@ -4393,7 +4405,7 @@ function openGuide(k,tab){
   if(k===4){
     L.push('Equip a bow and arrows, then attack. You shoot from up to 4 tiles away.');
     L.push('Max hit = 3 + half your Archery level + 2 per bow tier + arrow tier.');
-    L.push('Now: '+(ranged()?'up to '+(3+Math.floor(arlvl()/2)+2*(gear.bw+1)+ammo.t)+' damage.':'equip a bow and some arrows.'));
+    L.push('Now: '+(ranged()?'up to '+(3+Math.floor(arlvl()/2)+2*(gear.bw+1)+(ammo.t>=5?ammo.t-4:ammo.t))+' damage.':'equip a bow and some arrows.'));
     L.push('Each shot uses an arrow. Enemies hit back less often from far away.');
   }
   if(k===5){
@@ -6413,7 +6425,7 @@ function duelAttack(){
     if(spOk){src=srcFor(sp);if(chargeOf(src)>=sp.c)mag=true;else{armedSpell=null;msg('Your '+nm(src)+' is out of charges.');}}
     if(!mag&&ranged()){if(ammo.n>0)bow=true;else if(dist>meleeReach()){msg('You are out of arrows!');return;}}
     if(mag){setCh(src,chargeOf(src)-sp.c);d=Phaser.Math.Between(1,spellMax(sp,src));}
-    else if(bow){d=Phaser.Math.Between(1,3+Math.floor(arlvl()/2)+2*(gear.bw+1)+ammo.t+dmgPray()+rangedGear());ammo.n--;if(ammo.n<=0){ammo.n=0;ammo.t=-1;}try{shootArrow({c:o.c});}catch(e){}}
+    else if(bow){d=Phaser.Math.Between(1,3+Math.floor(arlvl()/2)+2*(gear.bw+1)+arB()+dmgPray()+rangedGear());ammo.n--;if(ammo.n<=0){ammo.n=0;ammo.t=-1;}try{shootArrow({c:o.c});}catch(e){}}
     else{if(dist>meleeReach())return;d=Phaser.Math.Between(1,3+Math.floor(alvl()/2)+Math.max(0,axe)+wpnBonus()+dmgPray());}
     const ch=Math.max(0.3,Math.min(0.85,0.85-p.dd*0.02));   // their defense makes you miss more often
     if(Math.random()>ch)d=0;
