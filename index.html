@@ -442,7 +442,8 @@ const PRAYERS=[
 ];
 const BONEXP={bn0:20,bn1:60,bn2:250},SCRXP={sr0:150,sr1:500,sr2:2000};
 const NKD=['+1 damage','+8% gathering success','+6 max health','+2 defense','+1 damage, +4% gathering, +1 defense'];   // amulet powers
-const amDmg=()=>[1,0,0,0,1][gear.nk]||0,amGath=()=>[0,.08,0,0,.04][gear.nk]||0,amHp=()=>[0,0,6,0,0][gear.nk]||0,amDef=()=>[0,0,0,2,1][gear.nk]||0;
+const RGD=['+3 max health','+5% gathering success','+1 damage','+1 defense','+1 damage, +3% gathering, +1 defense'];   // ring powers
+const amDmg=()=>([1,0,0,0,1][gear.nk]||0)+([0,0,1,0,1][gear.rg]||0),amGath=()=>([0,.08,0,0,.04][gear.nk]||0)+([0,.05,0,0,.03][gear.rg]||0),amHp=()=>([0,0,6,0,0][gear.nk]||0)+([3,0,0,0,0][gear.rg]||0),amDef=()=>([0,0,0,2,1][gear.nk]||0)+([0,0,0,1,1][gear.rg]||0);
 const dmgPray=()=>amDmg()+(pOn('might')?2:0)+(pOn('piety')?3:0)+(Date.now()<mightUntil?3:0),spellPray=()=>amDmg()+(pOn('arcane')?2:0)+(pOn('piety')?3:0)+(Date.now()<focusUntil?4:0),defPray=()=>(pOn('skin')?2:0)+(pOn('piety')?3:0)+(Date.now()<skinUntil?3:0);
 const ammo={t:-1,n:0},skRows=[],SKCW=98,SKCH=62,SKGAP=6,SKX0=27,SKY0=44,SKROWS=6,SKW=SKX0*2+3*SKCW+2*SKGAP,SKH2=SKY0+SKROWS*SKCH+(SKROWS-1)*SKGAP+34;
 // Skills window order: combat first, then gathering, then crafting (numbers are skill ids)
@@ -457,12 +458,12 @@ const ZMIN=0.75,ZMAX=2;let zoomLv=1,zoomSoft=false;const uiObjs=[];let menuScr={
 let gdIc,gdOff=0,gdFull='',gdHint,gdK=-1,gdTab=0,gdTabs=[],gd,gdTitle,gdBody,topBar,botBar,resetTxt,logoutTxt,smUp,smDn;
 let MAXHP=20;
 // Defense per equipped piece (head, body, hands, feet); each point cuts the slime's hit chance by 3%
-const DEF={cp0:1,cp1:2,cp2:1,cp3:1,cp4:0,hd0:1,hd1:1,hd2:2,bd0:2,bd1:2,bd2:3,hn0:1,hn1:2,ft0:1,ft1:2,hd3:2,hd4:3,hd5:4,bd3:3,bd4:5,bd5:7,sh0:1,sh1:3,sh2:5,hd6:5,hd7:6,hd8:0,hd9:7,hd10:1,hd11:1,hd12:2,hd13:2,hd14:3,bd10:2,bd11:2,bd12:3,bd13:4,bd14:5,bd6:9,bd7:11,sh3:7,sh4:9,sh5:6,hn2:3,hn3:4,ft2:3,ft3:4,hd15:2,bd15:3,hd16:1,hd17:1,hd22:1,hd23:4,bd21:1,hd24:1,bd22:1,hd25:1,hd26:1,cp5:1,hd18:2,hd19:2,hd20:3,hd21:4,bd16:2,bd17:3,bd18:4,bd19:6,bd20:8};
+const DEF={cp0:1,cp1:2,cp2:1,cp3:1,cp4:0,hd0:1,hd1:1,hd2:2,bd0:2,bd1:2,bd2:3,hn0:1,hn1:2,ft0:1,ft1:2,hd3:2,hd4:3,hd5:4,bd3:3,bd4:5,bd5:7,sh0:1,sh1:3,sh2:5,hd6:5,hd7:6,hd8:0,hd9:7,hd10:1,hd11:1,hd12:2,hd13:2,hd14:3,bd10:2,bd11:2,bd12:3,bd13:4,bd14:5,bd6:9,bd7:11,sh3:7,sh4:9,sh5:6,hn2:3,hn3:4,ft2:3,ft3:4,hd15:2,bd15:3,hd16:1,hd17:1,hd22:1,hd23:4,bd21:1,hd24:1,bd22:1,hd25:1,hd26:1,cp5:1,hd18:2,hd19:2,hd20:3,hd21:4,bd16:2,bd17:3,bd18:4,bd19:6,bd20:8,bd23:4,bd24:6,bd25:8,bd26:10,bd27:12};
 let fightMon=null;
-const dolls=[],gSl={},gear={hd:-1,bd:-1,hn:-1,ft:-1,wp:-1,wt:0,sh:-1,bw:-1,bk:-1,cp:-1,nk:-1,pt:-1},crT=[],shopIc=[],bkSlots=[],bank={},smT=[],smImgs=[];
+const dolls=[],gSl={},gear={hd:-1,bd:-1,hn:-1,ft:-1,wp:-1,wt:0,sh:-1,bw:-1,bk:-1,cp:-1,nk:-1,pt:-1,rg:-1},crT=[],shopIc=[],bkSlots=[],bank={},smT=[],smImgs=[];
 let bk,bkBtn,bkMode=0;
 const BK_AMT=[1,10,999],BK_LBL=['x1','x10','All'];
-const ITEM_OK=/^(kn0|ub[0-4]|bs|fx|ar[0-9]|at[0-4]|bw[0-4]|cf[0-7]|sd[0-4]|vg[0-4]|pf[0-5]|gm[0-4]|nk[0-4]|fth|rch|rbf|rrm|rwm|rgm|crm|cwm|cgm|hid|coin|rbo|rve|rbe|cbo|cve|cbe|hbo|hde|hbe|hwf|cch|cbf|log|lg[1-4]|fish|fs[1-7]|ore|or[1-4]|bar|bar[1-4]|axe[0-4]|net[0-4]|pik[0-4]|hd([0-9]|1[0-9]|2[0-6])|bd([0-7]|1[0-9]|2[0-2])|hn[0-3]|ft[0-3]|wp[0-4]|sp[0-5]|fl[0-4]|tw[0-4]|wd[0-4]|st[0-5]|bk[0-4]|pt([0-9]|1[0-9]|20)|sc[0-4]|sh[0-5]|cp[0-5]|bn[0-2]|sr[0-2]|qi0|qi1)$/;
+const ITEM_OK=/^(kn0|ub[0-4]|bs|fx|ar[0-9]|at[0-4]|bw[0-4]|cf[0-7]|sd[0-9]|vg[0-9]|rg[0-4]|lt[0-4]|ud[0-4]|dh[0-4]|pf[0-5]|gm[0-4]|nk[0-4]|fth|rch|rbf|rrm|rwm|rgm|crm|cwm|cgm|hid|coin|rbo|rve|rbe|cbo|cve|cbe|hbo|hde|hbe|hwf|cch|cbf|log|lg[1-4]|fish|fs[1-7]|ore|or[1-4]|bar|bar[1-4]|axe[0-4]|net[0-4]|pik[0-4]|hd([0-9]|1[0-9]|2[0-6])|bd([0-7]|1[0-9]|2[0-7])|hn[0-3]|ft[0-3]|wp[0-4]|sp[0-5]|fl[0-4]|tw[0-4]|wd[0-4]|st[0-5]|bk[0-4]|pt([0-9]|1[0-9]|20)|sc[0-4]|sh[0-5]|cp[0-5]|bn[0-2]|sr[0-2]|qi0|qi1)$/;
 // Anvil recipes: [item, bars needed, Smithing level needed, xp earned]
 const SMITH=[
   ['kn0',1,SL(1),15,0],['axe0',2,SL(1),20,0],['pik0',2,SL(1),20,0],['axe1',3,SL(10),40,0],['axe2',6,SL(20),90,0],['axe3',9,SL(30),150,0],['axe4',12,SL(40),220,0],
@@ -475,12 +476,13 @@ const SMITH=[
   ['hd3',3,SL(1),30,2],['hd4',5,SL(10),55,2],['hd5',7,SL(20),100,2],['hd6',10,SL(30),170,2],['hd7',13,SL(40),240,2],
   ['bd3',6,SL(1),60,2],['bd4',9,SL(10),100,2],['bd5',13,SL(20),160,2],['bd6',18,SL(30),270,2],['bd7',24,SL(40),380,2],
   ['hn1',4,SL(10),50,2],['hn2',8,SL(30),110,2],['hn3',11,SL(40),160,2],['ft1',4,SL(10),50,2],['ft2',8,SL(30),110,2],['ft3',11,SL(40),160,2],
+  ['bd23',4,SL(5),45,2],['bd24',7,SL(15),85,2],['bd25',10,SL(25),135,2],['bd26',14,SL(35),220,2],['bd27',19,SL(45),320,2],
   ['sh0',3,SL(1),30,2],['sh1',5,SL(10),55,2],['sh2',8,SL(20),110,2],['sh3',11,SL(30),190,2],['sh4',15,SL(40),270,2]
 ];
 let smOff=0; // how far the forge list is scrolled
 const SMCATS=['Tools','Weapons','Armor'];
 // Equipment slots: [key, x, y, label] inside the Gear panel
-const SSZ=48,SLOTS=[['hd',12,8,'Head'],['bd',12,62,'Body'],['hn',12,116,'Hands'],['ft',12,170,'Feet'],['am',12,224,'Ammo'],['cp',300,8,'Back'],['wp',300,62,'Weapon'],['sh',300,116,'Shield\n/ Book'],['nk',300,170,'Amulet'],['pt',300,224,'Pet']];
+const SSZ=48,SLOTS=[['hd',12,8,'Head'],['bd',12,62,'Body'],['hn',12,116,'Hands'],['ft',12,170,'Feet'],['am',12,224,'Ammo'],['cp',300,8,'Back'],['wp',300,62,'Weapon'],['sh',300,116,'Shield\n/ Book'],['nk',300,170,'Amulet'],['rg',156,176,'Ring'],['pt',300,224,'Pet']];
 const GT={hd0:'band',hd1:'hat',hd2:'helm',bd0:'tunic',bd1:'vest',bd2:'apron'};
 const AXES=['Bronze axe','Iron axe','Steel axe','Mithril axe','Adamant axe'],NETS=['Small net','Big net','Master net','Mithril-weave net','Adamant-weave net'],COST=[10,40,120];
 const PIKS=['Bronze pickaxe','Iron pickaxe','Steel pickaxe','Mithril pickaxe','Adamant pickaxe'],TOOLN={pt:['Baby groblin','Goblin pup','Wolf pup','Baby ogre','Chick','Calf','Pet rat','Piglet','Fawn','Garden snake','Spiderling','Bear cub','Mini wizard','Mini Warlord','Mini Rat King','Mini Frogking','Baby crab','Sand sprite','Gnome child','Elf child','Mini scarecrow'],axe:AXES,net:NETS,pik:PIKS,hd:['Lumberjack headband','Bucket hat','Miner helmet','Bronze helm','Iron helm','Steel helm','Mithril helm','Adamant helm','Top hat','Warlord crown'],bd:['Lumberjack tunic','Fisher vest','Miner apron','Bronze platebody','Iron platebody','Steel platebody','Mithril platebody','Adamant platebody'],wp:['Bronze sword','Iron sword','Steel sword','Mithril sword','Adamant sword'],sp:['Bronze spear','Iron spear','Steel spear','Mithril spear','Adamant spear','Red pitchfork'],wd:['Apprentice wand','Adept wand','Expert wand','Master wand','Archmage wand'],st:['Apprentice staff','Adept staff','Expert staff','Master staff','Archmage staff','Frog staff'],bk:['Apprentice spellbook','Adept spellbook','Expert spellbook','Master spellbook','Archmage spellbook'],fl:['Bronze flail','Iron flail','Steel flail','Mithril flail','Adamant flail'],tw:['Bronze 2H sword','Iron 2H sword','Steel 2H sword','Mithril 2H sword','Adamant 2H sword'],sh:['Bronze shield','Iron shield','Steel shield','Mithril shield','Adamant shield','Bone shield'],hn:['Leather gloves','Iron gauntlets','Mithril gauntlets','Adamant gauntlets'],ft:['Work boots','Iron-toe boots','Mithril-toe boots','Adamant-toe boots']},GC=[25,80];
@@ -492,9 +494,10 @@ TOOLN.hd.push('Frogkin hood');TOOLN.hd.push('Pointed wizard hat');TOOLN.bd.push(
 const isLeather=id=>{const k=kd(id),t=tr(id);return (k==='hd'&&t>=17&&t<=21)||(k==='bd'&&t>=16&&t<=20);},leatherT=id=>kd(id)==='hd'?tr(id)-17:tr(id)-16;
 const RGH=[1, 1, 2, 2, 3],RGB=[1, 2, 3, 4, 5];   // ranged damage from a leather cap / jerkin
 const rangedGear=()=>(gear.hd>=17?RGH[gear.hd-17]||0:0)+(gear.bd>=16?RGB[gear.bd-16]||0:0);   // hd15 / bd15: magic frog robes (Magic 30, spell damage and faith points)
+['Bronze','Iron','Steel','Mithril','Adamant'].forEach((n,t)=>{TOOLN.bd[23+t]=n+' chainmail';});TOOLN.rg=['Sapphire ring','Emerald ring','Ruby ring','Diamond ring','Dragonstone ring'];TOOLN.lt=['Torch','Iron lantern','Steel lantern','Mithril lantern','Magic lantern'];
 TOOLN.cp=['Traveller cloak','Hunter cape','Mage cape','Faith cape','Demon wings'];
 TOOLN.kn=['Knife'];TOOLN.nk=["Sapphire amulet", "Emerald amulet", "Ruby amulet", "Diamond amulet", "Dragonstone amulet"];TOOLN.bw=['Shortbow','Oak bow','Maple bow','Redwood bow','Magic bow'];TOOLN.ar=['Arrows','Oak arrows','Maple arrows','Redwood arrows','Magic arrows','Bronze-tipped arrows','Iron-tipped oak arrows','Steel-tipped maple arrows','Mithril-tipped redwood arrows','Adamant-tipped magic arrows'];TOOLN.at=['Bronze arrowtips','Iron arrowtips','Steel arrowtips','Mithril arrowtips','Adamant arrowtips'];
-const isTool=id=>/^(axe|net|pik|hd|bd|hn|ft|wp|sp|fl|tw|wd|st|bk|pt|sh|bw|ar|cp|nk)\d+$/.test(id);
+const isTool=id=>/^(axe|net|pik|hd|bd|hn|ft|wp|sp|fl|tw|wd|st|bk|pt|sh|bw|ar|cp|nk|rg)\d+$/.test(id);
 // Pets: a rare drop from a monster. Equip one in the Pet slot and it follows you around (it does nothing else).
 const PETS=[['slime','Baby groblin',.003],['goblin','Goblin pup',.003],['wolf','Wolf pup',.003],['ogre','Baby ogre',.0025],['chicken','Chick',.0025],['cow','Calf',.0025],['rat','Pet rat',.003],['boar','Piglet',.003],['deer','Fawn',.003],['snake','Garden snake',.003],['spider','Spiderling',.003],['bear','Bear cub',.002],['wizard','Mini wizard',.002],['warlord','Mini Warlord',.01],['ratking','Mini Rat King',.01],['frogking','Mini Frogking',.01],['crab','Baby crab',.003],['sandmonster','Sand sprite',.0025],['gnome','Gnome child',.003],['elf','Elf child',.003],['farmer','Mini scarecrow',.003]];
 const petTex=t=>'ipt'+t;
@@ -502,11 +505,21 @@ const icon=id=>isTool(id)?'i'+id:id;
 // Resource tiers: [normal, oak/trout/iron, yew/lobster/steel]
 const LOGS=['log','lg1','lg2','lg3','lg4'],FISHES=['fish','fs1','fs2'],ORES=['ore','or1','or2','or3','or4'],BARS=['bar','bar1','bar2','bar3','bar4'];
 const ITEMN={hd25:'pumpkin head',hd26:'witch hat',cp5:'spectral cape',hd24:"angler's hat",bd22:"angler's vest",hd23:'eye patch',hd22:'demon mask',bd21:'demon armour',sp5:'red pitchfork',qi0:'cultist idol',qi1:'crown of the forgotten king',log:'log',lg1:'oak log',lg2:'maple log',lg3:'redwood log',lg4:'magic log',fish:'raw fish',fs1:'raw trout',fs2:'raw lobster',fs3:'raw perch',fs4:'raw salmon',fs5:'raw tuna',fs6:'raw swordfish',fs7:'raw elven lobster',sd0:'potato seed',sd1:'carrot seed',sd2:'cabbage seed',sd3:'tomato seed',sd4:'pumpkin seed',vg0:'potato',vg1:'carrot',vg2:'cabbage',vg3:'tomato',vg4:'pumpkin',gm0:'sapphire',gm1:'emerald',gm2:'ruby',gm3:'diamond',gm4:'dragonstone',pf0:'pint of ale',pf1:'dark stout',pf2:'bread loaf',pf3:'cheese wedge',pf4:'meat pie',pf5:'hearty stew',ore:'copper ore',or1:'iron ore',or2:'steel ore',bar:'bronze bar',bar1:'iron bar',bar2:'steel bar',or3:'mithril ore',or4:'adamant ore',bar3:'mithril bar',bar4:'adamant bar',kn0:'knife',ub0:'unstrung shortbow',ub1:'unstrung oak bow',ub2:'unstrung maple bow',ub3:'unstrung redwood bow',ub4:'unstrung magic bow',bs:'bowstring',fx:'flax',ar0:'arrows (20)',ar1:'oak arrows (20)',ar2:'maple arrows (20)',ar3:'redwood arrows (20)',ar4:'magic arrows (20)',ar5:'bronze-tipped arrows (20)',ar6:'iron-tipped oak arrows (20)',ar7:'steel-tipped maple arrows (20)',ar8:'mithril-tipped redwood arrows (20)',ar9:'adamant-tipped magic arrows (20)',at0:'bronze arrowtips',at1:'iron arrowtips',at2:'steel arrowtips',at3:'mithril arrowtips',at4:'adamant arrowtips',cf0:'cooked fish',cf1:'cooked trout',cf2:'cooked lobster',cf3:'cooked perch',cf4:'cooked salmon',cf5:'cooked tuna',cf6:'cooked swordfish',cf7:'cooked elven lobster',fth:'feather',rch:'raw chicken',rbf:'raw beef',hid:'cowhide',coin:'coins',rbo:'raw boar meat',rve:'raw venison',rbe:'raw bear meat',cbo:'cooked boar meat',cve:'cooked venison',cbe:'cooked bear meat',hbo:'boar hide',hde:'deer hide',hbe:'bear hide',hwf:'wolf pelt',cch:'cooked chicken',cbf:'cooked beef',rrm:'raw rat meat',rwm:'raw wolf meat',rgm:'raw ogre steak',crm:'cooked rat meat',cwm:'cooked wolf meat',cgm:'cooked ogre steak',sc0:'minor recharge scroll',sc1:'recharge scroll',sc2:'greater recharge scroll',sc3:'major recharge scroll',sc4:'grand recharge scroll',bn0:'bones',bn1:'big bones',bn2:'ancient bones',sr0:'torn scripture',sr1:'holy scripture',sr2:'ancient scripture'};
+// ---------- In-between craftables: chainmail (Smithing), rings (Crafting), torches and lanterns (Firemaking), new crops (Farming) and pies and stews (Cooking).
+// Each unlocks halfway between the old tiers: levels 6, 18, 30, 42 and 54.
+const MIDL=[0,1,2,3,4].map(t=>SL(5+10*t));
+Object.assign(ITEMN,{bd23:'bronze chainmail',rg0:'sapphire ring',bd24:'iron chainmail',rg1:'emerald ring',bd25:'steel chainmail',rg2:'ruby ring',bd26:'mithril chainmail',rg3:'diamond ring',bd27:'adamant chainmail',rg4:'dragonstone ring',lt0:'torch',lt1:'iron lantern',lt2:'steel lantern',lt3:'mithril lantern',lt4:'magic lantern',sd5:'onion seed',vg5:'onion',sd6:'garlic seed',vg6:'garlic',sd7:'sweetcorn seed',vg7:'sweetcorn',sd8:'chili pepper seed',vg8:'chili pepper',sd9:'golden squash seed',vg9:'golden squash',ud0:'uncooked beef and onion stew',dh0:'beef and onion stew',ud1:'uncooked fish pie',dh1:'fish pie',ud2:"uncooked hunter's stew",dh2:"hunter's stew",ud3:'uncooked spicy lobster pie',dh3:'spicy lobster pie',ud4:'uncooked royal feast pie',dh4:'royal feast pie'});
+const isChain=id=>/^bd2[3-7]$/.test(id);
 const COOKED=['cf0','cf1','cf2','cch','cbf','crm','cwm','cgm','cf3','cf4','cf5','cf6','cbo','cve','cbe','cf7'],COOKP=[5,12,24],HEAL=[4,8,14,3,6,10,18,26,6,11,18,22,8,7,15,32],FMXP=[25,45,80,130,200],FIRET=[60000,90000,120000,150000,180000],CKXP=[30,55,95,20,35,70,130,200,42,75,115,150,40,32,75,260];
+const DISHES=[['ud0',{rbf:1,vg5:1}],['ud1',{fs1:1,vg0:1,vg6:1}],['ud2',{rve:1,vg1:1,vg7:1}],['ud3',{fs2:1,vg3:1,vg8:1}],['ud4',{fs6:1,vg4:1,vg9:1}]];   // prepare in the bag, then cook on a fire or range
+COOKED.push('dh0','dh1','dh2','dh3','dh4');HEAL.push(9,15,21,27,36);CKXP.push(45,85,130,190,280);
 const PUBF=['pf0','pf1','pf2','pf3','pf4','pf5'],PUBH=[2,3,3,4,6,9],PUBV=['drink','drink','eat','eat','eat','eat'];   // pub food and drink from the barkeep
 const RAW=FISHES.concat(['rch','rbf','rrm','rwm','rgm','fs3','fs4','fs5','fs6','rbo','rve','rbe','fs7']),NEEDC=[1,10,20,1,3,12,25,35,5,15,25,30,6,5,20,40].map(SL); // raw things you can cook, in the same order as COOKED
+RAW.push('ud0','ud1','ud2','ud3','ud4');NEEDC.push(...MIDL);
 // Farming: plant seeds in a farm patch, wait for them to grow (it keeps growing while you are away), then harvest.
 const SEEDS=['sd0','sd1','sd2','sd3','sd4'],CROPS=['vg0','vg1','vg2','vg3','vg4'],CROPN=['potato','carrot','cabbage','tomato','pumpkin'],CROPP=['potatoes','carrots','cabbages','tomatoes','pumpkins'],FRNEED=[1,10,20,30,40].map(SL),FRXP=[20,45,85,140,220],FRGROW=[120,180,270,390,540],FRHEAL=[3,5,8,12,18],PATCH='\u00aa';
+SEEDS.push('sd5','sd6','sd7','sd8','sd9');CROPS.push('vg5','vg6','vg7','vg8','vg9');CROPN.push('onion','garlic','sweetcorn','chili pepper','golden squash');CROPP.push('onions','garlic bulbs','sweetcorn','chili peppers','golden squashes');
+FRNEED.push(...MIDL);FRXP.push(32,65,110,180,280);FRGROW.push(150,220,330,460,640);FRHEAL.push(4,6,10,15,22);
 let cfxp=0;const cflvl=()=>lvOf(cfxp,50);
 let thxp=0;const thlvl=()=>lvOf(thxp,50);   // Thieving
 let frxp=0;const farm={},patchSpr={},patchTx={};
@@ -518,20 +531,20 @@ const TREETX=['tree','oak','yew','ytree','mtree'],ROCKTX=['rock','rockI','rockM'
 const TREENM=['tree','oak tree','maple tree','redwood tree','magic tree'],ROCKNM=['copper rock','iron rock','steel rock','mithril rock','adamant rock'],SPOTNM=['fishing spot','trout spot','lobster spot','deep spot','elven pool'];
 const an=w=>(/^[aeiou]/i.test(w)?'an ':'a ')+w;
 const TREERS=[6000,9000,13000,18000,24000],ROCKRS=[8000,11000,15000,19000,24000];
-const barTier=id=>{const k=kd(id),t=tr(id);return (k==='hd'||k==='bd')?Math.max(0,t-3):(k==='hn'||k==='ft')?[0,1,3,4][t]:t;};
+const barTier=id=>{const k=kd(id),t=tr(id);if(k==='bd'&&t>=23)return t-23;return (k==='hd'||k==='bd')?Math.max(0,t-3):(k==='hn'||k==='ft')?[0,1,3,4][t]:t;};
 // ---- Item values ----
 // Every item is worth about what a shop would charge for it. Shops pay SELL_RATE of that, so selling is always cheaper than buying.
 // Smithing levels: each metal opens up one item at a time instead of the whole set at once. Base level of the metal plus an offset for the kind of item.
 const SMOFF={kn:0,axe:0,pik:1,wp:0,sp:2,fl:4,tw:6,hd:3,sh:5,hn:7,ft:8,bd:10};
 SMITH.forEach(r=>{r[2]=SL([1,10,20,30,40][barTier(r[0])])+(SMOFF[kd(r[0])]||0);});
 SMITH.forEach(r=>{if(r[0]==='axe0'||r[0]==='pik0')r[2]=1;});
-SMITH.forEach(r=>{if(kd(r[0])==='at')r[2]=SL(5+10*tr(r[0]));});   // arrowtips sit halfway between the metal tiers: 6, 18, 30, 42, 54   // bronze tools: anyone can forge them at the anvil
+SMITH.forEach(r=>{if(kd(r[0])==='at')r[2]=SL(5+10*tr(r[0]));if(isChain(r[0]))r[2]=MIDL[tr(r[0])-23];});   // arrowtips sit halfway between the metal tiers: 6, 18, 30, 42, 54   // bronze tools: anyone can forge them at the anvil
 SMITH.sort((a,b)=>a[4]-b[4]||a[2]-b[2]);
 const SELL_RATE=0.4,SMITH_BONUS=1.25;
 const VAL={hd25:25,hd26:25,cp5:50,hd24:300,bd22:450,hd23:800,cp4:1,hd22:1,bd21:1,sp5:1,sh5:400,cp0:60,cp1:140,cp2:220,cp3:260,log:5,lg1:15,lg2:35,lg3:70,lg4:130,fish:8,fs1:20,fs2:40,cf0:13,cf1:30,cf2:60,fs3:12,fs4:28,fs5:52,fs6:68,fs7:95,cf7:150,cf3:20,cf4:42,cf5:80,cf6:100,sd0:3,sd1:9,sd2:22,sd3:50,sd4:110,vg0:4,vg1:10,vg2:24,vg3:52,vg4:100,gm0:40,gm1:90,gm2:180,gm3:400,gm4:900,nk0:70,nk1:140,nk2:260,nk3:560,nk4:1200,pf0:8,pf1:13,pf2:6,pf3:11,pf4:24,pf5:36,
   ore:13,or1:30,or2:65,or3:125,or4:225,bar:20,bar1:45,bar2:100,bar3:190,bar4:340,
   rbo:12,rve:10,rbe:22,cbo:20,cve:17,cbe:34,hbo:16,hde:14,hbe:30,hwf:22,kn0:20,fx:12,bs:15,fth:3,rch:6,rbf:8,rrm:12,rwm:24,rgm:40,crm:20,cwm:38,cgm:62,hid:12,cch:10,cbf:14,
-  ub0:25,ub1:60,ub2:140,ub3:280,ub4:520,bw0:70,bw1:170,bw2:380,bw3:760,bw4:1400,ar0:50,ar1:120,ar2:260,ar3:520,ar4:960,ar5:80,ar6:170,ar7:360,ar8:700,ar9:1300,at0:12,at1:28,at2:62,at3:118,at4:210,
+  ub0:25,ub1:60,ub2:140,ub3:280,ub4:520,bw0:70,bw1:170,bw2:380,bw3:760,bw4:1400,ar0:50,ar1:120,ar2:260,ar3:520,ar4:960,rg0:50,rg1:100,rg2:190,rg3:400,rg4:850,lt0:12,lt1:60,lt2:140,lt3:260,lt4:480,sd5:6,sd6:15,sd7:35,sd8:75,sd9:160,vg5:7,vg6:16,vg7:36,vg8:75,vg9:140,ud0:20,ud1:40,ud2:70,ud3:110,ud4:170,dh0:30,dh1:60,dh2:100,dh3:150,dh4:230,ar5:80,ar6:170,ar7:360,ar8:700,ar9:1300,at0:12,at1:28,at2:62,at3:118,at4:210,
   bn0:8,bn1:30,bn2:130,sr0:120,sr1:400,sr2:1500,sc0:10,sc1:50,sc2:150,sc3:450,sc4:1200,
   axe0:5,pik0:5,net0:5,net1:40,net2:120,net3:300,net4:700,
   hd0:15,hd1:15,hd2:30,bd0:20,bd1:20,bd2:35,hn0:15,ft0:15,
@@ -570,6 +583,9 @@ const nm=id=>ITEMN[id]||TOOLN[kd(id)][tr(id)].toLowerCase();
 const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
 const goodId=id=>typeof id==='string'&&ITEM_OK.test(id);
 const goodList=a=>(Array.isArray(a)?a:[]).filter(e=>Array.isArray(e)&&goodId(e[0])&&Number.isFinite(+e[1])&&+e[1]>=0).map(e=>[e[0],Math.min(9999,Math.floor(+e[1]))]).slice(0,60);
+{const NEWSEEDS=[['sd5',12],['sd6',30],['sd7',70],['sd8',150],['sd9',320]];
+ [SHOPCFG&&SHOPCFG.sell].concat((typeof NPCCFG!=='undefined'&&NPCCFG||[]).map(n=>n&&n.shop&&n.shop.sell)).forEach(l=>{if(!Array.isArray(l)||!l.some(e=>e&&e[0]==='sd0'))return;
+   NEWSEEDS.forEach(e=>{if(!l.some(q=>q&&q[0]===e[0]))l.push(e.slice());});});}   // anyone who sells potato seeds also sells the in-between seeds
 const SHOPSELL=goodList(SHOPCFG&&SHOPCFG.sell),SHOPBUY=goodList(SHOPCFG&&SHOPCFG.buy);
 const SHVIS=8,SHROW=44,SHY0=66;
 const NPCS=[],NPCAT={};
@@ -646,7 +662,7 @@ function load(){
     const ct=v=>(Number.isInteger(v)&&v>=-1&&v<=4)?v:0;axe=ct(d.axe);net=ct(d.net);pik=ct(d.pik);mxp=+d.mxp||0;cxp=+d.cxp||0;sxp=+d.sxp||0;fmxp=+d.fmxp||0;ckxp=+d.ckxp||0;dxp=+d.dxp||0;hxp=+d.hxp||0;akxp=+d.akxp||0;fkxp=+d.fkxp||0;
     ammo.t=-1;ammo.n=0;if(d.ammo&&Number.isInteger(d.ammo.t)&&d.ammo.t>=0&&d.ammo.t<=9&&d.ammo.n>0){ammo.t=d.ammo.t;ammo.n=Math.min(9999,Math.floor(d.ammo.n));}
     const cg=v=>(Number.isInteger(v)&&v>=-1&&v<=31)?v:-1;
-    ['hd','bd','hn','ft','wp','sh','bw','cp','nk'].forEach(k=>{gear[k]=cg(d.gear&&d.gear[k]);});
+    ['hd','bd','hn','ft','wp','sh','bw','cp','nk','rg'].forEach(k=>{gear[k]=cg(d.gear&&d.gear[k]);});gear.rg=Math.min(gear.rg,4);
     gear.wt=(d.gear&&Number.isInteger(d.gear.wt)&&d.gear.wt>=0&&d.gear.wt<=5)?d.gear.wt:0;
     gear.bk=cg(d.gear&&d.gear.bk);gear.bk=Math.min(gear.bk,4);gear.pt=Math.min(cg(d.gear&&d.gear.pt),20);
     if(gear.wp>=0&&(gear.wt===3||gear.wt===5)){gear.sh=-1;gear.bk=-1;}
@@ -656,7 +672,7 @@ function load(){
     gear.bw=Math.min(gear.bw,4);gear.cp=Math.min(gear.cp,5);gear.nk=Math.min(gear.nk,4);
     gear.hd=Math.min(gear.hd,26);gear.hn=Math.min(gear.hn,3);gear.ft=Math.min(gear.ft,3);gear.wp=Math.min(gear.wp,WKS[gear.wt]==='sp'||WKS[gear.wt]==='st'?5:4);gear.sh=Math.min(gear.sh,5);
 
-    mgxp=+d.mgxp||0;pxp=Math.max(0,+d.pxp||0);frxp=Math.max(0,+d.frxp||0);cfxp=Math.max(0,+d.cfxp||0);thxp=Math.max(0,+d.thxp||0);for(const k in farm)delete farm[k];if(d.farm&&typeof d.farm==='object')for(const k in d.farm){const f=d.farm[k];if(/^\d+,\d+$/.test(k)&&Array.isArray(f)&&Number.isInteger(f[0])&&f[0]>=0&&f[0]<5&&Number.isFinite(+f[1]))farm[k]=[f[0],+f[1]];}pp=Number.isFinite(+d.pp)&&d.pp!==undefined?Math.max(0,+d.pp):-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];
+    mgxp=+d.mgxp||0;pxp=Math.max(0,+d.pxp||0);frxp=Math.max(0,+d.frxp||0);cfxp=Math.max(0,+d.cfxp||0);thxp=Math.max(0,+d.thxp||0);for(const k in farm)delete farm[k];if(d.farm&&typeof d.farm==='object')for(const k in d.farm){const f=d.farm[k];if(/^\d+,\d+$/.test(k)&&Array.isArray(f)&&Number.isInteger(f[0])&&f[0]>=0&&f[0]<10&&Number.isFinite(+f[1]))farm[k]=[f[0],+f[1]];}pp=Number.isFinite(+d.pp)&&d.pp!==undefined?Math.max(0,+d.pp):-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];
     if(d.chg&&typeof d.chg==='object')Object.keys(d.chg).forEach(k=>{const n=Math.floor(+d.chg[k]);if(/^(wd|st|bk)[0-5]$/.test(k)&&n>=0)chg[k]=Math.min(n,maxCharges(k));});
     for(const k in bank)delete bank[k];
     if(d.bank&&typeof d.bank==='object')Object.keys(d.bank).forEach(k=>{const n=Math.floor(+d.bank[k]);if(ITEM_OK.test(k)&&n>0)bank[k]=Math.min(n,k==='coin'?2e9:99999);});
@@ -1023,6 +1039,8 @@ function desc(id){
   if(id==='hd24'||id==='bd22')return ' (+'+DEF[id]+' defense, +5% Fishing XP)';
   if(id==='hd22'||id==='hd23'||id==='bd21')return ' (+'+DEF[id]+' defense)';
   if(id==='hd15'||id==='bd15')return ' (+'+DEF[id]+' defense, +'+mgb(id)+' spell damage, +'+(id==='hd15'?6:10)+' faith points)';
+  if(isChain(id))return ' (+'+DEF[id]+' defense, chainmail)';
+  if(k==='rg')return ' ('+RGD[t]+')';
   if(isLeather(id))return ' (+'+DEF[id]+' defense, +'+(k==='hd'?RGH:RGB)[leatherT(id)]+' ranged damage)';
   if((k==='hd'||k==='bd')&&t>=10)return ' (+'+DEF[id]+' defense, +'+mgb(id)+' spell damage)';
   if(k==='sh'||((k==='hd'||k==='bd')&&t>=3))return ' (+'+DEF[id]+' defense)';
@@ -1057,12 +1075,15 @@ const recLv=id=>id==='cp2'?SL(15):/^(wd|st|bk|sc)\d$/.test(id)?NEEDL[tr(id)]:0;
 // Crafting skill: magic robes and leather armour need Crafting; everything crafted gives Crafting xp
 const CRFX=[30,60,100,160,260];
 const armT=id=>{const k=kd(id),t=tr(id);if(k==='nk')return t;if(k==='hd')return t>=17?t-17:t>=10?t-10:-1;if(k==='bd')return t>=16?t-16:t>=10?t-10:-1;return -1;};
-const crLv=id=>{const a=armT(id);return a>=0&&a<5?NEEDL[a]:recLv(id);};   // magic items (wands, staves, spellbooks, scrolls) need Crafting at the same level too
+const crLv=id=>{if(/^rg\d$/.test(id))return MIDL[tr(id)];if(/^lt\d$/.test(id))return 0;const a=armT(id);return a>=0&&a<5?NEEDL[a]:recLv(id);};   // magic items (wands, staves, spellbooks, scrolls) need Crafting at the same level too
 // Crafting xp grows with the level an item needs: armour and amulets use the CRFX steps, everything else is placed on the same curve by the level it needs
 const lvXp=L=>{const P=[[1,30],[12,60],[24,100],[36,160],[48,260]];if(L<=1)return 30;for(let i=1;i<5;i++)if(L<=P[i][0]){const a=P[i-1],b=P[i];return Math.round(a[1]+(b[1]-a[1])*(L-a[0])/(b[0]-a[0]));}return 260+(L-48)*8;};
-const crXp=id=>{const a=armT(id);if(a>=0&&a<5)return CRFX[a]*(kd(id)==='bd'?2:1);if(/^(hd|bd)[0-2]$/.test(id))return kd(id)==='bd'?16:8;if(/^(wd|st|bk)\d$/.test(id))return lvXp(recLv(id));if(/^sc\d$/.test(id))return Math.round(lvXp(recLv(id))/2);if(id==='cp2')return lvXp(recLv(id));if(/^(cp\d|bs)$/.test(id))return 10;return 0;};
+const crXp=id=>{if(/^rg\d$/.test(id))return lvXp(MIDL[tr(id)]);if(/^lt\d$/.test(id))return 0;const a=armT(id);if(a>=0&&a<5)return CRFX[a]*(kd(id)==='bd'?2:1);if(/^(hd|bd)[0-2]$/.test(id))return kd(id)==='bd'?16:8;if(/^(wd|st|bk)\d$/.test(id))return lvXp(recLv(id));if(/^sc\d$/.test(id))return Math.round(lvXp(recLv(id))/2);if(id==='cp2')return lvXp(recLv(id));if(/^(cp\d|bs)$/.test(id))return 10;return 0;};
 for(let t=0;t<5;t++)RECIPES.push(['nk'+t,{['gm'+t]:1,bs:1},5]);   // amulets: a gem and a bowstring
-const CRCATS=['Head','Body','Other','Magic','Armor','Amulet'],CRSHOW=[2,3,4,5],FTCATS=['Unstrung','Bows','Arrows','Tipped'];
+for(let t=0;t<5;t++)RECIPES.push(['rg'+t,{['gm'+t]:1,[BARS[t]]:1},5]);   // rings: a gem set in a metal band (Jewelry tab)
+const LTNEED=MIDL,LTXP=[25,50,90,140,210],LTR=[1.5,1.9,2.3,2.7,3.3],LTC=[0xffa040,0xffc070,0xfff0c0,0xc0ffe8,0xd8b0ff];
+[[{log:1,fx:1}],[{bar1:1,lg1:1}],[{bar2:1,lg2:1}],[{bar3:1,lg3:1}],[{bar4:1,lg4:1}]].forEach(([need],t)=>RECIPES.push(['lt'+t,need,6]));   // torches and lanterns (Light tab): carry one to light up the night
+const CRCATS=['Head','Body','Other','Magic','Armor','Jewelry','Light'],CRSHOW=[2,3,4,5,6],FTCATS=['Unstrung','Bows','Arrows','Tipped'];
 let crCat=2,ftCat=0,crTabs=[],ftTabs=[];
 const crList=()=>RECIPES.filter(r=>r[2]===crCat);
 function openCraft(){
@@ -1080,13 +1101,14 @@ function craft(i){
   const [id,need]=rec,ks=Object.keys(need);
   const rl=recLv(id);
   const cl=crLv(id);if(cl&&cflvl()<cl){msg('You need Crafting '+cl+' to make that.');return;}
+  const lt=/^lt\d$/.test(id)?tr(id):-1;if(lt>=0&&fmlvl()<LTNEED[lt]){msg('You need Firemaking '+LTNEED[lt]+' to make that.');return;}
   if(!ks.every(k=>cnt(k)>=need[k])){msg('You need more materials for that.');return;}
   const freed=ks.reduce((n,k)=>n+(STACKS.test(k)?(cnt(k)<=need[k]?1:0):need[k]),0);
   if(inv.length-freed+1>CAPN()&&!(STACKS.test(id)&&inv.includes(id))){msg('Your bag is full.');return;}
   ks.forEach(k=>takeN(k,need[k]));
   addItem(id,1);taskEvt('craft');
-  const bm=mglvl(),bc=cflvl();if(rl)mgxp+=(/^sc/.test(id)?8:20)*(tr(id)%10+1);cfxp+=crXp(id);
-  msg('You craft the '+nm(id)+(isTool(id)?'. Equip it from your bag.':'.')+(rl?magicLvlMsg(bm):'')+(cflvl()>bc?' Level up! Crafting is now '+cflvl()+'.':''));
+  const bm=mglvl(),bc=cflvl(),bf=fmlvl();if(rl)mgxp+=(/^sc/.test(id)?8:20)*(tr(id)%10+1);cfxp+=crXp(id);if(lt>=0)fmxp+=LTXP[lt];
+  msg('You craft the '+nm(id)+(isTool(id)?'. Equip it from your bag.':lt>=0?'. Carry it in your bag to light your way at night.':'.')+(rl?magicLvlMsg(bm):'')+(cflvl()>bc?' Level up! Crafting is now '+cflvl()+'.':'')+(fmlvl()>bf?' Level up! Firemaking is now '+fmlvl()+'.':''));
   ui();
 }
 function nextTier(kind){
@@ -1387,6 +1409,7 @@ function spellClick(sp){
 const REQSK={axe:['Woodcutting',()=>lvl()],net:['Fishing',()=>flvl()],pik:['Mining',()=>mlvl()],wp:['Attack',()=>alvl()],sp:['Attack',()=>alvl()],fl:['Attack',()=>alvl()],tw:['Attack',()=>alvl()],wd:['Magic',()=>mglvl()],st:['Magic',()=>mglvl()],bk:['Magic',()=>mglvl()],bw:['Archery',()=>arlvl()],ar:['Archery',()=>arlvl()],hd:['Defense',()=>dflvl()],bd:['Defense',()=>dflvl()],hn:['Defense',()=>dflvl()],ft:['Defense',()=>dflvl()],sh:['Defense',()=>dflvl()]};
 function reqLv(id){
   const k=kd(id),t=tr(id);
+  if(isChain(id))return MIDL[t-23];   // chainmail: Defense 6, 18, 30, 42, 54
   if(isLeather(id))return NEEDL[leatherT(id)];
   if(id==='hd9')return SL(40);
   if(id==='st5')return SL(30);
@@ -1402,7 +1425,7 @@ function reqLv(id){
   return NEEDL[t]||1;
 }
 function reqMsg(id){
-  const k=kd(id),r=isLeather(id)?['Archery',()=>arlvl()]:((k==='hd'||k==='bd')&&tr(id)>=10&&id!=='hd22'&&id!=='hd23'&&id!=='bd21'&&id!=='hd24'&&id!=='bd22'&&id!=='hd25'&&id!=='hd26')?['Magic',()=>mglvl()]:REQSK[k];
+  const k=kd(id),r=isLeather(id)?['Archery',()=>arlvl()]:((k==='hd'||k==='bd')&&tr(id)>=10&&!isChain(id)&&id!=='hd22'&&id!=='hd23'&&id!=='bd21'&&id!=='hd24'&&id!=='bd22'&&id!=='hd25'&&id!=='hd26')?['Magic',()=>mglvl()]:REQSK[k];
   if(!r)return '';
   const need=reqLv(id);
   return r[1]()>=need?'':'You need '+r[0]+' '+need+' to use the '+nm(id)+'.';
@@ -1486,8 +1509,9 @@ function updatePanels(){
     const r=CL[crOff+i];if(!r){row.bg.setVisible(false);row.ic.setVisible(false);row.t.setVisible(false);return;}
     const [id,need]=r,ok=Object.keys(need).every(k=>cnt(k)>=need[k]);
     row.bg.setVisible(true);row.ic.setVisible(true).setTexture(icon(id));row.t.setVisible(true);
-    row.t.setText(nm(id)+(crLv(id)?'   Crafting '+crLv(id):'')+'\n'+Object.keys(need).map(k=>need[k]+' '+nm(k)).join(' + '));
-    row.t.setColor(ok&&cflvl()>=crLv(id)?'#f1e9c8':'#8a8472');
+    const ltq=/^lt\d$/.test(id)?tr(id):-1;
+    row.t.setText(nm(id)+(ltq>=0?'   Firemaking '+LTNEED[ltq]:crLv(id)?'   Crafting '+crLv(id):'')+'\n'+Object.keys(need).map(k=>need[k]+' '+nm(k)).join(' + '));
+    row.t.setColor(ok&&cflvl()>=crLv(id)&&(ltq<0||fmlvl()>=LTNEED[ltq])?'#f1e9c8':'#8a8472');
   });
   if(crBar){const n=CL.length,tk=CRVIS*CRP-4,th=Math.max(14,tk*Math.min(1,CRVIS/Math.max(1,n)));crBar.setSize(5,th).setPosition(CRW-11,60+(n>CRVIS?(tk-th)*crOff/(n-CRVIS):0));}
   const sl=smlvl();
@@ -3391,6 +3415,7 @@ function create(){
   try{restOfWearables(this);}catch(e){console.warn(e);}
   try{worldArt(this);}catch(e){console.warn(e);}
   try{crispItems(this);}catch(e){console.warn(e);}
+  try{newCraftArt(this);}catch(e){console.warn(e);}
   try{unclipWorn(this);}catch(e){console.warn(e);}
   try{groundArt(this);}catch(e){console.warn(e);}
   // one repeating sprite for all the plain grass, so a big map stays light
@@ -3724,7 +3749,7 @@ function create(){
   cr.add(this.add.text(12,8,'Crafting bench',small).setResolution(2));
   crUp=this.add.text(CRW-80,6,'\u25B2',{...small,color:'#ffe066'}).setResolution(2);crDn=this.add.text(CRW-56,6,'\u25BC',{...small,color:'#ffe066'}).setResolution(2);
   cr.add([crUp,crDn]);
-  crTabs=CRSHOW.map((c,i)=>{const t=this.add.text([12,76,140,204][i],30,CRCATS[c],small).setResolution(2);cr.add(t);return t;});
+  crTabs=CRSHOW.map((c,i)=>{const t=this.add.text([12,76,140,204,284][i],30,CRCATS[c],small).setResolution(2);cr.add(t);return t;});
   for(let i=0;i<CRVIS;i++){
     const by=58+i*CRP;
     const bg=this.add.rectangle(12,by,CRW-34,CRB,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a);
@@ -3916,6 +3941,13 @@ function create(){
     fireGl.forEach(q=>{q.g.setVisible(on);if(on)q.g.setAlpha(Math.max(0,k)*(0.6+Math.random()*0.25));});
   };
   this.time.addEvent({delay:250,loop:true,callback:nightTick});nightTick();
+  {const plGlow=this.add.image(0,0,'glowtex').setBlendMode('ADD').setDepth(391).setVisible(false);let plLt=-1;
+   const best=()=>{plLt=-1;inv.forEach(o=>{if(/^lt\d$/.test(o))plLt=Math.max(plLt,tr(o));});};best();
+   this.time.addEvent({delay:400,loop:true,callback:best});
+   this.events.on('update',()=>{const dk=curD>=0?0:skyAt(worldClock()).a,on=plLt>=0&&dk>0.12&&!!player&&player.visible!==false;
+     plGlow.setVisible(on);if(!on)return;
+     const fl=plLt===0?0.94+Math.random()*0.08:1;
+     plGlow.setPosition(player.x,player.y-4).setTint(LTC[plLt]).setScale(LTR[plLt]*fl).setAlpha(Math.min(1,(dk-0.1)/0.3)*(plLt===0?0.6:0.5));});}
   // walking away from a bank or shop closes its window (one step is fine, two or more closes it)
   {let openAt=null;
    this.time.addEvent({delay:200,loop:true,callback:()=>{
@@ -4254,7 +4286,7 @@ function create(){
       if(p.x>=CX&&p.x<=CX+CRW&&p.y>=CY&&p.y<=CY+CRH){
         const lx=p.x-CX,ly=p.y-CY;
         if(ly<28){if(lx>=CRW-86&&lx<CRW-60)craftScroll(-1);else if(lx>=CRW-60&&lx<CRW-32)craftScroll(1);return;}
-        if(ly<56){crCat=lx<70?2:lx<134?3:lx<198?4:5;crOff=0;ui();return;}
+        if(ly<56){crCat=lx<70?2:lx<134?3:lx<198?4:lx<276?5:6;crOff=0;ui();return;}
         const i=Math.floor((ly-58)/CRP);
         if(i>=0&&i<CRVIS&&crList()[crOff+i]&&ly-58-i*CRP<=CRB&&lx<=CRW-22)craft(crOff+i);
         return;
@@ -4303,7 +4335,7 @@ function create(){
     }
     if(p.y<OY){
       if(false){   // (Reset save was here; it has been removed)
-        if(resetArm){frxp=0;cfxp=0;thxp=0;for(const k in farm)delete farm[k];xp=0;fxp=0;mxp=0;cxp=0;sxp=0;fmxp=0;ckxp=0;dxp=0;hxp=0;akxp=0;fkxp=0;ammo.t=-1;ammo.n=0;coins=0;quest=0;fq=0;bq=0;nq={f:0,m:0,g:0,k:0,t:0,s:0};axe=0;net=-1;pik=-1;gear.hd=gear.bd=gear.hn=gear.ft=gear.wp=gear.sh=gear.bw=gear.bk=gear.cp=gear.nk=-1;mgxp=0;pxp=0;pp=-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];inv.length=0;for(const k in stk)delete stk[k];inv.push('net0','pik0','kn0');for(const k in bank)delete bank[k];resetArm=false;stopChop();ui();msg('Progress erased.');}
+        if(resetArm){frxp=0;cfxp=0;thxp=0;for(const k in farm)delete farm[k];xp=0;fxp=0;mxp=0;cxp=0;sxp=0;fmxp=0;ckxp=0;dxp=0;hxp=0;akxp=0;fkxp=0;ammo.t=-1;ammo.n=0;coins=0;quest=0;fq=0;bq=0;nq={f:0,m:0,g:0,k:0,t:0,s:0};axe=0;net=-1;pik=-1;gear.hd=gear.bd=gear.hn=gear.ft=gear.wp=gear.sh=gear.bw=gear.bk=gear.cp=gear.nk=gear.rg=-1;mgxp=0;pxp=0;pp=-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];inv.length=0;for(const k in stk)delete stk[k];inv.push('net0','pik0','kn0');for(const k in bank)delete bank[k];resetArm=false;stopChop();ui();msg('Progress erased.');}
         else{resetArm=true;msg('Tap Reset again to erase your progress.');scene.time.delayedCall(4000,()=>{resetArm=false;});}
       }else if(p.x>W*T-110){
         // log out: save, stop what you were doing, and go back to the start screen
@@ -4435,9 +4467,12 @@ function openGuide(k,tab){
     [0,1,2,3,4].forEach(t=>L.push('Lv '+NEEDL[t]+'  '+['Cowhide','Deerskin','Boarhide','Wolf hide','Bearhide'][t]+' leather and magic hoods/robes\n   '+CRFX[t]+' xp (head), '+CRFX[t]*2+' xp (body)'));
     [0,1,2,3,4].forEach(t=>L.push('Lv '+NEEDL[t]+'  '+[nm('wd'+t),nm('st'+t),nm('bk'+t)].join(', ').replace(/^./,c=>c.toUpperCase())+' (Magic tab)\n   '+crXp('wd'+t)+' xp each'));
     [0,1,2,3,4].forEach(t=>L.push('Lv '+NEEDL[t]+'  '+nm('nk'+t).replace(/^./,c=>c.toUpperCase())+' ('+nm('gm'+t)+' + bowstring)\n   '+crXp('nk'+t)+' xp, '+NKD[t]));
+    L.push('Rings go in their own Ring slot, so you can wear one with an amulet. They are made from a gem and a bar (Jewelry tab).');
+    [0,1,2,3,4].forEach(t=>L.push('Lv '+MIDL[t]+'  '+nm('rg'+t).replace(/^./,c=>c.toUpperCase())+' ('+nm('gm'+t)+' + '+nm(BARS[t])+')\n   '+crXp('rg'+t)+' xp, '+RGD[t]));
   }
   if(k===14){L.push('Buy seeds from the shopkeeper, plant them in a farm patch (tilled soil) and wait. Crops keep growing while you are away. Tap a ripe patch to harvest. Eat crops to heal, or sell them.');SEEDS.forEach((s,i)=>L.push('Lv '+FRNEED[i]+'  '+nm(CROPS[i])+'\n   Grows in '+fmtDur(FRGROW[i])+', '+FRXP[i]+' xp, heals '+FRHEAL[i]+' HP'));}
-  if(k===8)tier5(i=>'Lv '+NEEDL[i]+'  Burn '+nm(LOGS[i])+'s\n   '+FMXP[i]+' xp, fire lasts '+FIRET[i]/1000+'s');
+  if(k===8){tier5(i=>'Lv '+NEEDL[i]+'  Burn '+nm(LOGS[i])+'s\n   '+FMXP[i]+' xp, fire lasts '+FIRET[i]/1000+'s');L.push('Torches and lanterns: make them at the crafting bench (Light tab). Carry one in your bag and it lights up the area around you at night. Better ones shine further.');[0,1,2,3,4].forEach(t=>{const r=RECIPES.find(q=>q[0]==='lt'+t);L.push('Lv '+LTNEED[t]+'  Make a '+nm('lt'+t)+' ('+Object.keys(r[1]).map(q=>r[1][q]+' '+nm(q)).join(' + ')+')\n   '+LTXP[t]+' xp');});}
+  if(k===9)L.push('Pies and stews: hold (or right-click) one of the ingredients in your bag and choose Make. Then cook it on a fire or range. '+DISHES.map(([u,n])=>nm(u).replace('uncooked ','')+' = '+Object.keys(n).map(q=>nm(q)).join(' + ')).join('; ')+'.');
   if(k===9){COOKED.map((_,i)=>i).map(i=>[NEEDC[i],i]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]).forEach(([lv,i])=>L.push('Lv '+lv+'  Cook '+nm(RAW[i]).replace('raw ','')+'\n   '+CKXP[i]+' xp, heals '+HEAL[i]+' HP'));}
   if(k===10){
     L.push('Pick flax from the purple-blue plants. Make 2 flax into a bowstring at the crafting bench.');
@@ -4564,7 +4599,7 @@ function farmAct(tx,ty,want){
   }
   let t=-1;
   if(want!==undefined&&want>=0)t=want;
-  else for(let q=4;q>=0;q--)if(cnt(SEEDS[q])>0&&frlvl()>=FRNEED[q]){t=q;break;}
+  else for(const q of SEEDS.map((_,i)=>i).sort((a,b)=>FRNEED[b]-FRNEED[a]))if(cnt(SEEDS[q])>0&&frlvl()>=FRNEED[q]){t=q;break;}
   if(t<0){
     const low=SEEDS.findIndex(s=>cnt(s)>0);
     msg(low>=0?'You need Farming '+FRNEED[low]+' to plant '+nm(SEEDS[low])+'s.':'You need seeds to plant. The shopkeeper sells them.');return;
@@ -4576,6 +4611,14 @@ function farmAct(tx,ty,want){
   farm[k]=[t,Date.now()];frxp+=Math.round(FRXP[t]/4);farmVis();
   msg(frlvl()>before?'Level up! Farming is now '+frlvl()+'.':'You plant a '+nm(SEEDS[t])+'. It will be ready in about '+fmtDur(FRGROW[t])+'.');
   ui();save();
+}
+function prepDish(k){
+  const [ud,need]=DISHES[k],ti=RAW.indexOf(ud),ks=Object.keys(need);
+  if(cklvl()<NEEDC[ti]){msg('You need Cooking '+NEEDC[ti]+' to make '+nm(ud).replace('uncooked ','')+'.');return;}
+  if(!ks.every(q=>cnt(q)>=need[q])){msg('You need '+ks.map(q=>nm(q)).join(', ')+'.');return;}
+  ks.forEach(q=>takeN(q,need[q]));addItem(ud,1);
+  const before=cklvl();ckxp+=Math.round(CKXP[ti]/5);
+  msg(cklvl()>before?'Level up! Cooking is now '+cklvl()+'.':'You prepare an '+nm(ud)+'. Cook it on a fire or range.');ui();
 }
 function eat(i){
   const ci=CROPS.indexOf(inv[i]);
@@ -4798,6 +4841,7 @@ function bagOptions(i){
   if(/^(kn0|ub.|bs)$/.test(id))o.push(['Fletch',()=>openFletch()]);
   if(LOGS.includes(id))o.push(['Light '+nm(id),same(()=>lightFire(id))]);
   if(COOKED.includes(id)||CROPS.includes(id))o.push(['Eat '+nm(id),same(()=>eat(i))]);
+  DISHES.forEach(([ud,need],k)=>{if(need[id]&&Object.keys(need).every(q=>cnt(q)>=need[q]))o.push(['Make '+nm(ud).replace('uncooked ',''),same(()=>prepDish(k))]);});
   if(PUBF.includes(id))o.push([(PUBV[PUBF.indexOf(id)]==='drink'?'Drink ':'Eat ')+nm(id),same(()=>eat(i))]);
   o.push(['Drop '+nm(id),same(()=>{const it=takeOne(i);dropAt(px,py,it,1,300000);msg('You drop the '+nm(it)+'. Tap the ground under you to pick it up.');ui();})]);
   o.push(['Examine '+nm(id),()=>msg(examine(id))]);
@@ -5638,6 +5682,84 @@ function groundEdges(sc,x,y,cx,cy){
     C.forEach(([dx,dy],s)=>{// a corner piece only where both sides next to it are clear
       if(!hit[s===0?0:s===1?0:2]&&!hit[s===0||s===3?3:1]&&inb(x+dx,y+dy)&&test(x+dx,y+dy))sc.add.image(cx,cy,corner+s);});
   }catch(e){}
+}
+
+// ---------- Pictures for the in-between craftables: chainmail, rings, torches and lanterns, new seeds and crops, pies and stews ----------
+function newCraftArt(sc){
+  const mine=k=>{try{return SPRITES.some(s=>sprKey(s[0])===k);}catch(e){return false;}};
+  const M=armMix;
+  const cv=(fn,h)=>{const c=document.createElement('canvas');c.width=T;c.height=h||T;const x=c.getContext('2d');
+    const P=(a,b,w,hh,col,al)=>{x.globalAlpha=al===undefined?1:al;x.fillStyle=col;x.fillRect(a,b,w,hh);x.globalAlpha=1;};
+    const D=(cx,cy,r,col)=>{for(let y=Math.floor(cy-r);y<=Math.ceil(cy+r);y++)for(let q=Math.floor(cx-r);q<=Math.ceil(cx+r);q++){const dx=q+0.5-cx,dy=y+0.5-cy;if(dx*dx+dy*dy<=r*r)P(q,y,1,1,col);}};
+    fn(P,D,x);pxOutline(c);return c;};
+  const put=(k,c)=>{if(mine(k))return;if(sc.textures.exists(k))sc.textures.remove(k);sc.textures.addCanvas(k,c);};
+  const icon=src=>{const x=src.getContext('2d'),d=x.getImageData(0,0,src.width,src.height).data;let x0=99,y0=99,x1=-1,y1=-1;
+    for(let y=0;y<src.height;y++)for(let q=0;q<src.width;q++)if(d[(y*src.width+q)*4+3]>0){x0=Math.min(x0,q);y0=Math.min(y0,y);x1=Math.max(x1,q);y1=Math.max(y1,y);}
+    const c=document.createElement('canvas');c.width=c.height=T;if(x1<0)return c;
+    const w=x1-x0+1,h=y1-y0+1,k=Math.max(1,Math.min(4,Math.floor(28/Math.max(w,h)))),g=c.getContext('2d');g.imageSmoothingEnabled=false;
+    g.drawImage(src,x0,y0,w,h,Math.floor((T-w*k)/2),Math.floor((T-h*k)/2),w*k,h*k);return c;};
+
+  // chainmail: a mail shirt with short sleeves and a leather belt, rings picked out in light and dark dots
+  for(let t=0;t<5;t++){const b=ARM_METAL[t][0],l=M(b,0.35),d=M(b,-0.3),k=M(b,-0.55);
+    const c=cv(P=>{P(10,12,12,9,b);P(7,11,4,5,b);P(21,11,4,5,b);P(10,21,12,2,b);
+      for(let y=12;y<23;y++)for(let q=7;q<25;q++){if((q<10||q>21)&&y>15)continue;if((q<10||q>21)&&(q<7||q>24))continue;if((q+y)%2===0)P(q,y,1,1,(y%2?l:d));}
+      P(10,12,1,11,l);P(21,12,1,11,d);P(13,12,6,1,k);P(14,13,4,1,d);
+      P(7,15,4,1,k);P(21,15,4,1,k);
+      P(10,20,12,2,'#5a3a1c');P(10,20,12,1,'#7a5228');P(15,20,2,2,ARM_METAL[t][1]);});
+    put('bd'+(23+t),c);put('ibd'+(23+t),icon(c));}
+
+  // rings: a metal band with the gem on top
+  const GEMC=['#3a7ad8','#3fbf5a','#d8343a','#e8f4ff','#c040c0'];
+  for(let t=0;t<5;t++){const m=['#b87333','#b7c4cc','#4aa3df','#3fd0b0','#b070f0'][t],g=GEMC[t];
+    const c=cv((P,D)=>{for(let a=0;a<48;a++){const r=a/48*Math.PI*2,q=Math.round(16+Math.cos(r)*8),y=Math.round(19+Math.sin(r)*6);P(q-1,y-1,3,3,m);}
+      for(let a=0;a<48;a++){const r=a/48*Math.PI*2,q=Math.round(16+Math.cos(r)*8),y=Math.round(19+Math.sin(r)*6);if(Math.sin(r)<-0.2)P(q,y-1,1,1,M(m,0.45));if(Math.sin(r)>0.4)P(q,y+1,1,1,M(m,-0.35));}
+      P(12,9,8,4,m);D(16,9,4.2,g);P(14,7,2,2,'#ffffff');P(17,11,2,1,M(g,-0.35));});
+    put('rg'+t,c);put('irg'+t,c);}
+
+  // torch and lanterns
+  put('lt0',cv((P,D)=>{P(15,13,3,16,'#7a4a25');P(15,13,1,16,'#a06a38');P(13,11,7,4,'#c9b27a');P(13,11,7,1,'#e8d8a8');
+    D(16.5,7,4.5,'#e8581c');D(16.5,8,3.2,'#ffb02e');D(16.5,9,1.8,'#fff0a0');P(16,1,1,2,'#ff8a3c');}));
+  for(let t=1;t<5;t++){const m=['','#b7c4cc','#4aa3df','#3fd0b0','#b070f0'][t],gl=['','#ffd070','#fff0c0','#c0ffe8','#e8c8ff'][t];
+    put('lt'+t,cv((P,D)=>{P(13,2,6,2,M(m,-0.3));P(15,0,2,3,m);P(10,5,12,3,m);P(10,5,12,1,M(m,0.4));
+      P(11,8,10,15,gl);P(11,8,10,15,'#ffffff',0.25);D(16,15,3,M(gl,0.4));P(15,13,2,4,'#ffffff');
+      P(11,8,1,15,m);P(20,8,1,15,M(m,-0.3));P(15,8,1,15,m,0.5);P(10,23,12,3,m);P(10,25,12,1,M(m,-0.4));P(12,26,8,2,M(m,-0.2));
+      if(t===4){P(7,10,1,1,'#ffffff');P(24,14,1,1,'#ffffff');P(8,20,1,1,gl);}}));}
+
+  // new crops: onion, garlic, sweetcorn, chili pepper, golden squash
+  const CROP=[
+    (P,D,o)=>{D(16+o.x,19+o.y,7*o.s,'#c8803a');D(15+o.x,18+o.y,5*o.s,'#e0a050');P(15+o.x,10+o.y,2,4,'#5a9a3b');P(14+o.x,8+o.y,1,3,'#6aa946');P(17+o.x,9+o.y,1,3,'#6aa946');P(13+o.x,16+o.y,1,5,'#f0c070');},
+    (P,D,o)=>{D(16+o.x,19+o.y,6.5*o.s,'#ece6d8');D(14+o.x,19+o.y,3.5*o.s,'#f8f4ec');P(16+o.x,19+o.y,1,6,'#c8bca8');P(15+o.x,11+o.y,2,3,'#d8d0bc');P(15+o.x,25+o.y,3,1,'#a89a80');},
+    (P,D,o)=>{for(let y=0;y<16;y++){const w=y<2||y>13?3:5;P(16-Math.floor(w/2)+o.x,8+y+o.y,w,1,'#f0c83a');}for(let y=9;y<23;y+=2)P(15+o.x,y+o.y,1,1,'#c89a20');P(11+o.x,14+o.y,3,12,'#6aa946');P(19+o.x,13+o.y,3,13,'#5a9a3b');P(15+o.x,24+o.y,3,3,'#5a9a3b');},
+    (P,D,o)=>{for(let y=0;y<16;y++){const w=Math.max(1,Math.round(5-y*0.28));P(14+o.x+Math.round(y*0.25),10+y+o.y,w,1,'#d8302a');}P(14+o.x,11+o.y,1,6,'#ff7a6a');P(14+o.x,7+o.y,3,3,'#3d8236');P(15+o.x,5+o.y,1,3,'#3d8236');},
+    (P,D,o)=>{D(16+o.x,18+o.y,9*o.s,'#e8b030');for(const dx of [-5,0,5])P(16+dx+o.x,10+o.y,1,16,'#c8901a');D(13+o.x,15+o.y,3*o.s,'#ffd860');P(15+o.x,7+o.y,3,3,'#6b4423');}
+  ];
+  const SEEDC=['#c8803a','#ece6d8','#f0c83a','#d8302a','#e8b030'];
+  for(let t=0;t<5;t++){const f=CROP[t];
+    put('vg'+(5+t),cv((P,D)=>f(P,D,{x:0,y:0,s:1})));
+    put('sd'+(5+t),cv((P,D)=>{P(9,8,14,18,'#d8c8a0');P(9,8,14,4,'#b8a070');P(9,8,1,18,'#ece0c0');P(22,8,1,18,'#a89060');
+      P(11,14,10,9,SEEDC[t]);P(11,14,10,1,M(SEEDC[t],0.3));P(13,16,2,2,'#3a2a1a');P(17,18,2,2,'#3a2a1a');P(15,20,2,2,'#3a2a1a');}));
+    // a ripe patch: the tilled soil with three plants on it
+    const pc=document.createElement('canvas');pc.width=pc.height=T;const px=pc.getContext('2d');
+    try{px.drawImage(sc.textures.get('patch0').getSourceImage(),0,0);}catch(e){px.fillStyle='#6b4a2a';px.fillRect(0,0,T,T);}
+    const small=cv((P,D)=>f(P,D,{x:0,y:0,s:1}));
+    [[-9,-7],[7,-7],[-1,4]].forEach(([dx,dy])=>{px.imageSmoothingEnabled=false;px.drawImage(small,dx+8,dy+8,16,16);});
+    put('patchr'+(5+t),pc);}
+
+  // pies and stews: uncooked ones look pale, cooked ones golden brown
+  const STEW=['#8a4a2a','#d8b878','#7a5a2a','#c8402a','#e8a030'],BITS=['#e0a050','#f0e8d0','#f0c83a','#ffd060','#ffd860'];
+  const dish=(t,cooked)=>cv((P,D)=>{const pie=t===1||t>=3;
+    if(pie){D(16,19,11,M('#c9a46a',-0.15));D(16,18,10,cooked?'#c8862e':'#ead8a8');D(16,17,8,cooked?'#e0a040':'#f4e8c8');
+      for(let a=0;a<8;a++){const r=a/8*Math.PI*2;P(Math.round(16+Math.cos(r)*9),Math.round(18+Math.sin(r)*9),2,2,cooked?'#a86a22':'#d8c090');}
+      P(12,15,8,1,cooked?'#8a5218':'#c8b080');P(15,12,1,8,cooked?'#8a5218':'#c8b080');P(13,13,2,2,cooked?'#f8d080':'#ffffff');
+      if(t===3){P(19,13,2,2,'#d8302a');P(10,19,2,2,'#d8302a');}if(t===4){P(19,12,2,2,'#ffd860');P(9,18,2,2,'#ffd860');P(21,20,2,2,'#ffd860');}}
+    else{const st=cooked?STEW[t]:M(STEW[t],0.35);
+      for(let y=0;y<12;y++){const w=Math.round(26-y*y*0.13);P(16-Math.floor(w/2),14+y,w,1,y>9?'#6b4423':'#8a5a2a');P(16-Math.floor(w/2),14+y,1,1,'#a8743a');}
+      P(3,13,26,2,'#c89a5a');P(3,13,26,1,'#e0b878');
+      P(5,14,22,3,st);P(7,13,18,1,st);P(6,14,20,1,M(st,0.2));
+      [[8,14],[13,13],[19,14],[11,15],[17,15],[22,15]].forEach(([a,b],i)=>P(a,b,2,1,i%2?BITS[t]:(cooked?'#c06030':'#e8a090')));
+      P(11,26,10,1,'#5a3418');
+      if(cooked){P(11,5,1,4,'#ffffff',0.5);P(16,3,1,5,'#ffffff',0.5);P(21,5,1,4,'#ffffff',0.5);P(12,9,1,2,'#ffffff',0.4);P(20,9,1,2,'#ffffff',0.4);}}});
+  for(let t=0;t<5;t++){put('ud'+t,dish(t,false));put('dh'+t,dish(t,true));}
 }
 
 // ---------- Item pictures (bag, bank, shops): logs, ores and bars redrawn; everything else gets the outline and edge shading ----------
