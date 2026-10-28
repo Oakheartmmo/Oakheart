@@ -4473,6 +4473,46 @@ function create(){
     };
     this.time.addEvent({delay:300,loop:true,callback:tick});
   }
+  // ---------- XP drops and the progress tracker ----------
+  // Every XP gain floats up beside the minimap; a small tracker under the region name shows the skill you trained last and how far it is to the next level.
+  {
+    const ff='ui-monospace, Menlo, Consolas, monospace',TW=184,TH=48;
+    const NAMES=['Woodcutting','Fishing','Mining','Attack','Archery','Defense','Hitpoints','Smithing','Firemaking','Cooking','Fletching','Combat','Magic','Faith','Farming','Crafting','Thieving','Construction','Slayer'];
+    const trk=this.add.container(MMX-2+MMPX-TW,MMY-2+MMPY+48).setDepth(803);
+    const bg=this.add.rectangle(0,0,TW,TH,0x20232a,0.88).setOrigin(0).setStrokeStyle(1,0xc9982a);
+    const ic=this.add.image(21,TH/2,'skic0').setScale(0.44);
+    const nmT=this.add.text(42,5,'',{fontFamily:ff,fontSize:'12px',color:'#ffe066',fontStyle:'bold'}).setResolution(2);
+    const barBg=this.add.rectangle(42,22,TW-50,8,0x0e0f13).setOrigin(0).setStrokeStyle(1,0x6b5a2a);
+    const bar=this.add.rectangle(43,23,0,6,0x7fc84a).setOrigin(0);
+    const sub=this.add.text(42,32,'',{fontFamily:ff,fontSize:'10px',color:'#c8c0a8'}).setResolution(2);
+    trk.add([bg,ic,nmT,barBg,bar,sub]);trk.setVisible(false);
+    const drops=this.add.container(MMX-8,MMY+MMPY-16).setDepth(804);
+    this.xpUi={trk,drops,TW};
+    let prev=skXpAll().slice(),lastK=-1,lastT=0,live=0;
+    const drop=(k,d,i)=>{
+      const t=this.add.text(0,-i*18,'+'+Math.round(d).toLocaleString('en-US'),{fontFamily:ff,fontSize:'14px',color:'#ffffff',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(1,0.5).setResolution(2);
+      const im=this.add.image(-t.width-12,-i*18,'skic'+k).setScale(0.26);
+      drops.add([t,im]);live++;
+      this.tweens.add({targets:[t,im],y:'-=46',alpha:{from:1,to:0},delay:500,duration:1100,ease:'Sine.easeIn',onComplete:()=>{t.destroy();im.destroy();live--;}});
+    };
+    const show=k=>{
+      const xp=skXpAll()[k],dv=SKDIV[k],L=lvOf(xp,dv),a=xpAt(L,dv),b=xpAt(L+1,dv);
+      ic.setTexture('skic'+k);nmT.setText(NAMES[k]+'  Lv '+L);
+      bar.setSize(Math.max(0,Math.min(1,(xp-a)/Math.max(1,b-a)))*(TW-52),6).setFillStyle(SKCOL[k]);
+      sub.setText(Math.max(0,Math.ceil(b-xp)).toLocaleString('en-US')+' xp to level '+(L+1));
+      trk.setVisible(true).setAlpha(1);
+    };
+    this.time.addEvent({delay:150,loop:true,callback:()=>{
+      const cur=skXpAll();let n=0,big=false;
+      for(let k=0;k<cur.length;k++){const d=cur[k]-(prev[k]||0);if(d<0||d>20000)big=true;}
+      if(!big&&!startOpen){let best=-1,bd=0;
+        for(let k=0;k<cur.length;k++){if(k===11)continue;const d=cur[k]-(prev[k]||0);if(d<0.5)continue;drop(k,d,n++);
+          const score=(k===5||k===6?0:1e6)+d;if(score>bd){bd=score;best=k;}}   // the tracker follows the main skill, not the Hitpoints and Defense that come with every fight
+        if(best>=0){lastK=best;lastT=Date.now();}}
+      prev=cur.slice();
+      if(lastK>=0){if(Date.now()-lastT<30000)show(lastK);else trk.setAlpha(Math.max(0,trk.alpha-0.05));}
+    }});
+  }
   this.children.list.slice(nWorld).forEach(o=>{if(o.texture&&o.texture.key==='glowtex')return;if(o.depth<10)o.setDepth(395);o.setScrollFactor(0);if(o!==menuC)uiObjs.push({o,x:o.x,y:o.y,sx:o.scaleX,sy:o.scaleY});});
   const cam=this.cameras.main;
   const boundsNow=()=>{if(curD>=0){const D=DUNS[curD];cam.setBounds(0,(D.z0-20)*T+OY,MW*T,(D.h+40)*T+BOT);}else cam.setBounds(0,0,MW*T,OY+WH*T+BOT);};
@@ -4601,6 +4641,7 @@ function create(){
   const barLay=()=>{
     const sw=W*T/6,ty=Math.round(OY+H*T+11),put2=(o,x,y)=>{const u=ent(o);if(u){u.x=x;u.y=y;}};
     MMX=Math.round(W*T-MMPX-2);put2(miniBg,MMX-2,MMY-2);put2(miniImg,MMX,MMY);put2(clockTxt,MMX-2+MMPX,MMY-2+MMPY+3);
+    if(this.xpUi){const X=this.xpUi;put2(X.trk,MMX-2+MMPX-X.TW,MMY-2+MMPY+48);put2(X.drops,MMX-8,MMY+MMPY-16);}
     if(this.regUi){const R=this.regUi,bx=W*T/2,by=OY+Math.round(H*T*0.2);put2(R.rTxt,MMX-2+MMPX,MMY-2+MMPY+25);put2(R.bTxt,bx,by);put2(R.bSub,bx,by-28);put2(R.bL,bx,by+24);}
     const by0=Math.round(OY+H*T);
     [hpTxt,statTxt,gtab,qTab,ctab,logTxt].forEach((o,i)=>put2(o,Math.round(sw*(i+0.5)),by0+37));
@@ -8014,13 +8055,13 @@ function emoteMenu(show){
   let b=document.getElementById('emBtn'),m=document.getElementById('emMenu');
   if(!b){
     const st=document.createElement('style');
-    st.textContent='#emBtn{position:fixed;left:8px;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:30;display:none;font:13px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;background:#2c2f38;border:1px solid #c9982a;border-radius:6px;padding:6px 10px;min-height:34px;cursor:pointer}'
+    st.textContent='#emBtn{position:fixed;left:8px;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:30;display:none;font:13px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;background:#2c2f38;border:1px solid #c9982a;border-radius:50%;padding:0;width:30px;height:30px;line-height:0;opacity:.85;cursor:pointer}#emBtn:hover{opacity:1}'
      +'#emBtn[aria-expanded="true"]{border-color:#ffe066}'
      +'#emMenu{position:fixed;left:8px;z-index:41;display:none;grid-template-columns:repeat(4,1fr);gap:6px;width:min(320px,calc(100vw - 16px));padding:8px;background:rgba(32,35,42,.95);border:1px solid #c9982a;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.4)}'
      +'#emMenu button{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;padding:6px 2px;font:12px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;background:#1f2229;border:1px solid #6a5a3e;border-radius:6px;cursor:pointer}'
-     +'#emMenu button span{font-size:20px;line-height:1;display:block;height:32px}#emBtn img{vertical-align:-4px}#emMenu button:hover,#emMenu button:focus-visible{border-color:#ffe066}';
+     +'#emMenu button span{font-size:20px;line-height:1;display:block;height:32px}#emBtn img{vertical-align:middle}#emMenu button:hover,#emMenu button:focus-visible{border-color:#ffe066}';
     document.head.appendChild(st);
-    b=document.createElement('button');b.id='emBtn';b.type='button';b.append(emoteImg('smile',18),document.createTextNode(' Emotes'));b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','emMenu');
+    b=document.createElement('button');b.id='emBtn';b.type='button';b.append(emoteImg('smile',18));b.title='Emotes';b.setAttribute('aria-label','Emotes');b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','emMenu');
     m=document.createElement('div');m.id='emMenu';m.setAttribute('role','menu');m.setAttribute('aria-label','Emotes');
     EMOTES.forEach(([id,label,ic])=>{const e=document.createElement('button');e.type='button';e.setAttribute('role','menuitem');e.title='Or type /'+id+' in chat';const i=document.createElement('span');i.append(emoteImg(id,32));e.append(i,document.createTextNode(label));e.addEventListener('click',()=>emotePlay(id));m.append(e);});
     document.body.append(b,m);
