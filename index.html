@@ -333,7 +333,7 @@ const SPRITECFG={"m_slime":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAA
 // Buy a plot from the estate agent in the Kingdom of Nero, then build rooms in six room spaces and furniture on each room's spots.
 // The house is its own small map (like a dungeon) that only you see. Room space s sits at column s%3, row floor(s/3).
 let cnxp=0;const cnlvl=()=>lvOf(cnxp,50);   // Construction
-let HOUSE={own:0,r:[-1,-1,-1,-1,-1,-1],f:{}};
+let HOUSE={own:0,r:[-1,-1,-1,-1,-1,-1],f:{},d:{}};
 const HSW=22,HSH=17,HSEXIT=[10,15];
 const HFURN={   // spot kind: the furniture you can build there
   table:[{ch:'E',n:'Wooden table',lv:1,cost:{pk0:3},xp:40}],
@@ -348,15 +348,37 @@ const HFURN={   // spot kind: the furniture you can build there
   portal:[]
 };
 const HPORT=[['Kingdom of Nero',12,20],['Ocean Arch',75,84],["Wayfarer's Rest",140,28],['The Gnome Halls',9,64],['The Silverwood',218,84],["Giant's Quarry",229,175]];
-HPORT.forEach((d,i)=>HFURN.portal.push({ch:'Ȼ',dest:i,n:'Portal to '+d[0],lv:54,cost:{pk2:4,bar3:2,gm2:1},xp:800}));
+HPORT.forEach((d,i)=>HFURN.portal.push({ch:'Ȼ',dest:i,v:String(i),n:'Portal to '+d[0],lv:54,cost:{pk2:4,bar3:2,gm2:1},xp:800}));
+// ---------- Cosmetics: decorations, rugs and garden features, plus a floor and wall style for every room ----------
+const HDEC=[   // [name, picture, Construction level, materials, where it goes]
+  ['Potted plant','nx_fpot',1,{pk0:2},'decor'],['Barrel','barrel',1,{pk0:3},'decor'],['Crates','crates',2,{pk0:3},'decor'],
+  ['Firewood basket','inn_firewood',4,{pk0:2,log:3},'decor'],['Coat rack','inn_coats',6,{pk0:3},'decor'],['Tall bookcase','nx_bookcase',10,{pk1:3},'decor'],
+  ['Lute stand','inn_lute',14,{pk1:3,bs:2},'decor'],['Keg stack','nx_kegstack',16,{pk1:4,bar:1},'decor'],['Fireplace','nx_fireplace',20,{pk1:2,or1:4},'decor'],
+  ['Banner','banner',24,{pk1:2,fx:6},'decor'],['Sleeping hound','inn_hound',28,{rbf:3},'decor'],['Elven harp','nx_harp',35,{pk2:3,bar2:1},'decor'],
+  ['Statue','nx_statue',40,{pk2:2,or2:8},'decor'],['Crystal orb','nx_orb',48,{pk2:2,gm3:1},'decor'],['Pile of gold','nx_hoard',55,{bar4:3,gm4:1},'decor'],
+  ['Braided round rug','nx_ruground',1,{fx:4},'rug'],['Striped rug','nx_rugstripe',6,{fx:6},'rug'],['Checker rug','nx_rugcheck',10,{fx:6},'rug'],
+  ['Bearskin rug','inn_bearskin',12,{hbe:1},'rug'],['Green leaf rug','nx_rugleaf',18,{fx:8},'rug'],['Blue diamond rug','nx_rugblue',26,{fx:8,gm0:1},'rug'],
+  ['Royal purple rug','nx_rugroyal',38,{fx:10,gm2:1},'rug'],
+  ['Flower bed','flowers',1,{sd0:2},'garden'],['Bush','bush',3,{sd1:2},'garden'],['Bird bath','nx_birdbath',8,{pk0:2,ore:3},'garden'],
+  ['Garden gnome','nx_gstatue',12,{pk0:1,ore:5},'garden'],['Scarecrow','scarecrow',15,{pk1:2,fx:4},'garden'],['Beehive','nx_beehive',20,{pk1:3},'garden'],
+  ['Mossy boulder','nx_mossrock',22,{or2:4},'garden'],['Well','well',25,{pk1:3,or1:6},'garden'],['Oak tree','oak',30,{sd2:3},'garden'],
+  ['Lantern post','nx_lantpost',34,{pk1:2,bar1:2},'garden'],['Garden statue','nx_statue',40,{pk2:2,or2:8},'garden'],['Magic tree','mtree',50,{sd9:2,lg4:3},'garden']
+];
+HDEC.forEach(([n,tex,lv,cost,kind],i)=>{(HFURN[kind]=HFURN[kind]||[]).push({ch:kind==='rug'?'_':'\u023c',v:String(i),tex,n,lv,cost,xp:Math.round(12+lv*3.5)});});
+const HFLOOR=[['Wooden boards','wood',1,{pk0:2}],['Birch boards','nx_birchf',6,{pk0:4}],['Kitchen tiles','tile',10,{ore:4}],['Stone flags','stone',14,{or1:4}],
+  ['Red carpet','nx_carpetr',18,{fx:10}],['Blue carpet','nx_carpetb',22,{fx:10}],['Dark wood','nx_dwood',28,{pk1:6}],['Elven tile','nx_etile',36,{pk2:4,gm1:1}],['Marble','nx_marble',45,{or3:6}]];
+const HWALL=[['Wooden walls','W',1,{pk0:2}],['Log walls','\u00ce',5,{log:6}],['Plaster walls','\u00cd',12,{pk0:4}],['Brick walls','\u00cc',18,{ore:8}],
+  ['Stone walls','V',24,{or1:8}],['Mossy stone walls','\u00d0',30,{or1:8,sd0:2}],['Castle walls','\u00d2',40,{or2:10}],['Elven marble walls','\u010b',50,{or3:10}]];
+const HGARDEN=[[2,13],[5,14],[7,13],[14,13],[16,14],[19,13]];   // garden spots, from the house's top-left corner
+const hsFurnOf=(kind,code)=>(HFURN[kind]||[]).find(F=>F.ch===code[0]&&(F.v||'')===code.slice(1));
 const HROOMS=[   // spots are [x, y, kind] inside the 6 by 5 room
-  {n:'Parlour',lv:1,cost:{pk0:5},xp:80,spots:[[1,1,'table'],[3,1,'chair'],[5,1,'shelf']],blurb:'A cosy sitting room.'},
-  {n:'Kitchen',lv:6,cost:{pk0:8},xp:120,spots:[[1,1,'range'],[4,1,'table'],[0,3,'shelf']],blurb:'Cook at your own range.'},
-  {n:'Bedroom',lv:12,cost:{pk1:6},xp:200,spots:[[1,1,'bed'],[4,1,'shelf'],[5,3,'chair']],blurb:'A bed heals you fully.'},
-  {n:'Workshop',lv:18,cost:{pk1:8},xp:280,spots:[[1,1,'bench'],[4,1,'anvil']],blurb:'Craft and smith at home.'},
-  {n:'Chapel',lv:30,cost:{pk2:6},xp:400,spots:[[2,1,'altar'],[0,3,'chair'],[5,3,'chair']],blurb:'Pray to restore your faith.'},
-  {n:'Treasury',lv:42,cost:{pk2:8},xp:520,spots:[[2,1,'chest']],blurb:'Your own bank chest.'},
-  {n:'Portal room',lv:54,cost:{pk2:10},xp:700,spots:[[0,1,'portal'],[2,1,'portal'],[5,1,'portal']],blurb:'Portals to places around the world.'}
+  {n:'Parlour',lv:1,cost:{pk0:5},xp:80,spots:[[1,1,'table'],[3,1,'chair'],[5,1,'shelf'],[0,4,'decor'],[5,4,'decor'],[2,2,'rug']],blurb:'A cosy sitting room.'},
+  {n:'Kitchen',lv:6,cost:{pk0:8},xp:120,spots:[[1,1,'range'],[4,1,'table'],[0,3,'shelf'],[0,4,'decor'],[5,4,'decor'],[2,2,'rug']],blurb:'Cook at your own range.'},
+  {n:'Bedroom',lv:12,cost:{pk1:6},xp:200,spots:[[1,1,'bed'],[4,1,'shelf'],[5,3,'chair'],[0,4,'decor'],[5,4,'decor'],[2,2,'rug']],blurb:'A bed heals you fully.'},
+  {n:'Workshop',lv:18,cost:{pk1:8},xp:280,spots:[[1,1,'bench'],[4,1,'anvil'],[0,4,'decor'],[5,4,'decor'],[2,2,'rug']],blurb:'Craft and smith at home.'},
+  {n:'Chapel',lv:30,cost:{pk2:6},xp:400,spots:[[2,1,'altar'],[0,3,'chair'],[5,3,'chair'],[0,4,'decor'],[5,4,'decor'],[2,2,'rug']],blurb:'Pray to restore your faith.'},
+  {n:'Treasury',lv:42,cost:{pk2:8},xp:520,spots:[[2,1,'chest'],[0,4,'decor'],[5,4,'decor'],[2,2,'rug']],blurb:'Your own bank chest.'},
+  {n:'Portal room',lv:54,cost:{pk2:10},xp:700,spots:[[0,1,'portal'],[2,1,'portal'],[5,1,'portal'],[0,4,'decor'],[5,4,'decor'],[2,2,'rug']],blurb:'Portals to places around the world.'}
 ];
 const PLANK=[['log','pk0',5],['lg1','pk1',15],['lg2','pk2',30]];   // log, plank, sawmill fee
 const HAGENT={x:16,y:20};
@@ -368,6 +390,13 @@ function hsFind(x,y){   // which room space (and where inside it) a tile is
   for(let s=0;s<6;s++){const [ox,oy]=hsOrigin(s);if(x>=ox&&x<ox+6&&y>=oy&&y<oy+5)return {s,ix:x-ox,iy:y-oy};}
   return null;
 }
+function hsSpot(x,y){
+  const D=DUNS[houseD()];if(!D)return null;
+  const f=hsFind(x,y);
+  if(f){if(HOUSE.r[f.s]<0)return null;const R=HROOMS[HOUSE.r[f.s]],n=R.spots.findIndex(([a,b])=>a===f.ix&&b===f.iy);return n>=0?{key:f.s+':'+n,kind:R.spots[n][2],where:R.n}:null;}
+  const g=HGARDEN.findIndex(([a,b])=>D.x0+a===x&&D.z0+b===y);
+  return g>=0?{key:'g:'+g,kind:'garden',where:'garden'}:null;
+}
 const hsCost=c=>Object.keys(c).map(k=>c[k]+' '+nm(k)+(c[k]>1&&!/[sx]$/.test(nm(k))?'s':'')).join(', ');
 const hsHas=c=>Object.keys(c).every(k=>cnt(k)>=c[k]);
 const hsTake=c=>Object.keys(c).forEach(k=>takeN(k,c[k]));
@@ -375,31 +404,35 @@ function hsXp(n){const b=cnlvl();cnxp+=n;return cnlvl()>b?' Level up! Constructi
 // sets the house's tiles in the map from what you have built, then redraws it
 let hsLayer=null,hsSpr=[];
 function houseRender(){
-  const di=houseD();if(di<0||!scene)return;const D=DUNS[di];
-  const wall=new Set(),door=new Set(),floor=new Set();
-  HOUSE.r.forEach((rt,s)=>{if(rt<0)return;const [ox,oy]=hsOrigin(s);
-    for(let x=ox-1;x<=ox+6;x++)for(let y=oy-1;y<=oy+5;y++){const k=x+','+y;if(x>=ox&&x<ox+6&&y>=oy&&y<oy+5)floor.add(k);else wall.add(k);}
-    door.add((ox+2)+','+(oy+5));door.add((ox+3)+','+(oy+5));
-    if(oy>D.z0+1){door.add((ox+2)+','+(oy-1));door.add((ox+3)+','+(oy-1));}});
-  door.forEach(k=>{wall.delete(k);floor.add(k);});
+  const di=houseD();if(di<0||!scene)return;const D=DUNS[di],DEC=HOUSE.d||{};
+  const wall=new Map(),door=new Map(),floor=new Map(),over={};
+  HOUSE.r.forEach((rt,s)=>{if(rt<0)return;const [ox,oy]=hsOrigin(s),st=DEC[s]||{},fl=HFLOOR[st.f||0][1],wl=HWALL[st.w||0][1];
+    for(let x=ox-1;x<=ox+6;x++)for(let y=oy-1;y<=oy+5;y++){const k=x+','+y;if(x>=ox&&x<ox+6&&y>=oy&&y<oy+5)floor.set(k,fl);else if(!wall.has(k))wall.set(k,wl);}
+    const dr=[[ox+2,oy+5],[ox+3,oy+5]];if(oy>D.z0+1)dr.push([ox+2,oy-1],[ox+3,oy-1]);
+    dr.forEach(([x,y])=>{const k=x+','+y;if(!door.has(k))door.set(k,fl);});});
+  door.forEach((fl,k)=>{wall.delete(k);floor.set(k,fl);});
   for(let y=D.z0;y<D.z0+HSH;y++)for(let x=D.x0;x<D.x0+HSW;x++){
     const k=x+','+y,i=y*MW+x;
     if(x===D.x0+HSEXIT[0]&&y===D.z0+HSEXIT[1])continue;
-    if(wall.has(k)){grid[y][x]='W';FLOOR[i]='wood';continue;}
-    if(floor.has(k)){grid[y][x]='.';FLOOR[i]='wood';}
+    if(wall.has(k)){grid[y][x]=wall.get(k);FLOOR[i]='wood';continue;}
+    if(floor.has(k)){grid[y][x]='.';FLOOR[i]=floor.get(k);}
     else{grid[y][x]=(x===D.x0||y===D.z0||x===D.x0+HSW-1||y===D.z0+HSH-1)?'Ñ':'.';delete FLOOR[i];}
     const f=hsFind(x,y);
     if(f&&HOUSE.r[f.s]<0&&f.ix===2&&f.iy===2)grid[y][x]='ȸ';   // an empty room space: a sign to build a room
-    if(f&&HOUSE.r[f.s]>=0){const R=HROOMS[HOUSE.r[f.s]];R.spots.forEach(([sx,sy],n)=>{if(sx===f.ix&&sy===f.iy){const fc=HOUSE.f[f.s+':'+n];grid[y][x]=fc?fc[0]:'ȹ';}});}
+    const sp=hsSpot(x,y);
+    if(sp){const code=HOUSE.f[sp.key];
+      if(!code)grid[y][x]='ȹ';
+      else{const F=hsFurnOf(sp.kind,code);if(code[0]==='_'){if(F)over[k]=F.tex;}else{grid[y][x]=code[0];if(F&&F.tex)over[k]=F.tex;}}}
   }
   hsSpr.forEach(o=>o.destroy());hsSpr=[];
-  const add=(x,y,k)=>{if(!scene.textures.exists(k))return;const im=scene.add.image(x*T+T/2,y*T+T/2+OY,k);hsLayer.add(im);hsSpr.push(im);};
+  const add=(x,y,k)=>{if(!k)return;if(scene.textures.exists(k+'_t'))k=k+'_t';if(!scene.textures.exists(k))return;const im=scene.add.image(x*T+T/2,y*T+T/2+OY,k);hsLayer.add(im);hsSpr.push(im);};
   const TX={E:'table',J:'chair',X:'shelf',D:'range',C:'bench',A:'anvil','}':'altar','«':'bankchest','Ⱥ':'bed','Ȼ':'hportal','ȸ':'hsign','ȹ':'hspot'};
   for(let y=D.z0;y<D.z0+HSH;y++)for(let x=D.x0;x<D.x0+HSW;x++){
-    const c=grid[y][x],fl=FLOOR[y*MW+x];
-    add(x,y,fl||'grass');
-    if(WALLT[c])add(x,y,thinWall(scene,x,y,c));
-    else if(TX[c]){const k=TX[c];add(x,y,scene.textures.exists(k+'_t')?k+'_t':k);}
+    const c=grid[y][x],k=x+','+y,fl=FLOOR[y*MW+x];
+    {const im0=scene.textures.exists(fl||'grass')?(fl||'grass'):'wood';const im=scene.add.image(x*T+T/2,y*T+T/2+OY,im0);hsLayer.add(im);hsSpr.push(im);}
+    if(WALLT[c]){const im=scene.add.image(x*T+T/2,y*T+T/2+OY,thinWall(scene,x,y,c));hsLayer.add(im);hsSpr.push(im);}
+    else if(over[k])add(x,y,over[k]);
+    else if(TX[c])add(x,y,TX[c]);
   }
 }
 // ---------- windows: the estate agent, building a room, building furniture ----------
@@ -423,7 +456,7 @@ function hsWin(title,text,buttons){
   buttons.concat([['Close','',false,null,'close']]).forEach(([label,sub,dis,fn,cls])=>{const b=document.createElement('button');b.type='button';if(cls)b.className=cls;b.disabled=!!dis;
     const a=document.createElement('span');a.textContent=label;b.append(a);if(sub){const s2=document.createElement('small');s2.textContent=sub;b.append(s2);}
     b.addEventListener('click',()=>{w.style.display='none';if(fn)fn();});box.append(b);});
-  w.append(box);w.style.display='flex';try{box.querySelector('button:not(:disabled)').focus();}catch(e){}
+  w.append(box);w.style.display='flex';try{box.querySelector('button:not(:disabled)').focus({preventScroll:true});box.scrollTop=0;}catch(e){}
 }
 function agentMenu(){
   const b=[];
@@ -432,7 +465,7 @@ function agentMenu(){
   PLANK.forEach(([lg,pk,fee])=>{const n=cnt(lg),can=Math.min(n,Math.floor(coins/fee));
     b.push(['Make '+nm(pk)+'s from '+nm(lg)+'s',n?can+' of '+n+' ('+fee+' coins each)':fee+' coins each',!can,()=>{let k=0;while(k<can&&cnt(lg)>0&&coins>=fee){takeN(lg,1);addItem(pk,1);coins-=fee;k++;}msg('The sawmill turns '+k+' '+nm(lg)+(k>1?'s':'')+' into '+nm(pk)+'s for '+k*fee+' coins.');ui();}]);});
   hsWin('Estate Agent Wren',['"Looking for a place of your own? A plot is 1,000 coins. I run the sawmill too: bring me logs and I\'ll cut them into planks."',
-    'Build rooms and furniture in your house to train Construction. Furniture needs planks, and some needs metal bars, flax or gems. Your house: '+(HOUSE.own?HOUSE.r.filter(r=>r>=0).length+' of 6 rooms built.':'not bought yet.')],b);
+    'Build rooms and furniture in your house to train Construction. Furniture needs planks, and some needs metal bars, flax or gems. Hold (or right-click) inside a room to decorate it with new floors and walls. Your house: '+(HOUSE.own?HOUSE.r.filter(r=>r>=0).length+' of 6 rooms built.':'not bought yet.')],b);
 }
 function houseEnter(){
   const di=houseD();if(di<0)return;const D=DUNS[di];
@@ -444,16 +477,23 @@ function houseEnter(){
 function roomMenu(s){
   const b=HROOMS.map((R,i)=>[R.n,'Lv '+R.lv+' · '+hsCost(R.cost),cnlvl()<R.lv||!hsHas(R.cost),()=>{
     if(cnlvl()<R.lv){msg('You need Construction '+R.lv+'.');return;}if(!hsHas(R.cost)){msg('You need '+hsCost(R.cost)+'.');return;}
-    hsTake(R.cost);HOUSE.r[s]=i;for(const k in HOUSE.f)if(k.split(':')[0]===String(s))delete HOUSE.f[k];
+    hsTake(R.cost);HOUSE.r[s]=i;for(const k in HOUSE.f)if(k.split(':')[0]===String(s))delete HOUSE.f[k];if(HOUSE.d)delete HOUSE.d[s];
     const l=hsXp(R.xp);houseRender();ui();save();msg('You build a '+R.n.toLowerCase()+'.'+l);}]);
   hsWin('Build a room',['Choose a room for this space. '+'Construction level '+cnlvl()+'.','Rooms are built from planks. Make them at the sawmill (Estate Agent Wren, in the Kingdom of Nero).'],b);
 }
-function furnMenu(s,n){
-  const R=HROOMS[HOUSE.r[s]],kind=R.spots[n][2];
-  const b=HFURN[kind].map(F=>[F.n,'Lv '+F.lv+' · '+hsCost(F.cost),cnlvl()<F.lv||!hsHas(F.cost),()=>{
-    if(cnlvl()<F.lv||!hsHas(F.cost))return;hsTake(F.cost);HOUSE.f[s+':'+n]=F.ch+(F.dest!==undefined?F.dest:'');
-    const l=hsXp(F.xp);houseRender();ui();save();msg('You build the '+F.n.toLowerCase()+'.'+l);}]);
-  hsWin('Build furniture ('+R.n+')','Choose what to build on this spot.',b);
+function furnMenu(key,kind,where){
+  const b=(HFURN[kind]||[]).map(F=>[F.n,'Lv '+F.lv+' · '+hsCost(F.cost),cnlvl()<F.lv||!hsHas(F.cost),()=>{
+    if(cnlvl()<F.lv||!hsHas(F.cost))return;hsTake(F.cost);HOUSE.f[key]=F.ch+(F.v||'');
+    const l=hsXp(F.xp);houseRender();ui();save();msg('You '+(kind==='rug'?'lay down the ':kind==='garden'?'put in the ':'build the ')+F.n.toLowerCase()+'.'+l);}]);
+  hsWin(kind==='garden'?'Garden feature':kind==='rug'?'Lay a rug ('+where.toLowerCase()+')':kind==='decor'?'Decoration ('+where.toLowerCase()+')':'Build furniture ('+where.toLowerCase()+')','Choose what to put on this spot.',b);
+}
+// a new floor or walls for a room
+function decorMenu(s){
+  const R=HROOMS[HOUSE.r[s]];if(!R)return;HOUSE.d=HOUSE.d||{};const cur=HOUSE.d[s]||{};
+  const pick=(list,field,label)=>list.map(([n,_,lv,cost],i)=>[label+n+(i===(cur[field]||0)?' (now)':''),'Lv '+lv+' · '+hsCost(cost),i===(cur[field]||0)||cnlvl()<lv||!hsHas(cost),()=>{
+    if(cnlvl()<lv||!hsHas(cost))return;hsTake(cost);HOUSE.d[s]=Object.assign({f:0,w:0},HOUSE.d[s]||{},{[field]:i});
+    const l=hsXp(Math.round(10+lv*3));houseRender();ui();save();msg('The '+R.n.toLowerCase()+' now has '+n.toLowerCase()+'.'+l);}]);
+  hsWin('Decorate the '+R.n.toLowerCase(),'Pick a floor and walls for this room. Walls shared with a neighbouring room take the style of the room built in the earlier space.',pick(HFLOOR,'f','Floor: ').concat(pick(HWALL,'w','Walls: ')));
 }
 // tapping things in the house
 function houseTap(tx,ty){
@@ -461,9 +501,10 @@ function houseTap(tx,ty){
   const c=grid[ty][tx],f=hsFind(tx,ty);
   const near=fn=>{const path=bfs((x,y)=>Math.max(Math.abs(x-tx),Math.abs(y-ty))===1&&!(x===tx&&y===ty));if(!path){msg("You can't reach that.");return true;}go(path,fn);return true;};
   if(c==='ȸ'&&f)return near(()=>roomMenu(f.s));
-  if(c==='ȹ'&&f){const n=HROOMS[HOUSE.r[f.s]].spots.findIndex(([x,y])=>x===f.ix&&y===f.iy);return near(()=>furnMenu(f.s,n));}
+  if(c==='ȹ'){const sp=hsSpot(tx,ty);if(sp)return near(()=>furnMenu(sp.key,sp.kind,sp.where));}
+  if(c==='ȼ'){const sp=hsSpot(tx,ty),F=sp&&hsFurnOf(sp.kind,HOUSE.f[sp.key]||'');msg(F?'Your '+F.n.toLowerCase()+'. (Hold or right-click to remove it.)':'');return true;}
   if(c==='Ⱥ')return near(()=>{hp=MAXHP;hpUi();ui();msg('You lie down in your comfy bed for a moment. You feel fully rested.');});
-  if(c==='Ȼ'&&f){const n=HROOMS[HOUSE.r[f.s]].spots.findIndex(([x,y])=>x===f.ix&&y===f.iy),code=HOUSE.f[f.s+':'+n]||'',d=HPORT[+code.slice(1)];
+  if(c==='Ȼ'){const sp=hsSpot(tx,ty),code=(sp&&HOUSE.f[sp.key])||'',d=HPORT[+code.slice(1)];
     if(!d)return true;return near(()=>hsTeleport(d));}
   return false;
 }
@@ -476,22 +517,28 @@ function hsTeleport(d){
 // press and hold in the house: remove furniture or a whole room
 function houseOptions(tx,ty){
   if(!inHouse())return [];
-  const f=hsFind(tx,ty),o=[];if(!f||HOUSE.r[f.s]<0)return o;
-  const R=HROOMS[HOUSE.r[f.s]],n=R.spots.findIndex(([x,y])=>x===f.ix&&y===f.iy);
-  if(n>=0&&HOUSE.f[f.s+':'+n]){const code=HOUSE.f[f.s+':'+n],F=HFURN[R.spots[n][2]].find(q=>q.ch===code[0]&&(q.dest===undefined||String(q.dest)===code.slice(1)));
-    o.push(['Remove '+(F?F.n.toLowerCase():'furniture'),()=>{delete HOUSE.f[f.s+':'+n];houseRender();save();msg('You take it apart. (The materials are used up.)');}]);}
-  o.push(['Remove the '+R.n.toLowerCase(),()=>hsWin('Remove the '+R.n.toLowerCase()+'?','The room and its furniture are taken down, and the materials are used up.',[['Yes, remove it','',false,()=>{if(f.s>=0){HOUSE.r[f.s]=-1;for(const k in HOUSE.f)if(k.split(':')[0]===String(f.s))delete HOUSE.f[k];
-      houseRender();save();msg('The '+R.n.toLowerCase()+' is gone.');}}]])]);
+  const o=[],sp=hsSpot(tx,ty);
+  if(sp&&HOUSE.f[sp.key]){const F=hsFurnOf(sp.kind,HOUSE.f[sp.key]);
+    o.push(['Remove '+(F?F.n.toLowerCase():'it'),()=>{delete HOUSE.f[sp.key];houseRender();save();msg('You take it away. (The materials are used up.)');}]);}
+  const f=hsFind(tx,ty);if(!f||HOUSE.r[f.s]<0)return o;
+  const R=HROOMS[HOUSE.r[f.s]];
+  o.push(['Decorate the '+R.n.toLowerCase(),()=>decorMenu(f.s)]);
+  o.push(['Remove the '+R.n.toLowerCase(),()=>hsWin('Remove the '+R.n.toLowerCase()+'?','The room and everything in it is taken down, and the materials are used up.',[['Yes, remove it','',false,()=>{
+      HOUSE.r[f.s]=-1;for(const k in HOUSE.f)if(k.split(':')[0]===String(f.s))delete HOUSE.f[k];if(HOUSE.d)delete HOUSE.d[f.s];houseRender();save();msg('The '+R.n.toLowerCase()+' is gone.');}]])]);
   return o;
 }
 function houseLoad(d){
-  HOUSE={own:0,r:[-1,-1,-1,-1,-1,-1],f:{}};
+  HOUSE={own:0,r:[-1,-1,-1,-1,-1,-1],f:{},d:{}};
   const h=d&&d.house;if(!h||typeof h!=='object')return;
   HOUSE.own=h.own?1:0;
   if(Array.isArray(h.r))for(let s=0;s<6;s++){const v=h.r[s];HOUSE.r[s]=Number.isInteger(v)&&v>=0&&v<HROOMS.length?v:-1;}
-  if(h.f&&typeof h.f==='object')for(const k in h.f){const m=/^([0-5]):(\d)$/.exec(k),code=String(h.f[k]||'');if(!m||HOUSE.r[+m[1]]<0)continue;
-    const sp=HROOMS[HOUSE.r[+m[1]]].spots[+m[2]];if(!sp)continue;
-    if(HFURN[sp[2]].some(F=>F.ch===code[0]&&(F.dest===undefined?code.length===1:String(F.dest)===code.slice(1))))HOUSE.f[k]=code;}
+  if(h.f&&typeof h.f==='object')for(const k in h.f){const code=String(h.f[k]||'');let kind=null;
+    const m=/^([0-5]):(\d)$/.exec(k),g=/^g:(\d)$/.exec(k);
+    if(m){if(HOUSE.r[+m[1]]<0)continue;const sp=HROOMS[HOUSE.r[+m[1]]].spots[+m[2]];if(!sp)continue;kind=sp[2];}
+    else if(g&&+g[1]<HGARDEN.length)kind='garden';
+    if(kind&&code&&hsFurnOf(kind,code))HOUSE.f[k]=code;}
+  if(h.d&&typeof h.d==='object')for(let s=0;s<6;s++){const v=h.d[s];if(!v||HOUSE.r[s]<0)continue;
+    HOUSE.d[s]={f:Number.isInteger(v.f)&&v.f>=0&&v.f<HFLOOR.length?v.f:0,w:Number.isInteger(v.w)&&v.w>=0&&v.w<HWALL.length?v.w:0};}
 }
 // pictures: the room sign, a building spot, the portal, planks and the Construction skill icon
 function houseArt(sc){
@@ -4568,7 +4615,7 @@ function create(){
     }
     if(p.y<OY){
       if(false){   // (Reset save was here; it has been removed)
-        if(resetArm){cnxp=0;HOUSE={own:0,r:[-1,-1,-1,-1,-1,-1],f:{}};frxp=0;cfxp=0;thxp=0;for(const k in farm)delete farm[k];xp=0;fxp=0;mxp=0;cxp=0;sxp=0;fmxp=0;ckxp=0;dxp=0;hxp=0;akxp=0;fkxp=0;ammo.t=-1;ammo.n=0;coins=0;quest=0;fq=0;bq=0;nq={f:0,m:0,g:0,k:0,t:0,s:0};axe=0;net=-1;pik=-1;gear.hd=gear.bd=gear.hn=gear.ft=gear.wp=gear.sh=gear.bw=gear.bk=gear.cp=gear.nk=gear.rg=-1;mgxp=0;pxp=0;pp=-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];inv.length=0;for(const k in stk)delete stk[k];inv.push('net0','pik0','kn0');for(const k in bank)delete bank[k];resetArm=false;stopChop();ui();msg('Progress erased.');}
+        if(resetArm){cnxp=0;HOUSE={own:0,r:[-1,-1,-1,-1,-1,-1],f:{},d:{}};frxp=0;cfxp=0;thxp=0;for(const k in farm)delete farm[k];xp=0;fxp=0;mxp=0;cxp=0;sxp=0;fmxp=0;ckxp=0;dxp=0;hxp=0;akxp=0;fkxp=0;ammo.t=-1;ammo.n=0;coins=0;quest=0;fq=0;bq=0;nq={f:0,m:0,g:0,k:0,t:0,s:0};axe=0;net=-1;pik=-1;gear.hd=gear.bd=gear.hn=gear.ft=gear.wp=gear.sh=gear.bw=gear.bk=gear.cp=gear.nk=gear.rg=-1;mgxp=0;pxp=0;pp=-1;for(const k in prayOn)delete prayOn[k];for(const k in chg)delete chg[k];inv.length=0;for(const k in stk)delete stk[k];inv.push('net0','pik0','kn0');for(const k in bank)delete bank[k];resetArm=false;stopChop();ui();msg('Progress erased.');}
         else{resetArm=true;msg('Tap Reset again to erase your progress.');scene.time.delayedCall(4000,()=>{resetArm=false;});}
       }else if(p.x>W*T-110){
         // log out: save, stop what you were doing, and go back to the start screen
@@ -4692,7 +4739,8 @@ function openGuide(k,tab){
   if(k===17){
     L.push('Buy a house plot from Estate Agent Wren in the Kingdom of Nero (1,000 coins). Her sawmill turns logs into planks. In your house, tap a sign to build a room, then tap a glowing spot to build furniture. Hold (or right-click) furniture or a room to remove it.');
     HROOMS.forEach(R=>L.push('Lv '+R.lv+'  '+R.n+' ('+hsCost(R.cost)+')\n   '+R.xp+' xp. '+R.blurb));
-    const seen=new Set();Object.keys(HFURN).forEach(k=>HFURN[k].forEach(F=>{const key=F.dest!==undefined?'portal':F.n;if(seen.has(key))return;seen.add(key);L.push('Lv '+F.lv+'  '+(F.dest!==undefined?'Portal (to a place of your choice)':F.n)+' ('+hsCost(F.cost)+')\n   '+F.xp+' xp');}));
+    const seen=new Set();L.push('Decorations: hold (or right-click) in a room to give it a new floor and walls. Every room also has spots for decorations and a rug, and your garden has spots for flowers, statues, trees and more: '+HDEC.length+' cosmetic things to build in all, plus '+HFLOOR.length+' floors and '+HWALL.length+' wall styles.');
+    Object.keys(HFURN).filter(k=>!['decor','rug','garden'].includes(k)).forEach(k=>HFURN[k].forEach(F=>{const key=F.dest!==undefined?'portal':F.n;if(seen.has(key))return;seen.add(key);L.push('Lv '+F.lv+'  '+(F.dest!==undefined?'Portal (to a place of your choice)':F.n)+' ('+hsCost(F.cost)+')\n   '+F.xp+' xp');}));
   }
   if(k===16){
     L.push('Steal for coins and loot. Right-click (or press and hold) a person, a market stall or a pile of stolen loot to try.');
