@@ -2,6 +2,7 @@
 // - serves the game (index.html)
 // - accounts: sign up / log in, passwords stored as salted scrypt hashes
 // - saves: each account's progress kept in a Postgres database (DATABASE_URL), or a local file when testing
+// - admin page (/admin): look up players and reset forgotten passwords, using the ADMIN_KEY you set on Render
 // - online play: everyone's "presence" (where they are, what they wear, trades, duels, monsters...) is shared
 //   between players over a WebSocket, the same way the game shares it when it runs inside Claude
 'use strict';
@@ -15,6 +16,9 @@ const SECRET=process.env.SESSION_SECRET||(process.env.DATABASE_URL?crypto.create
 if(!SECRET)console.warn('Note: no database is set, so log-ins reset whenever the server restarts.');
 const KEY=SECRET||crypto.randomBytes(32).toString('hex');
 const GAME=path.join(__dirname,'index.html');
+// The admin page's password: set ADMIN_KEY in Render > Environment. Without it the admin page is switched off.
+const ADMIN_KEY=String(process.env.ADMIN_KEY||'');
+if(ADMIN_KEY&&ADMIN_KEY.length<12)console.warn('Note: ADMIN_KEY is short. Use at least 12 characters so nobody can guess it.');
 
 // ---------- storage: Postgres when DATABASE_URL is set, otherwise a JSON file (for testing on your computer)
 let db;
@@ -24,10 +28,13 @@ async function openStore(){
     const url=process.env.DATABASE_URL,local=/localhost|127\.0\.0\.1/.test(url);
     const pool=new Pool({connectionString:url,ssl:local||process.env.PGSSL==='disable'?false:{rejectUnauthorized:false},max:5});
     await pool.query(`CREATE TABLE IF NOT EXISTS accounts(username TEXT PRIMARY KEY, display TEXT NOT NULL, hash TEXT NOT NULL, salt TEXT NOT NULL, created TIMESTAMPTZ DEFAULT now());
-      CREATE TABLE IF NOT EXISTS saves(username TEXT PRIMARY KEY REFERENCES accounts(username) ON DELETE CASCADE, data JSONB, updated TIMESTAMPTZ DEFAULT now());`);
+      CREATE TABLE IF NOT EXISTS saves(username TEXT PRIMARY KEY REFERENCES accounts(username) ON DELETE CASCADE, data JSONB, updated TIMESTAMPTZ DEFAULT now());
+      ALTER TABLE accounts ADD COLUMN IF NOT EXISTS reset_at BIGINT DEFAULT 0;`);
     console.log('Using the Postgres database for accounts and saves.');
     return {
-      async getAccount(u){const r=await pool.query('SELECT username,display,hash,salt FROM accounts WHERE username=$1',[u]);return r.rows[0]||null;},
+      async getAccount(u){const r=await pool.query('SELECT username,display,hash,salt,reset_at,created FROM accounts WHERE username=$1',[u]);const a=r.rows[0];if(a)a.reset_at=+a.reset_at||0;return a||null;},
+      async setPassword(u,hash,salt){await pool.query('UPDATE accounts SET hash=$2,salt=$3,reset_at=$4 WHERE username=$1',[u,hash,salt,Date.now()]);},
+      async listAccounts(q){const r=await pool.query("SELECT a.username,a.display,a.created,s.updated FROM accounts a LEFT JOIN saves s ON s.username=a.username WHERE a.username LIKE $1 ORDER BY COALESCE(s.updated,a.created) DESC LIMIT 200",['%'+q.replace(/[%_\\]/g,'\\$&')+'%']);const n=await pool.query('SELECT count(*)::int AS n FROM accounts');return {total:n.rows[0].n,rows:r.rows};},
       async addAccount(a){await pool.query('INSERT INTO accounts(username,display,hash,salt) VALUES($1,$2,$3,$4)',[a.username,a.display,a.hash,a.salt]);},
       async getSave(u){const r=await pool.query('SELECT data FROM saves WHERE username=$1',[u]);return r.rows[0]?r.rows[0].data:null;},
       async putSave(u,d){await pool.query('INSERT INTO saves(username,data,updated) VALUES($1,$2,now()) ON CONFLICT(username) DO UPDATE SET data=EXCLUDED.data, updated=now()',[u,d]);}
@@ -43,9 +50,11 @@ async function openStore(){
   console.warn('No DATABASE_URL: saving to data.json (fine for testing; on Render this file is wiped on every restart).');
   return {
     async getAccount(u){return mem.accounts[u]||null;},
-    async addAccount(a){mem.accounts[a.username]=a;flush();},
+    async addAccount(a){mem.accounts[a.username]=Object.assign({created:new Date().toISOString()},a);flush();},
+    async setPassword(u,hash,salt){const a=mem.accounts[u];if(a){a.hash=hash;a.salt=salt;a.reset_at=Date.now();flush();}},
+    async listAccounts(q){const rows=Object.values(mem.accounts).filter(a=>a.username.includes(q)).map(a=>({username:a.username,display:a.display,created:a.created||null,updated:mem.savedAt&&mem.savedAt[a.username]||null}));return {total:Object.keys(mem.accounts).length,rows:rows.slice(0,200)};},
     async getSave(u){return mem.saves[u]||null;},
-    async putSave(u,d){mem.saves[u]=d;flush();}
+    async putSave(u,d){mem.saves[u]=d;(mem.savedAt=mem.savedAt||{})[u]=new Date().toISOString();flush();}
   };
 }
 
@@ -60,6 +69,13 @@ function readToken(t){
   const good=sign(body);if(good.length!==sig.length||!crypto.timingSafeEqual(Buffer.from(good),Buffer.from(sig)))return null;
   const [u,exp]=Buffer.from(body,'base64url').toString().split('|');
   return +exp>Date.now()?u:null;
+}
+const tokenMade=t=>{try{return +Buffer.from(String(t).split('.')[0],'base64url').toString().split('|')[1]-DAYS30;}catch(e){return 0;}};
+// a log-in only counts if it was made after the account's last password reset
+async function liveUser(t){
+  const u=readToken(t);if(!u)return null;
+  const a=await db.getAccount(u);if(!a)return null;
+  return tokenMade(t)>(a.reset_at||0)?u:null;
 }
 const userKey=n=>String(n||'').trim().toLowerCase();
 const goodName=n=>/^[A-Za-z0-9_ ]{3,14}$/.test(n)&&n.trim()===n&&!/  /.test(n);
@@ -136,12 +152,14 @@ function checkSave(u,prevStr,nextStr){
 // ---------- web server
 function send(res,code,obj){res.writeHead(code,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(obj));}
 function body(req,limit){return new Promise((res,rej)=>{let n=0;const parts=[];req.on('data',c=>{n+=c.length;if(n>limit){rej(new Error('too big'));req.destroy();}else parts.push(c);});req.on('end',()=>{try{res(JSON.parse(Buffer.concat(parts).toString()||'{}'));}catch(e){rej(e);}});req.on('error',rej);});}
-const authUser=(req,b)=>{const h=req.headers.authorization||'';return readToken(h.startsWith('Bearer ')?h.slice(7):(b&&b.token));};
+const authUser=(req,b)=>{const h=req.headers.authorization||'';return liveUser(h.startsWith('Bearer ')?h.slice(7):(b&&b.token));};
 const cleanSave=d=>{   // what a save may hold: the progress and the character, each as text
   if(!d||typeof d!=='object')return null;
   const s=typeof d.save==='string'&&d.save.length<400000?d.save:null,c=typeof d.char==='string'&&d.char.length<4000?d.char:null;
   return s||c?{save:s,char:c}:null;
 };
+// ---------- the admin page (open /admin and type your ADMIN_KEY)
+const ADMIN_PAGE="<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"robots\" content=\"noindex\">\n<title>Oakheart Admin</title>\n<style>\n:root{--bg:#16181d;--panel:#22252d;--line:#3a3f4b;--gold:#c9982a;--gold2:#ffe066;--text:#f1e9c8;--dim:#9a927a;--ok:#8dff7a;--bad:#ff8a7a}\n*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px ui-monospace,Menlo,Consolas,monospace}\nmain{max-width:760px;margin:0 auto;padding:20px 16px 60px}\nh1{color:var(--gold2);font-size:22px;margin:0 0 4px;letter-spacing:1px}h2{font-size:16px;color:var(--gold2);margin:0 0 12px}\n.sub{color:var(--dim);margin:0 0 20px;font-size:13px}\n.box{background:var(--panel);border:1px solid var(--gold);border-radius:8px;padding:16px;margin-bottom:16px}\nlabel{display:block;font-size:13px;color:var(--dim);margin:0 0 4px}\ninput{width:100%;font:inherit;color:var(--text);background:#14161b;border:1px solid var(--line);border-radius:6px;padding:9px 10px;margin-bottom:10px}\ninput:focus{outline:none;border-color:var(--gold2)}\nbutton{font:inherit;color:#1a1408;background:var(--gold);border:0;border-radius:6px;padding:9px 14px;cursor:pointer;font-weight:bold}\nbutton:hover{background:var(--gold2)}button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:normal}\nbutton.ghost:hover{border-color:var(--gold2);background:transparent}\n.row{display:flex;gap:8px;align-items:flex-start}.row input{flex:1}\n.msg{min-height:20px;font-size:14px;margin-top:4px}.ok{color:var(--ok)}.bad{color:var(--bad)}\ntable{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}\nth{color:var(--dim);font-weight:normal}tr.p{cursor:pointer}tr.p:hover td{background:#2c3039}\n.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px}\n.stats{color:var(--dim);font-size:13px;margin-bottom:10px}.hidden{display:none}\n.new{font-size:18px;color:var(--gold2);background:#14161b;border:1px dashed var(--gold);border-radius:6px;padding:10px;margin-top:8px;word-break:break-all}\n@media(max-width:560px){.hide-sm{display:none}}\n</style></head><body><main>\n<h1>OAKHEART ADMIN</h1><p class=\"sub\">Look up players and reset forgotten passwords. Only you should know the admin key.</p>\n<section class=\"box\" id=\"login\"><h2>Sign in</h2>\n <label for=\"key\">Admin key</label>\n <div class=\"row\"><input id=\"key\" type=\"password\" autocomplete=\"current-password\"><button id=\"go\">Open</button></div>\n <div class=\"msg\" id=\"lmsg\"></div></section>\n<div id=\"app\" class=\"hidden\">\n<section class=\"box\"><h2>Reset a password</h2>\n <label for=\"who\">Username</label><input id=\"who\" autocomplete=\"off\" spellcheck=\"false\">\n <label for=\"pw\">New password</label>\n <div class=\"row\"><input id=\"pw\" autocomplete=\"new-password\" spellcheck=\"false\"><button class=\"ghost\" id=\"gen\" type=\"button\">Make one</button></div>\n <button id=\"reset\">Reset password</button>\n <div class=\"msg\" id=\"rmsg\"></div><div class=\"new hidden\" id=\"newpw\"></div></section>\n<section class=\"box\"><h2>Players</h2>\n <div class=\"row\"><input id=\"q\" placeholder=\"Search by name\" spellcheck=\"false\"><button class=\"ghost\" id=\"lock\" type=\"button\">Lock</button></div>\n <div class=\"stats\" id=\"stats\"></div>\n <table><thead><tr><th>Name</th><th>Last played</th><th class=\"hide-sm\">Joined</th></tr></thead><tbody id=\"list\"></tbody></table></section>\n</div>\n<script>\nlet KEY='';try{KEY=sessionStorage.getItem('oakAdmin')||'';}catch(e){}\nconst $=id=>document.getElementById(id);\nasync function api(path,data){const r=await fetch('/api/admin/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({key:KEY},data))});let j={};try{j=await r.json();}catch(e){}if(!r.ok)throw new Error(j.error||'Something went wrong.');return j;}\nconst when=t=>{if(!t)return 'never';const d=new Date(t),s=(Date.now()-d)/1000;if(s<90)return 'just now';if(s<3600)return Math.round(s/60)+' min ago';if(s<86400)return Math.round(s/3600)+' h ago';if(s<86400*30)return Math.round(s/86400)+' days ago';return d.toLocaleDateString();};\nfunction say(el,t,ok){el.textContent=t;el.className='msg '+(ok?'ok':'bad');}\nasync function load(){\n  const j=await api('players',{q:$('q').value});\n  $('stats').textContent=j.total+' accounts, '+j.online+' online now'+(j.players.length<j.total?' (showing '+j.players.length+')':'');\n  const tb=$('list');tb.textContent='';\n  j.players.forEach(p=>{const tr=document.createElement('tr');tr.className='p';tr.title='Tap to fill in the reset form';\n    const a=document.createElement('td');if(p.online){const d=document.createElement('span');d.className='dot';d.title='Online';a.append(d);}a.append(p.name);\n    const b=document.createElement('td');b.textContent=when(p.played);const c=document.createElement('td');c.className='hide-sm';c.textContent=when(p.created);\n    tr.append(a,b,c);tr.onclick=()=>{$('who').value=p.name;$('pw').focus();window.scrollTo({top:0,behavior:'smooth'});};tb.append(tr);});\n  if(!j.players.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=3;td.textContent='No players found.';tr.append(td);tb.append(tr);}\n}\nasync function open(){try{await load();$('login').classList.add('hidden');$('app').classList.remove('hidden');try{sessionStorage.setItem('oakAdmin',KEY);}catch(e){}}catch(e){say($('lmsg'),e.message,false);KEY='';try{sessionStorage.removeItem('oakAdmin');}catch(_){}}}\n$('go').onclick=()=>{KEY=$('key').value;open();};$('key').onkeydown=e=>{if(e.key==='Enter'){KEY=$('key').value;open();}};\n$('lock').onclick=()=>{KEY='';try{sessionStorage.removeItem('oakAdmin');}catch(e){}location.reload();};\nlet qt;$('q').oninput=()=>{clearTimeout(qt);qt=setTimeout(()=>load().catch(e=>say($('rmsg'),e.message,false)),250);};\n$('gen').onclick=()=>{const w='abcdefghjkmnpqrstuvwxyz23456789',a=new Uint32Array(10);crypto.getRandomValues(a);let s='';a.forEach((v,i)=>{s+=w[v%w.length];if(i===4)s+='-';});$('pw').value=s;};\n$('reset').onclick=async()=>{\n  const u=$('who').value.trim(),pw=$('pw').value;$('newpw').classList.add('hidden');\n  if(!u)return say($('rmsg'),'Type a username.',false);if(pw.length<6)return say($('rmsg'),'The new password needs at least 6 characters.',false);\n  if(!confirm('Reset the password for '+u+'? They will be logged out everywhere.'))return;\n  try{const j=await api('reset',{username:u,password:pw});\n    say($('rmsg'),'Done. '+j.name+\"'s password is now:\"+(j.kicked?' (they were online and have been logged out)':''),true);\n    $('newpw').textContent=pw;$('newpw').classList.remove('hidden');$('pw').value='';load().catch(()=>{});\n  }catch(e){say($('rmsg'),e.message,false);}\n};\nif(KEY)open();\n</script></main></body></html>\n";
 let page=null;
 function gamePage(){
   if(!page){const html=fs.readFileSync(GAME,'utf8');page=html.replace('<head>','<head><script>window.OAK_SERVER=1</script>');}
@@ -152,6 +170,33 @@ const server=http.createServer(async(req,res)=>{
   try{
     if(req.method==='GET'&&(url.pathname==='/'||url.pathname==='/index.html')){
       res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-cache'});return res.end(gamePage());
+    }
+    if(req.method==='GET'&&(url.pathname==='/admin'||url.pathname==='/admin/')){
+      res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex','X-Frame-Options':'DENY'});return res.end(ADMIN_PAGE);
+    }
+    if(req.method==='POST'&&url.pathname.startsWith('/api/admin/')){
+      if(!ADMIN_KEY)return send(res,503,{error:'The admin page is off. Add ADMIN_KEY in Render > Environment, then deploy again.'});
+      if(tooMany('admin|'+ip))return send(res,429,{error:'Too many tries. Wait a minute and try again.'});
+      const b=await body(req,10000),k=String(b.key||'');
+      const ka=crypto.createHash('sha256').update(k).digest(),kb=crypto.createHash('sha256').update(ADMIN_KEY).digest();
+      if(!crypto.timingSafeEqual(ka,kb)){console.log('Wrong admin key from '+ip);return send(res,401,{error:'Wrong admin key.'});}
+      tries.delete('admin|'+ip);   // the right key: no waiting
+      if(url.pathname==='/api/admin/players'){
+        const r=await db.listAccounts(userKey(b.q).slice(0,20));
+        const on=new Set([...peers.values()].map(p=>p.user));
+        return send(res,200,{total:r.total,online:on.size,players:r.rows.map(a=>({username:a.username,name:a.display,created:a.created,played:a.updated,online:on.has(a.username)}))});
+      }
+      if(url.pathname==='/api/admin/reset'){
+        const u=userKey(b.username),pw=String(b.password||'');
+        const a=await db.getAccount(u);if(!a)return send(res,404,{error:'No player called "'+String(b.username||'').slice(0,20)+'".'});
+        if(pw.length<6||pw.length>100)return send(res,400,{error:'The new password needs at least 6 characters.'});
+        const salt=crypto.randomBytes(16).toString('hex');
+        await db.setPassword(u,await scrypt(pw,salt),salt);
+        let kicked=0;peers.forEach(p=>{if(p.user===u){out(p.ws,{t:'bye',why:'Your password was changed. Please log in again.'});p.ws.close();kicked++;}});
+        console.log('Admin reset the password for '+u+' (from '+ip+')');
+        return send(res,200,{ok:true,name:a.display,kicked});
+      }
+      return send(res,404,{error:'Not found'});
     }
     if(req.method==='GET'&&url.pathname==='/health')return send(res,200,{ok:true,players:peers.size});
     if(req.method==='POST'&&(url.pathname==='/api/register'||url.pathname==='/api/login')){
@@ -171,12 +216,12 @@ const server=http.createServer(async(req,res)=>{
       return send(res,200,{token:makeToken(u),username:a.display,save:await db.getSave(u)});
     }
     if(req.method==='GET'&&url.pathname==='/api/me'){
-      const u=authUser(req);if(!u)return send(res,401,{error:'Please log in again.'});
+      const u=await authUser(req);if(!u)return send(res,401,{error:'Please log in again.'});
       const a=await db.getAccount(u);if(!a)return send(res,401,{error:'Please log in again.'});
       return send(res,200,{username:a.display});
     }
     if(req.method==='POST'&&url.pathname==='/api/save'){
-      const b=await body(req,450000),u=authUser(req,b);if(!u)return send(res,401,{error:'Please log in again.'});
+      const b=await body(req,450000),u=await authUser(req,b);if(!u)return send(res,401,{error:'Please log in again.'});
       const next=cleanSave(b),prev=await db.getSave(u);
       if(!next&&!b.reset)return send(res,200,{ok:true,ignored:true});   // an empty save only counts when the player chose New character
       const why=next&&next.save?checkSave(u,prev&&prev.save,next.save):null;
@@ -192,9 +237,11 @@ const peers=new Map();   // peer id -> {ws, user, presence}
 const wss=new WebSocketServer({server,path:'/ws',maxPayload:64*1024});
 const out=(ws,m)=>{if(ws.readyState===1)ws.send(JSON.stringify(m));};
 const all=(m,except)=>{const s=JSON.stringify(m);peers.forEach((p,id)=>{if(id!==except&&p.ws.readyState===1)p.ws.send(s);});};
-wss.on('connection',(ws,req)=>{
-  const u=readToken(new URL(req.url,'http://x').searchParams.get('t'));
+wss.on('connection',async(ws,req)=>{
+  const early=[];ws.on('message',r=>early.push(r));   // hold messages until the log-in is checked
+  let u=null;try{u=await liveUser(new URL(req.url,'http://x').searchParams.get('t'));}catch(e){}
   if(!u){out(ws,{t:'bye',why:'Please log in again.'});return ws.close();}
+  ws.removeAllListeners('message');
   peers.forEach((p,id)=>{if(p.user===u){out(p.ws,{t:'bye',why:'You logged in somewhere else.'});p.ws.close();}});   // one game per account
   const id=crypto.randomBytes(6).toString('hex');
   const me={ws,user:u,presence:{},alive:true};
@@ -211,6 +258,7 @@ wss.on('connection',(ws,req)=>{
     all({t:joined?'j':'u',peer:id,presence:next},id);
   });
   ws.on('close',()=>{if(peers.get(id)===me){peers.delete(id);all({t:'l',peer:id});}});
+  early.forEach(r=>ws.emit('message',r));
 });
 // A trade both sides confirmed, a duel stake set aside, a duel won: the server sees these pass by and lets the
 // matching coins and items show up in the next save.
