@@ -2866,7 +2866,7 @@ function shopRefresh(){
   });
   if(shBar){const n=L.length,tk=SHVIS*SHROW-4,th=Math.max(14,tk*Math.min(1,SHVIS/Math.max(1,n)));shBar.setSize(5,th).setPosition(SW0-11,SHY0+(n>SHVIS?(tk-th)*shOff/(n-SHVIS):0)).setVisible(n>SHVIS);if(shTrack)shTrack.setVisible(n>SHVIS);}
 }
-const SW0=360;
+let SW0=360;   // the shop's real width, set when the shop is built
 function shopBuy(i){
   const e=curShop.sell[i];if(!e)return;
   const [id,pr]=e;
@@ -4475,7 +4475,7 @@ function create(){
   }
 
   // Shop panel: opens when you tap the shopkeeper
-  let SY=panelTop();const SX=10,SW=Math.max(240,Math.min(360,W*T-PW-6-SX-6)),SH=476,small={...font,fontSize:'14px'};
+  let SY=panelTop();const SX=10,SW=Math.max(240,Math.min(360,W*T-PW-6-SX-6)),SH=476,small={...font,fontSize:'14px'};SW0=SW;
   shop=this.add.container(SX,SY).setDepth(950).setVisible(false);
   shop.add(this.add.rectangle(0,0,SW,SH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
   shTitle=this.add.text(12,10,'Shop',small).setResolution(2);shop.add(shTitle);
@@ -5218,7 +5218,7 @@ function create(){
       const xh=(ox,oy,w)=>p.x>=ox+w-32&&p.x<=ox+w&&p.y>=oy&&p.y<=oy+30;
       if(ftp.visible&&xh(CX,CY,FTWd)){ftp.setVisible(false);ui();return;}
       if(smc.visible&&xh(CX,CY,CRW)){smc.setVisible(false);ui();return;}
-      if(bk.visible&&xh(CX,CY,CW)){bk.setVisible(false);ui();return;}
+      if(bk.visible&&xh(CX,CY,BKW)){bk.setVisible(false);ui();return;}
       if(gd.visible&&xh(CX,CY,GDW)){gd.setVisible(false);sk.setVisible(true);ui();return;}
       if(chr.visible&&xh(CX,CY+CH-34,GCW)){chr.setVisible(false);ui();return;}
       if(sk.visible&&xh(CX,CY,SKW)){sk.setVisible(false);ui();return;}
