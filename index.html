@@ -2385,14 +2385,15 @@ function depositAll(){
   ui();
 }
 function openBankChest(){dlg.setVisible(false);[ftp,chr,sk,cr,shop,smc].forEach(o=>o.setVisible(false));bk.setVisible(true);bag.setVisible(true);ui();msg('You open the bank chest. Your items are safe inside.');}
+let BKC=7,BKP=41,BKZ=39,BKW=360,BKB=406;   // the bank's columns, slot pitch, slot size, width and button row (narrow screens use 6 smaller columns)
 function bankClick(lx,ly){
-  if(ly>=406&&ly<=436){
+  if(ly>=BKB&&ly<=BKB+30){
     if(lx>=12&&lx<=120)depositAll();
-    else if(lx>=132&&lx<=228){bkMode=(bkMode+1)%3;ui();}
+    else if(lx>=126&&lx<=222){bkMode=(bkMode+1)%3;ui();}
     return;
   }
-  const c=Math.floor((lx-12)/41),r=Math.floor((ly-30)/41),ids=Object.keys(bank),i=r*7+c;
-  if(c>=0&&c<7&&r>=0&&r<9&&(lx-12)%41<=39&&(ly-30)%41<=39&&i<ids.length){if(ids[i]==='coin')withdrawCoins(bank.coin);else withdraw(ids[i]);}
+  const c=Math.floor((lx-12)/BKP),r=Math.floor((ly-30)/BKP),ids=Object.keys(bank),i=r*BKC+c;
+  if(c>=0&&c<BKC&&r>=0&&r<Math.ceil(63/BKC)&&(lx-12)%BKP<=BKZ&&(ly-30)%BKP<=BKZ&&i<ids.length){if(ids[i]==='coin')withdrawCoins(bank.coin);else withdraw(ids[i]);}
 }
 
 // Smithing: smelt ore into bars at the furnace, then forge bars into gear at the anvil
@@ -4474,17 +4475,17 @@ function create(){
   }
 
   // Shop panel: opens when you tap the shopkeeper
-  let SY=panelTop();const SX=10,SW=360,SH=476,small={...font,fontSize:'14px'};
+  let SY=panelTop();const SX=10,SW=Math.max(240,Math.min(360,W*T-PW-6-SX-6)),SH=476,small={...font,fontSize:'14px'};
   shop=this.add.container(SX,SY).setDepth(950).setVisible(false);
   shop.add(this.add.rectangle(0,0,SW,SH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
   shTitle=this.add.text(12,10,'Shop',small).setResolution(2);shop.add(shTitle);
   shTabs=[];
-  shop.add(this.add.text(12,36,'Right-click an item here to examine it. To sell: right-click an item in your bag.',{...small,fontSize:'11px',color:'#c9b27a',wordWrap:{width:336}}).setResolution(2));
+  shop.add(this.add.text(12,36,SW<330?'Right-click to examine. To sell, right-click a bag item.':'Right-click an item here to examine it. To sell: right-click an item in your bag.',{...small,fontSize:'11px',color:'#c9b27a',wordWrap:{width:SW-24}}).setResolution(2));
   for(let i=0;i<SHVIS;i++){
     const by=SHY0+i*SHROW;
     const bg=this.add.rectangle(12,by,SW-34,40,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a);
     const ic=this.add.image(31,by+20,'log');
-    const t=this.add.text(52,by+3,'',{...small,fontSize:'13px'}).setResolution(2);
+    const t=this.add.text(52,by+3,'',{...small,fontSize:SW<330?'12px':'13px',wordWrap:{width:SW-90}}).setResolution(2);
     shop.add([bg,ic,t]);shRows.push({bg,ic,t});
   }
   shTrack=this.add.rectangle(SW-11,SHY0,5,SHVIS*SHROW-4,0x3b3024).setOrigin(0);shop.add(shTrack);
@@ -4629,22 +4630,23 @@ function create(){
   smUp=this.add.text(CRW-84,6,'\u25B2',{...small,color:'#ffe066'}).setResolution(2);smDn=this.add.text(CRW-58,6,'\u25BC',{...small,color:'#ffe066'}).setResolution(2);
   smc.add([smUp,smDn]);
   const BKH=476;
+  {const narrow=CX+CW+6>W*T-PW-6;BKC=narrow?6:7;BKP=narrow?35:41;BKZ=narrow?33:39;BKW=narrow?12*2+6*35:CW;BKB=narrow?30+11*35:406;}   // see bankClick
   bk=this.add.container(CX,CY).setDepth(950).setVisible(false);
-  bk.add(this.add.rectangle(0,0,CW,BKH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
+  bk.add(this.add.rectangle(0,0,BKW,BKH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
   bk.add(this.add.text(12,8,'Bank',small).setResolution(2));
   for(let i=0;i<63;i++){
-    const sx=12+(i%7)*41,sy=30+Math.floor(i/7)*41;
-    const ic=this.add.image(sx+19,sy+19,'log').setVisible(false);
-    const nt=this.add.text(sx+37,sy+37,'',{...small,fontSize:'13px',stroke:'#000000',strokeThickness:3}).setOrigin(1,1).setResolution(2).setVisible(false);
-    bk.add([this.add.rectangle(sx,sy,39,39,0x3b3024).setOrigin(0),ic,nt]);
+    const sx=12+(i%BKC)*BKP,sy=30+Math.floor(i/BKC)*BKP,hz=BKZ/2;
+    const ic=this.add.image(sx+hz,sy+hz,'log').setVisible(false).setScale(BKZ<39?0.9:1);
+    const nt=this.add.text(sx+BKZ-2,sy+BKZ-2,'',{...small,fontSize:BKZ<39?'11px':'13px',stroke:'#000000',strokeThickness:3}).setOrigin(1,1).setResolution(2).setVisible(false);
+    bk.add([this.add.rectangle(sx,sy,BKZ,BKZ,0x3b3024).setOrigin(0),ic,nt]);
     bkSlots.push({ic,tx:nt});
   }
-  bk.add(this.add.rectangle(12,406,108,30,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
-  bk.add(this.add.text(66,421,'Deposit all',small).setOrigin(0.5).setResolution(2));
-  bk.add(this.add.rectangle(132,406,96,30,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
-  bkBtn=this.add.text(180,421,'',small).setOrigin(0.5).setResolution(2);
+  bk.add(this.add.rectangle(12,BKB,108,28,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
+  bk.add(this.add.text(66,BKB+14,'Deposit all',small).setOrigin(0.5).setResolution(2));
+  bk.add(this.add.rectangle(126,BKB,96,28,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
+  bkBtn=this.add.text(174,BKB+14,'',small).setOrigin(0.5).setResolution(2);
   bk.add(bkBtn);
-  bk.add(this.add.text(12,442,'Tap a bank item to take it out.\nTap a bag item to put it in.',{...small,fontSize:'12px'}).setResolution(2));
+  bk.add(this.add.text(12,BKB+(BKW<300?31:36),'Tap a bank item to take it out.\nTap a bag item to put it in.',{...small,fontSize:BKW<300?'11px':'12px',lineSpacing:BKW<300?0:2}).setResolution(2));
 
   const FTW=CRW,FTH=58+5*FTP+34;
   ftp=this.add.container(CX,CY).setDepth(950).setVisible(false);
@@ -4760,7 +4762,7 @@ function create(){
   const miniCovered=p=>(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY&&p.y<=CY+SPH);
   const inMini=p=>miniImg.visible&&!miniCovered(p)&&p.x>=MMX-2&&p.x<=MMX-2+MMPX&&p.y>=MMY-2&&p.y<=MMY-2+MMPY;
   // every window gets a red X in its top-right corner; windows no longer close when you tap outside them
-  [[wm,WMW],[sk,SKW],[qp,QW],[bookW,OBW],[gd,GDW],[cr,CRW],[smc,CRW],[bk,CW],[ftp,FTW],[shop,SW],[dlg,DW]].forEach(([c,w])=>{
+  [[wm,WMW],[sk,SKW],[qp,QW],[bookW,OBW],[gd,GDW],[cr,CRW],[smc,CRW],[bk,BKW],[ftp,FTW],[shop,SW],[dlg,DW]].forEach(([c,w])=>{
     c.add(this.add.rectangle(w-30,4,26,22,0x7a2a1a).setOrigin(0).setStrokeStyle(1,0xe0b070));
     c.add(this.add.text(w-17,15,'X',{...small,fontSize:'15px',color:'#ffffff',fontStyle:'bold'}).setOrigin(0.5).setResolution(2));
   });
@@ -4875,15 +4877,15 @@ function create(){
   // ---------- XP drops and the progress tracker ----------
   // Every XP gain floats up beside the minimap; a small tracker under the region name shows the skill you trained last and how far it is to the next level.
   {
-    const ff='ui-monospace, Menlo, Consolas, monospace',TW=184,TH=48;
+    const ff='ui-monospace, Menlo, Consolas, monospace',TW=140,TH=34;
     const NAMES=['Woodcutting','Fishing','Mining','Attack','Archery','Defense','Hitpoints','Smithing','Firemaking','Cooking','Fletching','Combat','Magic','Faith','Farming','Crafting','Thieving','Construction','Slayer'];
     const trk=this.add.container(MMX-2+MMPX-TW,MMY-2+MMPY+48).setDepth(803);
     const bg=this.add.rectangle(0,0,TW,TH,0x20232a,0.88).setOrigin(0).setStrokeStyle(1,0xc9982a);
-    const ic=this.add.image(21,TH/2,'skic0').setScale(0.44);
-    const nmT=this.add.text(42,5,'',{fontFamily:ff,fontSize:'12px',color:'#ffe066',fontStyle:'bold'}).setResolution(2);
-    const barBg=this.add.rectangle(42,22,TW-50,8,0x0e0f13).setOrigin(0).setStrokeStyle(1,0x6b5a2a);
-    const bar=this.add.rectangle(43,23,0,6,0x7fc84a).setOrigin(0);
-    const sub=this.add.text(42,32,'',{fontFamily:ff,fontSize:'10px',color:'#c8c0a8'}).setResolution(2);
+    const ic=this.add.image(15,TH/2,'skic0').setScale(0.3);
+    const nmT=this.add.text(29,3,'',{fontFamily:ff,fontSize:'10px',color:'#ffe066',fontStyle:'bold'}).setResolution(2);
+    const barBg=this.add.rectangle(29,16,TW-35,6,0x0e0f13).setOrigin(0).setStrokeStyle(1,0x6b5a2a);
+    const bar=this.add.rectangle(30,17,0,4,0x7fc84a).setOrigin(0);
+    const sub=this.add.text(29,23,'',{fontFamily:ff,fontSize:'8px',color:'#c8c0a8'}).setResolution(2);
     trk.add([bg,ic,nmT,barBg,bar,sub]);trk.setVisible(false);
     const drops=this.add.container(MMX-8,MMY+MMPY-16).setDepth(804);
     // the level-up banner: a gold plaque that pops in at the top of the screen, with confetti
@@ -4959,8 +4961,8 @@ function create(){
     const show=k=>{
       const xp=skXpAll()[k],dv=SKDIV[k],L=lvOf(xp,dv),a=xpAt(L,dv),b=xpAt(L+1,dv);
       ic.setTexture('skic'+k);nmT.setText(NAMES[k]+'  Lv '+L);
-      bar.setSize(Math.max(0,Math.min(1,(xp-a)/Math.max(1,b-a)))*(TW-52),6).setFillStyle(SKCOL[k]);
-      sub.setText(Math.max(0,Math.ceil(b-xp)).toLocaleString('en-US')+' xp to level '+(L+1));
+      bar.setSize(Math.max(0,Math.min(1,(xp-a)/Math.max(1,b-a)))*(TW-37),4).setFillStyle(SKCOL[k]);
+      sub.setText(Math.max(0,Math.ceil(b-xp)).toLocaleString('en-US')+' xp to Lv '+(L+1));
       trk.setVisible(true).setAlpha(1);
     };
     this.time.addEvent({delay:150,loop:true,callback:()=>{
@@ -5043,12 +5045,12 @@ function create(){
         if((c===0&&r===7)||(coins>0&&i===inv.length&&c>=0&&c<4&&r>=0&&r<7)){itemTip('coin',coins,true);return;}
         tipC.setVisible(false);return;
       }
-      if(bk.visible&&p.x>=CX&&p.x<=CX+CW&&p.y>=CY&&p.y<=CY+BKH){
-        const lx=p.x-CX,ly=p.y-CY,c=Math.floor((lx-12)/41),r=Math.floor((ly-30)/41),ids=Object.keys(bank),i=r*7+c;
-        if(c>=0&&c<7&&r>=0&&r<9&&(lx-12)%41<=39&&(ly-30)%41<=39&&i<ids.length){itemTip(ids[i],bank[ids[i]],false);return;}
+      if(bk.visible&&p.x>=CX&&p.x<=CX+BKW&&p.y>=CY&&p.y<=CY+BKH){
+        const lx=p.x-CX,ly=p.y-CY,c=Math.floor((lx-12)/BKP),r=Math.floor((ly-30)/BKP),ids=Object.keys(bank),i=r*BKC+c;
+        if(c>=0&&c<BKC&&r>=0&&r<Math.ceil(63/BKC)&&(lx-12)%BKP<=BKZ&&(ly-30)%BKP<=BKZ&&i<ids.length){itemTip(ids[i],bank[ids[i]],false);return;}
         tipC.setVisible(false);return;
       }
-      const blocked=(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||(sk.visible&&p.x<=CX+SKW&&p.y>=CY)||((chr.visible&&p.x<=CX+GCW&&p.y>=CY)||(bk.visible&&p.x<=CX+CW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY)||(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)||(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)||(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY)||(shop.visible&&p.x>=SX&&p.x<=SX+SW)||p.y<OY||p.y>=OY+H*T||inZb(p);
+      const blocked=(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||(sk.visible&&p.x<=CX+SKW&&p.y>=CY)||((chr.visible&&p.x<=CX+GCW&&p.y>=CY)||(bk.visible&&p.x<=CX+BKW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY)||(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)||(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)||(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY)||(shop.visible&&p.x>=SX&&p.x<=SX+SW)||p.y<OY||p.y>=OY+H*T||inZb(p);
       let m=null;
       if(!blocked){const wp=p.positionToCamera(cam),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);m=mons.find(o=>o.alive&&o.x===tx&&o.y===ty)||null;}
       if(!m&&!blocked){
@@ -5110,7 +5112,7 @@ function create(){
   const barLay=()=>{
     const sw=W*T/6,ty=Math.round(OY+H*T+11),put2=(o,x,y)=>{const u=ent(o);if(u){u.x=x;u.y=y;}};
     MMX=Math.round(W*T-MMPX-2);put2(miniBg,MMX-2,MMY-2);put2(miniImg,MMX,MMY);put2(clockTxt,MMX-2+MMPX,MMY-2+MMPY+3);
-    if(this.xpUi){const X=this.xpUi;put2(X.trk,MMX-2+MMPX-X.TW,MMY-2+MMPY+48);put2(X.drops,MMX-8,MMY+MMPY-16);if(X.act)put2(X.act,MMX-2+MMPX,MMY-2+MMPY+48+48+6);if(X.ban)put2(X.ban,W*T/2,OY+Math.round(H*T*0.34));}
+    if(this.xpUi){const X=this.xpUi;put2(X.trk,MMX-2+MMPX-X.TW,MMY-2+MMPY+48);put2(X.drops,MMX-8,MMY+MMPY-16);if(X.act)put2(X.act,MMX-2+MMPX,MMY-2+MMPY+48+34+6);if(X.ban)put2(X.ban,W*T/2,OY+Math.round(H*T*0.34));}
     if(this.regUi){const R=this.regUi,bx=W*T/2,by=OY+Math.round(H*T*0.2);put2(R.rTxt,MMX-2+MMPX,MMY-2+MMPY+25);put2(R.bTxt,bx,by);put2(R.bSub,bx,by-28);put2(R.bL,bx,by+24);}
     const by0=Math.round(OY+H*T);
     [hpTxt,statTxt,gtab,qTab,ctab,logTxt].forEach((o,i)=>put2(o,Math.round(sw*(i+0.5)),by0+37));
@@ -5172,10 +5174,10 @@ function create(){
           const e=curShop.sell[shOff+i];
           if(e){const id=e[0],k=shOff+i;opts=[['Buy '+nm(id)+' ('+e[1]+' coins)',()=>shopBuy(k)],['Examine '+nm(id),()=>msg(examine(id))]];}
         }
-      }else if(bk.visible&&p.x>=CX&&p.x<=CX+CW&&p.y>=CY&&p.y<=CY+BKH){
+      }else if(bk.visible&&p.x>=CX&&p.x<=CX+BKW&&p.y>=CY&&p.y<=CY+BKH){
         // right-click a banked stack: choose how many to take out
-        const lx=p.x-CX,ly=p.y-CY,c=Math.floor((lx-12)/41),r=Math.floor((ly-30)/41),ids=Object.keys(bank),i=r*7+c;
-        if(c>=0&&c<7&&r>=0&&r<9&&(lx-12)%41<=39&&(ly-30)%41<=39&&i<ids.length){
+        const lx=p.x-CX,ly=p.y-CY,c=Math.floor((lx-12)/BKP),r=Math.floor((ly-30)/BKP),ids=Object.keys(bank),i=r*BKC+c;
+        if(c>=0&&c<BKC&&r>=0&&r<Math.ceil(63/BKC)&&(lx-12)%BKP<=BKZ&&(ly-30)%BKP<=BKZ&&i<ids.length){
           const id=ids[i],have=bank[id]||0;
           opts=[];
           if(id==='coin'){[100,1000,10000].forEach(a=>{if(have>a)opts.push(['Withdraw '+a.toLocaleString('en-US'),()=>withdrawCoins(a)]);});opts.push(['Withdraw all '+have.toLocaleString('en-US')+' coins',()=>withdrawCoins(have)]);opts.push(['Examine coins',()=>msg('Gold coins, kept safe in your bank.')]);}
@@ -5185,7 +5187,7 @@ function create(){
           opts.push(['Examine '+nm(id),()=>msg(examine(id))]);
           }
         }
-      }else if(!((sk.visible&&p.x<=CX+SKW&&p.y>=CY)||((chr.visible&&p.x<=CX+GCW&&p.y>=CY)||(bk.visible&&p.x<=CX+CW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY))&&!(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)&&!(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)&&!(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY)&&!(shop.visible&&p.x>=SX&&p.x<=SX+SW)&&p.y>=OY&&p.y<OY+H*T){
+      }else if(!((sk.visible&&p.x<=CX+SKW&&p.y>=CY)||((chr.visible&&p.x<=CX+GCW&&p.y>=CY)||(bk.visible&&p.x<=CX+BKW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY))&&!(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)&&!(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)&&!(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY)&&!(shop.visible&&p.x>=SX&&p.x<=SX+SW)&&p.y>=OY&&p.y<OY+H*T){
         const wp=p.positionToCamera(cam),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);
         if(tx>=0&&tx<MW&&ty>=0&&ty<MH)opts=worldOptions(tx,ty);
       }
@@ -5255,7 +5257,7 @@ function create(){
       }
     }
     if(bk.visible){
-      if(p.x>=CX&&p.x<=CX+CW&&p.y>=CY&&p.y<=CY+BKH){bankClick(p.x-CX,p.y-CY);return;}
+      if(p.x>=CX&&p.x<=CX+BKW&&p.y>=CY&&p.y<=CY+BKH){bankClick(p.x-CX,p.y-CY);return;}
     }
     if(chr.visible&&p.x>=CX&&p.x<=CX+GCW&&p.y>=CY&&p.y<=CY+CH){
       const lx=p.x-CX,ly=p.y-CY;
