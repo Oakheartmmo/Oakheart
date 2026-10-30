@@ -1369,7 +1369,7 @@ function sndPanel(open){
 }
 setInterval(()=>{try{
   sndPanel();const b=document.getElementById('sndBtn'),eb=document.getElementById('emBtn');
-  const show=typeof player!=='undefined'&&!!player&&!startOpen&&!overPanel(b)&&!(document.getElementById('emBtn')&&overPanel(document.getElementById('emBtn')));b.style.display=show?'block':'none';if(!show){sndPanel(false);return;}
+  b.style.display='none';if(typeof player==='undefined'||!player||startOpen)sndPanel(false);return;   // Settings now lives in the More tab
   const er=eb&&eb.style.display!=='none'?eb.getBoundingClientRect():null;
   b.style.left=(er?er.right+6:8)+'px';if(er)b.style.top=er.top+'px';
 }catch(e){}},500);
@@ -1435,7 +1435,7 @@ function purge(id){    // remove every one of an item
 // Saving: stored in this browser on this device (localStorage)
 const KEY='woodcutter-save-v1';
 let savedPos=null,saveOK=false;
-let tabIc=[],tabHi=[],tabHov=[];   // the bottom menu: a picture and a highlight for each button
+let tabIc=[],tabHi=[],tabHov=[],moreTxt=null;   // the bottom menu: a picture and a highlight for each button
 let welSeen=false;
 let wbK=0,ttlCur='',ttlReset=false;
 let tut=99;
@@ -3561,6 +3561,7 @@ function create(){
   tex('tb_gr',()=>{g.fillStyle(0x8a949c).fillCircle(16,14,10).fillRect(6,14,20,12);g.fillStyle(0xb7c4cc).fillCircle(16,14,9).fillRect(7,14,18,11);g.fillStyle(0x2a2f36).fillRect(9,15,14,3);g.fillStyle(0x8a949c).fillRect(15,15,2,9).fillRect(7,22,18,3);g.fillStyle(0xffffff,0.45).fillRect(10,8,4,2);g.fillStyle(0xc0392b).fillRect(15,1,2,5);});
   tex('tb_qs',()=>{g.fillStyle(0xe8d8a8).fillRect(8,7,16,18);g.fillStyle(0xb8935a).fillRect(6,4,20,4).fillRect(6,24,20,4);g.fillStyle(0x8a6a3a).fillRect(6,4,2,4).fillRect(24,24,2,4);g.fillStyle(0x8a6a3a).fillRect(11,11,10,1).fillRect(11,14,10,1).fillRect(11,17,7,1);g.fillStyle(0xc0392b).fillCircle(20,20,3);});
   tex('tb_sp',()=>{g.fillStyle(0x3a1f60).fillRect(6,5,20,23);g.fillStyle(0x6a3aa8).fillRect(7,6,18,21);g.fillStyle(0x4a2878).fillRect(7,6,3,21);g.fillStyle(0xf1e9c8).fillRect(25,8,2,17);g.fillStyle(0xffe066).fillRect(16,10,2,10).fillRect(12,14,10,2);g.fillStyle(0xffffff).fillRect(16,14,2,2);});
+  tex('tb_mo',()=>{[8,16,24].forEach(x=>{g.fillStyle(0x6a4a10).fillCircle(x,17,4);g.fillStyle(0xe0b040).fillCircle(x,17,3);g.fillStyle(0xfff0b0).fillRect(x-2,15,1,1);});});
   tex('tb_bg',()=>{g.fillStyle(0x5a3a1c).fillCircle(16,19,10);g.fillStyle(0x9a6a3a).fillCircle(16,19,9).fillRect(11,5,10,4);g.fillStyle(0x8a5a2a).fillRect(12,8,8,5);g.fillStyle(0xe0c060).fillRect(10,12,12,2);g.fillStyle(0xb88a52).fillRect(10,16,3,5);g.fillStyle(0xe0c060).fillCircle(20,21,2.5);});
   tex('tunic',()=>{g.fillStyle(0x2f8a3a).fillRect(9,12,14,12).fillRect(6,12,4,8).fillRect(22,12,4,8);});
   tex('vest',()=>{g.fillStyle(0xe08a2a).fillRect(10,13,12,9).fillStyle(0xb86a1a).fillRect(15,13,2,9);});
@@ -4430,17 +4431,18 @@ function create(){
   topBar=this.add.rectangle(0,0,W*T,OY,0x1b2a1f).setOrigin(0);
   botBar=this.add.rectangle(0,OY+H*T,W*T,BOT,0x1b2a1f).setOrigin(0).setStrokeStyle(2,0xd8a428);
   // The menu buttons live in the bottom bar: HP, Skills, Gear, Quests, Spells, Bag (six equal slots; barLay places them)
-  const tabDiv=[1,2,3,4,5].map(()=>this.add.rectangle(0,OY+H*T+7,1,BOT-14,0x3f5144).setOrigin(0));
+  const tabDiv=[1,2,3,4,5,6].map(()=>this.add.rectangle(0,OY+H*T+7,1,BOT-14,0x3f5144).setOrigin(0));
   const cap={...font,fontSize:'12px'};
-  tabHi=[0,1,2,3,4,5].map(()=>this.add.rectangle(0,0,10,BOT-8,0xffe066,0.12).setOrigin(0.5,0).setStrokeStyle(1,0xffe066,0.5).setVisible(false));
-  tabHov=[0,1,2,3,4,5].map(()=>this.add.rectangle(0,0,10,BOT-8,0xffffff,0.07).setOrigin(0.5,0).setVisible(false));
-  tabIc=['tb_hp','tb_sk','tb_gr','tb_qs','tb_sp','tb_bg'].map(k=>this.add.image(0,0,k).setScale(0.9));
+  tabHi=[0,1,2,3,4,5,6].map(()=>this.add.rectangle(0,0,10,BOT-8,0xffe066,0.12).setOrigin(0.5,0).setStrokeStyle(1,0xffe066,0.5).setVisible(false));
+  tabHov=[0,1,2,3,4,5,6].map(()=>this.add.rectangle(0,0,10,BOT-8,0xffffff,0.07).setOrigin(0.5,0).setVisible(false));
+  tabIc=['tb_hp','tb_sk','tb_gr','tb_qs','tb_sp','tb_bg','tb_mo'].map(k=>this.add.image(0,0,k).setScale(0.9));
   hpTxt=this.add.text(0,OY+H*T+11,'',cap).setOrigin(0.5,0).setResolution(2);
   statTxt=this.add.text(0,OY+H*T+11,'',cap).setOrigin(0.5,0).setResolution(2);
   gtab=this.add.text(0,OY+H*T+11,'',cap).setOrigin(0.5,0).setResolution(2);
   qTab=this.add.text(0,OY+H*T+11,'',cap).setOrigin(0.5,0).setResolution(2);
   ctab=this.add.text(0,OY+H*T+11,'',cap).setOrigin(0.5,0).setResolution(2);
   logTxt=this.add.text(0,OY+H*T+11,'',cap).setOrigin(0.5,0).setResolution(2);
+  moreTxt=this.add.text(0,OY+H*T+11,'More',cap).setOrigin(0.5,0).setResolution(2);
   // Small on-screen display (top-left of the map): charges left on the magic items you are holding
   chgHud=this.add.text(8,OY+6,'',{fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'13px',color:'#e8c8ff',backgroundColor:'rgba(20,22,27,0.75)',padding:{x:6,y:3},lineSpacing:3}).setResolution(2).setDepth(400).setVisible(false);
   this.time.addEvent({delay:300,loop:true,callback:chgHudUp});
@@ -4780,7 +4782,7 @@ function create(){
   }).flat();
   // Night: a dark tint over the map (not over the bars), a small clock under the minimap, and a glow on lamps and fires
   const nightOv=this.add.rectangle(0,OY,W*T,H*T,0x0c1034,0).setOrigin(0).setDepth(390);
-  zb.forEach(o=>o.setDepth(392));mapBtn.forEach(o=>o.setDepth(392));
+  zb.forEach(o=>o.setDepth(392).setVisible(false));mapBtn.forEach(o=>o.setDepth(392).setVisible(false));
   const clockTxt=this.add.text(MMX-2+MMPX,MMY-2+MMPY+3,'',{fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'12px',color:'#ffe066',backgroundColor:'rgba(20,22,27,0.75)',padding:{x:5,y:2}}).setOrigin(1,0).setResolution(2).setDepth(802);
   {const gc=this.textures.createCanvas('glowtex',128,128),cx=gc.getContext(),gr=cx.createRadialGradient(64,64,0,64,64,64);
    gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(0.35,'rgba(255,255,255,0.45)');gr.addColorStop(1,'rgba(255,255,255,0)');cx.fillStyle=gr;cx.fillRect(0,0,128,128);gc.refresh();}
@@ -4908,7 +4910,7 @@ function create(){
     this.xpUi={trk,drops,TW,ban};
     // ---------- clean-up: panels fade in, buttons answer the pointer ----------
     {
-      const barSlot=p=>{const y0=OY+H*T;if(p.y<y0||p.y>y0+BOT)return -1;return Math.max(0,Math.min(5,Math.floor(p.x/(W*T/6))));};
+      const barSlot=p=>{const y0=OY+H*T;if(p.y<y0||p.y>y0+BOT)return -1;return Math.max(0,Math.min(6,Math.floor(p.x/(W*T/7))));};
       this.input.on('pointermove',p=>{const i=barSlot(p);tabHov.forEach((h,k)=>h.setVisible(k===i&&!tabHi[k].visible));});
       this.input.on('gameout',()=>tabHov.forEach(h=>h.setVisible(false)));
       const squish=o=>{if(!o||o._sq)return;o._sq=1;const sx=o.scaleX,sy=o.scaleY;this.tweens.add({targets:o,scaleX:sx*0.86,scaleY:sy*0.86,duration:60,yoyo:true,ease:'Quad.easeOut',onComplete:()=>{o.setScale(sx,sy);o._sq=0;}});};
@@ -5110,12 +5112,12 @@ function create(){
   rightHook=()=>rightLay(false);
   // Bottom bar: six equal slots for the menu buttons. Top bar: message line and Log out.
   const barLay=()=>{
-    const sw=W*T/6,ty=Math.round(OY+H*T+11),put2=(o,x,y)=>{const u=ent(o);if(u){u.x=x;u.y=y;}};
+    const sw=W*T/7,ty=Math.round(OY+H*T+11),put2=(o,x,y)=>{const u=ent(o);if(u){u.x=x;u.y=y;}};
     MMX=Math.round(W*T-MMPX-2);put2(miniBg,MMX-2,MMY-2);put2(miniImg,MMX,MMY);put2(clockTxt,MMX-2+MMPX,MMY-2+MMPY+3);
     if(this.xpUi){const X=this.xpUi;put2(X.trk,MMX-2+MMPX-X.TW,MMY-2+MMPY+48);put2(X.drops,MMX-8,MMY+MMPY-16);if(X.act)put2(X.act,MMX-2+MMPX,MMY-2+MMPY+48+34+6);if(X.ban)put2(X.ban,W*T/2,OY+Math.round(H*T*0.34));}
     if(this.regUi){const R=this.regUi,bx=W*T/2,by=OY+Math.round(H*T*0.2);put2(R.rTxt,MMX-2+MMPX,MMY-2+MMPY+25);put2(R.bTxt,bx,by);put2(R.bSub,bx,by-28);put2(R.bL,bx,by+24);}
     const by0=Math.round(OY+H*T);
-    [hpTxt,statTxt,gtab,qTab,ctab,logTxt].forEach((o,i)=>put2(o,Math.round(sw*(i+0.5)),by0+37));
+    [hpTxt,statTxt,gtab,qTab,ctab,logTxt,moreTxt].forEach((o,i)=>put2(o,Math.round(sw*(i+0.5)),by0+37));
     tabIc.forEach((o,i)=>put2(o,Math.round(sw*(i+0.5)),by0+21));
     tabHi.forEach((o,i)=>{put2(o,Math.round(sw*(i+0.5)),by0+4);o.setSize(Math.min(96,sw-10),BOT-8);});
     tabHov.forEach((o,i)=>{put2(o,Math.round(sw*(i+0.5)),by0+4);o.setSize(Math.min(96,sw-10),BOT-8);});
@@ -5144,8 +5146,8 @@ function create(){
   this.input.addPointer(1);
   this.input.on('wheel',(p,o,dx,dy)=>{if(bookW.visible&&p.x>=OBX&&p.x<=OBX+OBW&&p.y>=OBY&&p.y<=OBY+OBH){bookFlip(dy>0?1:-1,true);return;}if(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W&&p.y>=SY&&p.y<=SY+DLG_H){dlgOff+=dy>0?1:-1;dlgRender();return;}if(gd.visible){gdOff+=dy>0?2:-2;gdRender();return;}if(shop.visible&&p.x>=SX&&p.x<=SX+SW&&p.y>=SY&&p.y<=SY+SH){shopScroll(dy>0?1:-1);return;}if(cr.visible&&p.x>=CX&&p.x<=CX+CRW&&p.y>=CY&&p.y<=CY+CRH){craftScroll(dy>0?1:-1);return;}if(smc.visible&&p.x>=CX&&p.x<=CX+CRW&&p.y>=CY&&p.y<=CY+SMH){smOff+=dy>0?1:-1;ui();return;}if(!menuC.visible)setZoom(zoomLv*(dy>0?0.9:1.1));});
   const rightOpen=()=>bag.visible||spw.visible;
-  const inMapBtn=p=>(!rightOpen()&&p.x>=W*T-40&&p.x<=W*T-10&&p.y>=OY+H*T-106&&p.y<=OY+H*T-76)||inMini(p);
-  const inZb=p=>!rightOpen()&&p.x>=W*T-40&&p.x<=W*T-10&&p.y>=OY+H*T-70&&p.y<=OY+H*T-4;
+  const inMapBtn=p=>inMini(p);   // the Map button is gone: tap the minimap
+  const inZb=p=>false;   // the + and - buttons are gone (mouse wheel and pinch still zoom)
 
   const ctxAt=p=>{
       let opts=null;
@@ -5204,7 +5206,7 @@ function create(){
     }
     if(p.rightButtonDown()){ctxAt(p);return;}
     if(p.y>=OY+H*T){
-      const spWas=spw.visible,qWas=qp.visible,ti=Math.min(5,Math.floor(p.x/(W*T/6)));wm.setVisible(false);qp.setVisible(false);bookW.setVisible(false);
+      const spWas=spw.visible,qWas=qp.visible,ti=Math.min(6,Math.floor(p.x/(W*T/7)));if(ti===6){moreMenu();return;}wm.setVisible(false);qp.setVisible(false);bookW.setVisible(false);
       gd.setVisible(false);ftp.setVisible(false);dlg.setVisible(false);
       if(ti<5){bk.setVisible(false);smc.setVisible(false);spw.setVisible(false);}
       if(ti===5)bag.setVisible(!bag.visible);
@@ -8546,10 +8548,37 @@ function emoteMenu(show){
 // the Emotes button sits next to Chat (or in its place when you are playing alone)
 setInterval(()=>{try{
   emoteMenu();const b=document.getElementById('emBtn');if(!b)return;
-  const show=!!player&&!startOpen&&!overPanel(b);b.style.display=show?'block':'none';if(!show){emoteMenu(false);return;}
+  b.style.display='none';if(!player||startOpen)emoteMenu(false);return;   // Emotes now lives in the More tab
   const cb=document.getElementById('mpBtn'),on=cb&&getComputedStyle(cb).display!=='none';
   b.style.left=on?(cb.getBoundingClientRect().right+6)+'px':'8px';
 }catch(e){}},500);
+
+// ---- the More tab (bottom bar, far right): Emotes and Settings ----
+function barTopPx(){const c=game.canvas.getBoundingClientRect();return c.top+(OY+H*T)*c.height/game.scale.height;}
+function placeAboveBar(el){if(!el)return;el.style.top=Math.max(8,barTopPx()-el.offsetHeight-6)+'px';el.style.left=Math.max(8,window.innerWidth-el.offsetWidth-8)+'px';}
+function moreMenu(show){
+  let m=document.getElementById('moreMenu');
+  if(!m){
+    const st=document.createElement('style');
+    st.textContent='#moreMenu{position:fixed;z-index:41;display:none;flex-direction:column;gap:6px;padding:8px;background:rgba(32,35,42,.96);border:1px solid #c9982a;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.4)}'
+     +'#moreMenu button{display:flex;align-items:center;gap:10px;min-width:150px;min-height:40px;font:14px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;background:#1f2229;border:1px solid #6a5a3e;border-radius:6px;padding:8px 12px;cursor:pointer;text-align:left}'
+     +'#moreMenu button:hover,#moreMenu button:focus-visible{border-color:#ffe066;outline:none}';
+    document.head.appendChild(st);
+    m=document.createElement('div');m.id='moreMenu';m.setAttribute('role','menu');m.setAttribute('aria-label','More');
+    const add=(label,ic,fn)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','menuitem');if(ic)b.append(ic);b.append(label);b.addEventListener('click',()=>{m.style.display='none';setTimeout(fn,0);});m.append(b);};
+    add('Emotes',typeof emoteImg==='function'?emoteImg('smile',18):null,()=>{sndPanel(false);emoteMenu(true);placeAboveBar(document.getElementById('emMenu'));});
+    add('Settings',null,()=>{emoteMenu(false);sndPanel(true);placeAboveBar(document.getElementById('sndMenu'));});
+    document.body.appendChild(m);
+    // a tap anywhere else closes it (taps on the bottom bar are left to the More tab itself)
+    document.addEventListener('pointerdown',e=>{if(m.style.display!=='flex'||m.contains(e.target))return;if(e.target===game.canvas&&e.clientY>=barTopPx())return;m.style.display='none';});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&m.style.display==='flex')m.style.display='none';});
+  }
+  if(show===undefined)show=m.style.display!=='flex';
+  m.style.display=show?'flex':'none';
+  if(show){emoteMenu(false);sndPanel(false);placeAboveBar(m);const f=m.querySelector('button');if(f)f.focus({preventScroll:true});}
+}
+// the Chat button steps out of the way while a window (bank, shop...) is open underneath it
+setInterval(()=>{try{const b=MP.btn;if(!b||b.style.display==='none')return;const hide=overPanel(b);b.style.visibility=hide?'hidden':'visible';}catch(e){}},300);
 
 // ---- World boss: the Gloomhorn rises every hour, on the hour, at one of a few open places, and stays for 20 minutes ----
 // Every player works out the same time and place from the clock, so no server is needed to agree on it.
