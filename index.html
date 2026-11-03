@@ -1852,7 +1852,8 @@ function desc(id){
 }
 
 // Head and body gear is crafted from gathered materials in the Craft tab
-const CRVIS=5,CRW=500,CRP=68,CRB=64,FTP=60,FTB=56;   // crafting windows: width, visible rows, row spacing and row height
+let CRW=500;   // crafting, smithing and fletching window width: 500, or narrower so it fits a phone screen (set when the game starts)
+const CRVIS=5,CRP=68,CRB=64,FTP=60,FTB=56;   // crafting windows: width, visible rows, row spacing and row height
 const HT=['hid','hde','hbo','hwf','hbe'];   // hide needed per magic tier: cow, deer, boar, wolf, bear (stronger animal = higher tier)
 const RECIPES=[['cp0',{hid:2,fx:4},2],['cp1',{hid:3,fth:10},2],['cp2',{hid:2,fx:10,fth:10},2],['cp3',{hid:2,fx:8,bn1:3},2],['bs',{fx:2},2]];
 // Magic: wands, staves, spellbooks and recharge scrolls (made from logs, feathers, flax and cowhide)
@@ -4511,7 +4512,7 @@ function create(){
   dlgNextT=this.add.text(DW/2,DH-29,'Next',small).setOrigin(0.5).setResolution(2);dlg.add(dlgNextT);
   dlgPrevT=this.add.text(24,DH-29,'',{...small,color:'#c9b27a'}).setOrigin(0,0.5).setResolution(2);dlg.add(dlgPrevT);
   DLG_W=DW;DLG_H=DH;
-  const GW=330,GH=440,GDW=360,GDH=476,CW=360,GCW=360,CH=476,SKH=436,CRH=58+CRVIS*CRP+30,CX=10;let CY=panelTop();
+  const GW=330,GH=440,GDW=360,GDH=476,CW=360,GCW=360,CH=476,SKH=436,CRH=58+CRVIS*CRP+30,CX=10;let CY=panelTop();CRW=Math.max(300,Math.min(500,Math.round(W*T)-CX-10));
   chr=this.add.container(CX,CY).setDepth(950).setVisible(false);
   chr.add(this.add.rectangle(0,0,GCW,CH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
   chr.add(this.add.rectangle(GCW/2,76,136,136,0x4f8a34).setStrokeStyle(1,0x8a7a5a));
@@ -4882,15 +4883,16 @@ function create(){
      hole(player.x,player.y-4,Math.max(lit,gear.rg===5?4:0));
      fires.forEach(fr=>{if(dunAt(fr.y)===curD)hole(fr.x*T+T/2,fr.y*T+T/2+OY-4,2.6*(0.96+Math.random()*0.08));});
    });}
-  // walking away from a bank or shop closes its window (one step is fine, two or more closes it)
+  // walking away from a bank, shop, crafting bench or anvil closes its window (one step is fine, two or more closes it)
   {let openAt=null;
    this.time.addEvent({delay:200,loop:true,callback:()=>{
-     const open=(bk&&bk.visible)||(shop&&shop.visible);
+     const open=(bk&&bk.visible)||(shop&&shop.visible)||(cr&&cr.visible)||(smc&&smc.visible);
      if(!open){openAt=null;return;}
      if(!openAt){openAt={x:px,y:py,d:curD};return;}
      if(curD!==openAt.d||Math.max(Math.abs(px-openAt.x),Math.abs(py-openAt.y))>1){
-       const wasBank=bk.visible;bk.setVisible(false);shop.setVisible(false);openAt=null;ui();
-       msg(wasBank?'You walk away from the bank.':'You walk away from the shop.');
+       const what=bk.visible?'bank':shop.visible?'shop':cr.visible?'crafting bench':'anvil';
+       bk.setVisible(false);shop.setVisible(false);cr.setVisible(false);smc.setVisible(false);openAt=null;ui();
+       msg('You walk away from the '+what+'.');
      }
    }});}
   // Region names: a banner fades in when you walk into a new part of the world, and the name stays under the clock
