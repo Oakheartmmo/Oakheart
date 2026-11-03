@@ -3311,14 +3311,16 @@ function petUp(){
   if(petSpr){petSpr.destroy();petSpr=null;}
   if(t<0||!PETS[t])return;
   petBx=player.x-20;petBy=player.y+8;
-  petSpr=scene.add.image(petBx,petBy,petTex(t)).setScale(0.6).setDepth(player.depth-1);
+  petSpr=scene.add.image(petBx,petBy,petTex(t)).setScale(0.6);petLayer();
 }
+// the pet shares your layer and sits just behind you in it: a lower layer put it under the ground tiles, so it vanished
+function petLayer(){if(!petSpr||!player)return;petSpr.setDepth(player.depth);try{scene.children.moveBelow(petSpr,player);}catch(e){}}
 function petTick(time,dt){
   if(!petSpr||!player)return;
   const tx=player.x-20,ty=player.y+8,dx=tx-petBx,dy=ty-petBy,d2=dx*dx+dy*dy;
   if(d2>300*300){petBx=tx;petBy=ty;}
   else if(d2>14*14){const k=Math.min(1,(dt||16)*0.006);petBx+=dx*k;petBy+=dy*k;}
-  petSpr.setPosition(petBx,petBy+Math.sin(time/200)*1.5).setDepth(player.depth-1);
+  petSpr.setPosition(petBx,petBy+Math.sin(time/200)*1.5);if(petSpr.depth!==player.depth)petLayer();
   if(Math.abs(dx)>3)petSpr.setFlipX(dx<0);
 }
 const graves=[];   // a gravestone marks where you fell while your dropped things are still there
@@ -3520,6 +3522,7 @@ function create(){
   try{this.game.canvas.style.imageRendering='auto';}catch(e){}
   scene=this;
   this.events.on('update',petTick);
+  this.events.on('update',(t,d)=>{try{mpPetTick(t,d);}catch(e){}});
   const g=this.make.graphics({x:0,y:0,add:false});
   let noG=false,usedG=false;
   // Anything drawn on grass also gets a copy with no grass behind it (name_t), so it can sit on dirt or stone
@@ -7326,7 +7329,7 @@ function mpUrl(){
   if(window.WC_MP&&/^https?:$/.test(location.protocol))return (location.protocol==='https:'?'wss://':'ws://')+location.host;
   return null;
 }
-const mpLook=()=>({app:{skin:APP.skin,hs:APP.hs,hc:APP.hc,shirt:APP.shirt,pants:APP.pants},gear:{hd:gear.hd,bd:gear.bd,hn:gear.hn,ft:gear.ft,wp:gear.wp,wt:gear.wt,sh:gear.sh,bw:gear.bw,bk:gear.bk,cp:gear.cp,axe,net,pik}});
+const mpLook=()=>({app:{skin:APP.skin,hs:APP.hs,hc:APP.hc,shirt:APP.shirt,pants:APP.pants},gear:{hd:gear.hd,bd:gear.bd,hn:gear.hn,ft:gear.ft,wp:gear.wp,wt:gear.wt,sh:gear.sh,bw:gear.bw,bk:gear.bk,cp:gear.cp,pt:gear.pt,axe,net,pik}});
 function mpSend(m){try{if(MP.ws&&MP.ws.readyState===1)MP.ws.send(JSON.stringify(m));}catch(e){}}
 function mpTexKey(id){return 'pl_'+id;}
 function mpPaint(id,app,bald){
@@ -7338,6 +7341,7 @@ function mpPaint(id,app,bald){
 }
 function mpDress(o,look){
   o.look=look;
+  mpPet(o,look.gear||{});
   const L=o.c.L,g=look.gear||{},ex=k=>scene.textures.exists(k),setL=(l,k)=>{if(k&&ex(k)){l.setTexture(k).setVisible(true);}else l.setVisible(false);};
   setL(L.axe,g.axe>=0?'axe'+g.axe:null);setL(L.net,g.net>=0?'net'+g.net:null);setL(L.pik,g.pik>=0?'pik'+g.pik:null);
   setL(L.cape,g.cp>=0?'cp'+g.cp:null);   // capes and wings show on other players too
@@ -7366,12 +7370,34 @@ function mpBubble(c,text){
     scene.time.delayedCall(5000,()=>{if(c.bubble===t){t.destroy();c.bubble=null;}});
   }catch(e){}
 }
-function mpClear(){MP.others.forEach(o=>{try{o.c.destroy();}catch(e){}});MP.others.clear();}
+// other players' pets: drawn on their own (not inside the player) so they can trail along behind, like yours does
+function mpPet(o,g){
+  const t=Number.isInteger(g.pt)&&PETS[g.pt]?g.pt:-1;
+  if(o.petT===t&&(t<0||o.pet))return;
+  o.petT=t;if(o.pet){o.pet.destroy();o.pet=null;}
+  if(t<0||!scene.textures.exists(petTex(t)))return;
+  o.pbx=o.c.x-20;o.pby=o.c.y+8;
+  o.pet=scene.add.image(o.pbx,o.pby,petTex(t)).setScale(0.6).setDepth(o.c.depth);
+  try{scene.children.moveBelow(o.pet,o.c);}catch(e){}
+}
+function mpPetTick(time,dt){
+  if(!MP.others||!MP.others.size)return;
+  MP.others.forEach(o=>{
+    const p=o.pet;if(!p)return;
+    const tx=o.c.x-20,ty=o.c.y+8,dx=tx-o.pbx,dy=ty-o.pby,d2=dx*dx+dy*dy;
+    if(d2>300*300){o.pbx=tx;o.pby=ty;}
+    else if(d2>14*14){const k=Math.min(1,(dt||16)*0.006);o.pbx+=dx*k;o.pby+=dy*k;}
+    p.setPosition(o.pbx,o.pby+Math.sin(time/200+o.c.x)*1.5).setVisible(o.c.visible);
+    if(Math.abs(dx)>3)p.setFlipX(dx<0);
+  });
+}
+const mpGone=o=>{try{o.c.destroy();}catch(e){}try{if(o.pet)o.pet.destroy();}catch(e){}o.pet=null;};
+function mpClear(){MP.others.forEach(mpGone);MP.others.clear();}
 function mpGot(m){
   if(!m||typeof m.t!=='string')return;
   if(m.t==='welcome'){MP.id=m.id;(m.players||[]).forEach(mpAdd);msg('Online! '+(m.players||[]).length+' other player'+((m.players||[]).length===1?'':'s')+' here.');if(MP.btn)MP.btn.style.display='block';if(MP.chatAdd)MP.chatAdd('','You are online. '+(m.players||[]).length+' other player'+((m.players||[]).length===1?'':'s')+' here.',0,true);}
   else if(m.t==='join'){mpAdd(m.p);if(m.p){msg((m.p.name||'A player')+' joined.');if(MP.chatAdd)MP.chatAdd('',String(m.p.name||'A player').slice(0,14)+' joined.',0,true);}}
-  else if(m.t==='leave'){const o=MP.others.get(m.id);if(o){try{o.c.destroy();}catch(e){}MP.others.delete(m.id);msg((o.name||'A player')+' left.');if(MP.chatAdd)MP.chatAdd('',String(o.name||'A player').slice(0,14)+' left.',0,true);}}
+  else if(m.t==='leave'){const o=MP.others.get(m.id);if(o){mpGone(o);MP.others.delete(m.id);msg((o.name||'A player')+' left.');if(MP.chatAdd)MP.chatAdd('',String(o.name||'A player').slice(0,14)+' left.',0,true);}}
   else if(m.t==='move'){const o=MP.others.get(m.id);if(o){const d=Math.abs(m.x-o.x)+Math.abs(m.y-o.y);o.x=m.x;o.y=m.y;scene.tweens.add({targets:o.c,x:m.x*T+T/2,y:m.y*T+T/2+OY,duration:Math.min(900,Math.max(120,d*190))});}}
   else if(m.t==='look'){const o=MP.others.get(m.id);if(o){try{mpDress(o,m.look||{});}catch(e){}}}
   else if(m.t==='chat'){
@@ -7459,7 +7485,7 @@ function mpUi(){
 const RM={room:null,tried:false,sayN:0,seen:new Map(),started:false};
 const rmInt=(v,lo,hi,d)=>Number.isInteger(v)&&v>=lo&&v<=hi?v:d;
 const rmApp=a=>{a=a&&typeof a==='object'?a:{};return{skin:rmInt(a.skin,0,20,1),hs:rmInt(a.hs,0,40,0),hc:rmInt(a.hc,0,40,0),shirt:rmInt(a.shirt,0,40,0),pants:rmInt(a.pants,0,40,0)};};
-const rmGear=g=>{const o={};if(g&&typeof g==='object')['hd','bd','hn','ft','wp','wt','sh','bw','bk','cp','axe','net','pik'].forEach(k=>{o[k]=rmInt(g[k],-1,99,-1);});if(o.wt<0)o.wt=0;return o;};
+const rmGear=g=>{const o={};if(g&&typeof g==='object')['hd','bd','hn','ft','wp','wt','sh','bw','bk','cp','pt','axe','net','pik'].forEach(k=>{o[k]=rmInt(g[k],-1,99,-1);});if(o.wt<0)o.wt=0;return o;};
 const rmName=p=>String((p.presence&&p.presence.n)||'Player').replace(/[\u0000-\u001f]/g,'').slice(0,14)||'Player';
 // ---- Shared monsters. One player's game (the "host") runs every monster: where it walks, its health, who it chases,
 // when it dies and comes back. The host shares that in its room presence a few times a second; everyone else's game
