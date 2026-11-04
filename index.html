@@ -1532,7 +1532,17 @@ const hitChance=t=>Math.max(.15,(t?t.acc:.6)-.03*def()-.01*(dflvl()-1))*(Date.no
 const lvl=()=>lvOf(xp,50);
 // People and monsters do not block the way: you can walk straight through them
 const walkable=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH&&(grid[y][x]==='.'||grid[y][x]==='@'||grid[y][x]==='N'||grid[y][x]==='B'||(grid[y][x]==='~'&&pOn('water'))||(grid[y][x]==='ɂ'&&sllvl()>=MALG_SLAY));   // lit fires no longer block the way
-const msg=s=>{const ch=s&&s!==msgTxt.text;msgTxt.setText(s);if(msgFit)msgFit();if(ch&&scene&&scene.tweens){scene.tweens.killTweensOf(msgTxt);msgTxt.setAlpha(0.25);scene.tweens.add({targets:msgTxt,alpha:1,duration:180});}};
+// Game messages (drops, level ups, "You can't reach...") go into the chat box, not the top bar.
+// msgTxt still holds the latest one (hidden), because some code adds a little more onto the last message.
+const GM={last:'',t:0,q:[]};
+const msg=s=>{
+  const prev=msgTxt.text;msgTxt.setText(s);if(!s)return;
+  const now=Date.now();if(s===GM.last&&now-GM.t<1500)return;   // the same line again right away is not repeated
+  const more=!!GM.last&&prev===GM.last&&s.length>prev.length&&s.startsWith(prev)&&now-GM.t<3000;   // "...and you level up!" added onto the last line
+  GM.last=s;GM.t=now;
+  let add=null;try{add=MP.gmAdd;}catch(e){}   // MP is set up further down the script
+  if(add)add(s,more);else{if(more&&GM.q.length)GM.q[GM.q.length-1]=s;else GM.q.push(s);if(GM.q.length>40)GM.q.shift();}
+};
 let msgBg=null,msgFit=null;
 const ui=()=>{fixStacks();if(rightHook)rightHook();petUp();MAXHP=20+2*(hplvl()-1)+amHp();if(hp>MAXHP)hp=MAXHP;hpUi();tabMark();titleCheck();statTxt.setText('Skills').setColor(sk.visible?'#ffe066':'#f1e9c8');gtab.setText('Gear').setColor(chr.visible?'#ffe066':'#f1e9c8');logTxt.setText((inv.length+(coins>0&&inv.length<CAPMAX?1:0))+'/'+CAPMAX).setColor(bag.visible?'#ffe066':'#f1e9c8');if(selIdx>=inv.length||inv[selIdx]!==selId)selIdx=-1;if(selBox){selBox.setVisible(selIdx>=0);if(selIdx>=0)selBox.setPosition(4+(selIdx%4)*36,4+Math.floor(selIdx/4)*36);}slots.forEach((s,i)=>{s.setVisible(i<inv.length);if(i<inv.length)s.setTexture(icon(inv[i]));const q=i<inv.length&&STACKS.test(inv[i])?stackN(inv[i]):0;if(slotN[i]){slotN[i].setVisible(q>1);if(q>1)slotN[i].setText(q>=100000?'99k+':q>=10000?Math.floor(q/1000)+'k':String(q));}});{const cq=coins;pouchN.setText(cq>=100000?'99k+':cq>=10000?Math.floor(cq/1000)+'k':String(cq));pouchL.setText(cq>0?'Coins: '+cq.toLocaleString('en-US'):'');{const pi=inv.length,show=cq>0&&pi<CAPMAX,px0=4+(pi%4)*36,py0=4+Math.floor(pi/4)*36;pouchR.setVisible(show).setPosition(px0,py0);pouchI.setVisible(show).setPosition(px0+17,py0+17);pouchN.setVisible(show).setPosition(px0+32,py0+32);}}if(qTab)qTab.setText('Quests').setColor(qp&&qp.visible?'#ffe066':'#f1e9c8');if(qp&&qp.visible)qRender();ctab.setText(curSpell()?'Spells*':'Spells').setColor(spw&&spw.visible?'#ffe066':curSpell()?'#e8c8ff':'#f1e9c8');updateSpells();shopRefresh();
   dress();
@@ -4453,7 +4463,7 @@ function create(){
   // Messages show in the top bar (growing downward when long), above the night tint
   msgBg=this.add.rectangle(0,0,W*T,OY,0x1b2a1f,0.96).setOrigin(0).setDepth(396);
   msgTxt=this.add.text(10,7,'Tap the ground to walk, a tree to chop, a ripple to fish.',{...font,wordWrap:{width:W*T-130},lineSpacing:3}).setOrigin(0,0).setResolution(2).setDepth(397);
-  msgFit=()=>{msgBg.setSize(W*T,Math.max(OY,msgTxt.height+14));};msgFit();
+  msgTxt.setVisible(false);msgFit=()=>{msgBg.setSize(W*T,OY);};msgFit();   // the top bar no longer shows messages (they go to the chat box)
 
   // Inventory panel: 4 x 7 slots. Tap "Bag" (top right) to show or hide it.
   const panelTop=()=>Math.max(2,Math.round(OY+H*T-480));   // the big windows sit on the bottom bar
@@ -7395,14 +7405,13 @@ const mpGone=o=>{try{o.c.destroy();}catch(e){}try{if(o.pet)o.pet.destroy();}catc
 function mpClear(){MP.others.forEach(mpGone);MP.others.clear();}
 function mpGot(m){
   if(!m||typeof m.t!=='string')return;
-  if(m.t==='welcome'){MP.id=m.id;(m.players||[]).forEach(mpAdd);msg('Online! '+(m.players||[]).length+' other player'+((m.players||[]).length===1?'':'s')+' here.');if(MP.btn)MP.btn.style.display='block';if(MP.chatAdd)MP.chatAdd('','You are online. '+(m.players||[]).length+' other player'+((m.players||[]).length===1?'':'s')+' here.',0,true);}
-  else if(m.t==='join'){mpAdd(m.p);if(m.p){msg((m.p.name||'A player')+' joined.');if(MP.chatAdd)MP.chatAdd('',String(m.p.name||'A player').slice(0,14)+' joined.',0,true);}}
-  else if(m.t==='leave'){const o=MP.others.get(m.id);if(o){mpGone(o);MP.others.delete(m.id);msg((o.name||'A player')+' left.');if(MP.chatAdd)MP.chatAdd('',String(o.name||'A player').slice(0,14)+' left.',0,true);}}
+  if(m.t==='welcome'){MP.id=m.id;(m.players||[]).forEach(mpAdd);msg('Online! '+(m.players||[]).length+' other player'+((m.players||[]).length===1?'':'s')+' here.');}
+  else if(m.t==='join'){mpAdd(m.p);if(m.p){msg(String(m.p.name||'A player').slice(0,14)+' joined.');}}
+  else if(m.t==='leave'){const o=MP.others.get(m.id);if(o){mpGone(o);MP.others.delete(m.id);msg(String(o.name||'A player').slice(0,14)+' left.');}}
   else if(m.t==='move'){const o=MP.others.get(m.id);if(o){const d=Math.abs(m.x-o.x)+Math.abs(m.y-o.y);o.x=m.x;o.y=m.y;scene.tweens.add({targets:o.c,x:m.x*T+T/2,y:m.y*T+T/2+OY,duration:Math.min(900,Math.max(120,d*190))});}}
   else if(m.t==='look'){const o=MP.others.get(m.id);if(o){try{mpDress(o,m.look||{});}catch(e){}}}
   else if(m.t==='chat'){
     const c=m.id===MP.id?player:(MP.others.get(m.id)||{}).c;
-    msg(String(m.name||'')+': '+String(m.text||''));
     if(MP.chatAdd)MP.chatAdd(String(m.name||'Player').slice(0,14),String(m.text||'').slice(0,120),m.id,false);
     if(c)mpBubble(c,String(m.text||''));
   }
@@ -7412,7 +7421,7 @@ function mpConnect(url){
     const ws=new WebSocket(url);MP.ws=ws;
     ws.onopen=()=>{MP.sentPos='';MP.sentLook='';mpSend(Object.assign({t:'join',name:APP.name,x:px,y:py},mpLook()));MP.sentPos=px+','+py;MP.sentLook=JSON.stringify(mpLook());};
     ws.onmessage=ev=>{try{mpGot(JSON.parse(ev.data));}catch(e){}};
-    ws.onclose=()=>{if(MP.ws===ws){MP.ws=null;MP.id=0;mpClear();if(MP.btn)MP.btn.style.display='none';if(MP.chatOpen)MP.chatOpen(false);MP.nextTry=Date.now()+3000;msg('Disconnected from the server. Trying again...');}};
+    ws.onclose=()=>{if(MP.ws===ws){MP.ws=null;MP.id=0;mpClear();MP.nextTry=Date.now()+3000;msg('Disconnected from the server. Trying again...');}};
     ws.onerror=()=>{};
   }catch(e){MP.nextTry=Date.now()+5000;}
 }
@@ -7424,7 +7433,7 @@ function mpUi(){
    +'#mpBadge{display:none;margin-left:6px;min-width:18px;padding:0 5px;border-radius:9px;background:#c0392b;color:#fff;font-size:11px;line-height:18px;text-align:center}'
    +'#mpPanel{position:fixed;left:8px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:40;display:none;flex-direction:column;width:min(340px,calc(100vw - 16px));background:transparent;border:none;border-radius:8px;font:13px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;text-shadow:1px 1px 0 #000,-1px 0 0 #000,0 -1px 0 #000,0 1px 2px #000}'
    +'#mpLog{height:min(180px,32vh);overflow-y:auto;padding:6px 8px;display:flex;flex-direction:column;gap:3px;overscroll-behavior:contain;-webkit-user-select:text;user-select:text}'
-   +'#mpLog .ln{line-height:1.35;word-wrap:break-word;overflow-wrap:anywhere}#mpLog .nm{font-weight:700}#mpLog .sys{color:#d8d0b8;font-style:italic}#mpLog .tm{color:#c8c0a8;font-size:11px;margin-right:4px}'
+   +'#mpLog .ln{line-height:1.35;word-wrap:break-word;overflow-wrap:anywhere}#mpLog .nm{font-weight:700}#mpLog .sys{color:#d8d0b8;font-style:italic}#mpLog .gm{color:#ffe9a8}#mpLog .tm{color:#c8c0a8;font-size:11px;margin-right:4px}'
    +'#mpLog .empty{color:#a89a78}'
    +'#mpBox{display:flex;gap:6px;padding:6px}'
    +'#mpBox input{flex:1;min-width:0;font:16px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;background:rgba(20,22,27,.45);border:1px solid rgba(201,152,42,.7);border-radius:6px;padding:6px 8px;text-shadow:none}'
@@ -7436,7 +7445,7 @@ function mpUi(){
   btn.append('Chat');const badge=document.createElement('span');badge.id='mpBadge';btn.append(badge);
   const panel=document.createElement('div');panel.id='mpPanel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Chat');
   const log=document.createElement('div');log.id='mpLog';log.setAttribute('role','log');log.setAttribute('aria-live','polite');
-  const empty=document.createElement('div');empty.className='empty';empty.textContent='No messages yet. Say hello!';log.append(empty);
+  const empty=document.createElement('div');empty.className='empty';empty.textContent='No messages yet.';log.append(empty);
   const box=document.createElement('form');box.id='mpBox';
   const inp=document.createElement('input');inp.type='text';inp.maxLength=120;inp.placeholder='Say something...';inp.autocomplete='off';inp.enterKeyHint='send';inp.setAttribute('aria-label','Chat message');
   const go2=document.createElement('button');go2.type='submit';go2.textContent='Send';
@@ -7451,7 +7460,7 @@ function mpUi(){
   box.addEventListener('submit',e=>{e.preventDefault();const t=inp.value.trim();if(!t)return;
     if(Date.now()-lastSend<1200){hint.textContent='Slow down a little...';setTimeout(()=>{hint.textContent='Enter to chat, Esc to close';},1500);return;}
     {const em=/^\/([a-z]+)$/i.exec(t);if(em&&EMOTES.some(e=>e[0]===em[1].toLowerCase())){emotePlay(em[1].toLowerCase());inp.value='';inp.blur();return;}}
-    lastSend=Date.now();mpSend({t:'chat',text:t});inp.value='';inp.blur();});
+    lastSend=Date.now();if(!(MP.ws&&MP.ws.readyState===1)){MP.chatAdd('',"You're not online right now, so nobody can hear you.",0,true);inp.value='';return;}mpSend({t:'chat',text:t});inp.value='';inp.blur();});
   // keys typed in the chat box never reach the game
   inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();open(false);}});
   inp.addEventListener('keyup',e=>e.stopPropagation());
@@ -7476,9 +7485,23 @@ function mpUi(){
     if(atEnd||id===MP.id)log.scrollTop=log.scrollHeight;
     if(!sys&&id!==MP.id&&!isOpen()){MP.unread++;setBadge();}
   };
+  let lastGm=null;
+  MP.gmAdd=(text,more)=>{
+    if(more&&lastGm&&lastGm.parentNode){lastGm.lastChild.textContent=text;return;}
+    if(empty.parentNode)empty.remove();
+    const ln=document.createElement('div');ln.className='ln';
+    const tm=document.createElement('span');tm.className='tm';tm.textContent=hhmm();
+    const g=document.createElement('span');g.className='gm';g.textContent=text;ln.append(tm,g);
+    const atEnd=log.scrollHeight-log.scrollTop-log.clientHeight<24;
+    log.append(ln);lastGm=ln;while(log.children.length>80)log.firstChild.remove();
+    if(atEnd)log.scrollTop=log.scrollHeight;
+  };
+  GM.q.splice(0).forEach(t=>MP.gmAdd(t,false));   // messages from before the chat box was made
   MP.chatOpen=open;
   MP.box=box;MP.btn=btn;MP.input=inp;MP.panel=panel;
 }
+// the chat box is there whenever you are in the game, online or not (it also holds the game's messages)
+setInterval(()=>{try{if(typeof player==='undefined'||!player)return;if(!MP.box)mpUi();const show=!startOpen;if(MP.btn.style.display!==(show?'block':'none'))MP.btn.style.display=show?'block':'none';if(!show&&MP.chatOpen)MP.chatOpen(false);}catch(e){}},500);
 // ---- Playing together inside Claude: everyone who has this game open at the same time shares a live "room".
 // Each player's spot, looks and last chat line travel as their room "presence"; nothing is stored, and each
 // player's progress still saves on their own device. If a game server address is set, that is used instead.
@@ -8096,7 +8119,7 @@ async function rmStart(){
     MP.ws={readyState:1,send(s){try{rmOut(JSON.parse(s));}catch(e){}}};   // the rest of the game talks to the room as if it were a server
     MP.sentPos='';MP.sentLook='';
     rmOut(Object.assign({t:'join',x:px,y:py},mpLook()));MP.sentPos=px+','+py;MP.sentLook=JSON.stringify(mpLook());
-    room.onPeers(rmPeers,()=>{if(TR.peer){TR.peer=null;TR.st=null;trDraw();}RM.room=null;MP.ws=null;mpClear();if(MP.btn)MP.btn.style.display='none';if(MP.chatOpen)MP.chatOpen(false);});
+    room.onPeers(rmPeers,()=>{if(TR.peer){TR.peer=null;TR.st=null;trDraw();}RM.room=null;MP.ws=null;mpClear();});
   }catch(e){}
 }
 // runs twice a second: connects when the game has started, and tells the others where you are and what you wear
