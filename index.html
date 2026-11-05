@@ -107,7 +107,7 @@ body{background:var(--bg);overflow:hidden;touch-action:manipulation;-webkit-user
 }catch(e){console.warn(e);}})();
 </script>
 <script>
-const T=32,MW=240,WH=180,OY=32,BOT=60;
+const T=32,MW=240,WH=180,OY=0,BOT=60;   // OY: top bar height. 0 = no top bar (messages go to the chat box, Log out lives in the More tab)
 // The XP curve: XP needed for level L is d*(L-1)^2, made cheaper for the early levels (a third of the cost at level 2,
 // sliding up to the full cost at level 20). Saves hold XP, not levels, so a change here only ever moves players up.
 const XPEASE=L=>Math.min(1,0.35+0.65*(L-1)/19);
@@ -1535,11 +1535,25 @@ const walkable=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH&&(grid[y][x]==='.'||grid[y][x]==='@
 // Game messages (drops, level ups, "You can't reach...") go into the chat box, not the top bar.
 // msgTxt still holds the latest one (hidden), because some code adds a little more onto the last message.
 const GM={last:'',t:0,q:[]};
+const CANT=/^(You need |You can't|You cannot|Your bag is full|You don't have|You have no|Not enough|You're not)/;
+let HEAD=null;
+function headSay(t){
+  if(typeof scene==='undefined'||!scene||!scene.add||typeof player==='undefined'||!player)return;
+  if(!HEAD){
+    HEAD=scene.add.text(0,0,'',{fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'12px',color:'#ffd9c2',stroke:'#1b1208',strokeThickness:3,align:'center',wordWrap:{width:210}}).setOrigin(0.5,1).setResolution(2).setDepth(392).setVisible(false);
+    HEAD.rise=0;scene.events.on('update',()=>{if(HEAD.visible&&player)HEAD.setPosition(player.x,player.y-24-HEAD.rise);});
+  }
+  const short=String(t).split(/(?<=[.!?])\s/)[0];   // just the first sentence: "You need an axe."
+  scene.tweens.killTweensOf(HEAD);HEAD.rise=0;HEAD.setText(short).setAlpha(1).setVisible(true);
+  scene.tweens.add({targets:HEAD,rise:8,duration:260,ease:'Quad.easeOut'});
+  scene.tweens.add({targets:HEAD,alpha:0,delay:1900,duration:450,onComplete:()=>HEAD.setVisible(false)});
+}
 const msg=s=>{
   const prev=msgTxt.text;msgTxt.setText(s);if(!s)return;
   const now=Date.now();if(s===GM.last&&now-GM.t<1500)return;   // the same line again right away is not repeated
   const more=!!GM.last&&prev===GM.last&&s.length>prev.length&&s.startsWith(prev)&&now-GM.t<3000;   // "...and you level up!" added onto the last line
   GM.last=s;GM.t=now;
+  if(CANT.test(s))try{headSay(s);}catch(e){}   // "can't do that" messages also show briefly over your head, so they're seen with the chat closed
   let add=null;try{add=MP.gmAdd;}catch(e){}   // MP is set up further down the script
   if(add)add(s,more);else{if(more&&GM.q.length)GM.q[GM.q.length-1]=s;else GM.q.push(s);if(GM.q.length>40)GM.q.shift();}
 };
@@ -3398,9 +3412,24 @@ function pickup(x,y,only){
   ui();
 }
 
-function mark(tx,ty){
-  const m=scene.add.rectangle(tx*T+T/2,ty*T+T/2+OY,T-2,T-2,0xffffff,0).setStrokeStyle(2,0xffe066);
-  scene.tweens.add({targets:m,alpha:0,duration:450,onComplete:()=>m.destroy()});
+function tileKind(tx,ty){
+  let o=[];try{o=worldOptions(tx,ty).map(q=>q[0]);}catch(e){return '';}
+  if(o.some(l=>/^Attack /.test(l)))return 'fight';
+  return o.some(l=>!/^(Walk here|Examine)/.test(l))?'use':'';
+}
+// a marker where you tap: a shrinking ring on plain ground, a box around things you use (red for monsters)
+function mark(tx,ty,kind){
+  if(kind===undefined)kind=tileKind(tx,ty);
+  const x=tx*T+T/2,y=ty*T+T/2+OY;
+  if(!kind){
+    const r=scene.add.circle(x,y,11).setStrokeStyle(2,0xffe066).setDepth(391),d=scene.add.circle(x,y,2.5,0xffe066).setDepth(391);
+    scene.tweens.add({targets:r,scale:0.35,alpha:0,duration:480,ease:'Quad.easeIn',onComplete:()=>r.destroy()});
+    scene.tweens.add({targets:d,alpha:0,duration:480,delay:120,onComplete:()=>d.destroy()});
+    return;
+  }
+  const c=kind==='fight'?0xff6b6b:0xffe066,m=scene.add.rectangle(x,y,T-2,T-2,0xffffff,0).setStrokeStyle(2,c).setDepth(391).setScale(1.25);
+  scene.tweens.add({targets:m,scale:1,duration:160,ease:'Back.easeOut'});
+  scene.tweens.add({targets:m,alpha:0,duration:420,delay:260,onComplete:()=>m.destroy()});
 }
 
 // Custom sprites are embedded as base64 PNGs so the page stays one self-contained file.
@@ -4463,7 +4492,7 @@ function create(){
   // Messages show in the top bar (growing downward when long), above the night tint
   msgBg=this.add.rectangle(0,0,W*T,OY,0x1b2a1f,0.96).setOrigin(0).setDepth(396);
   msgTxt=this.add.text(10,7,'Tap the ground to walk, a tree to chop, a ripple to fish.',{...font,wordWrap:{width:W*T-130},lineSpacing:3}).setOrigin(0,0).setResolution(2).setDepth(397);
-  msgTxt.setVisible(false);msgFit=()=>{msgBg.setSize(W*T,OY);};msgFit();   // the top bar no longer shows messages (they go to the chat box)
+  msgTxt.setVisible(false);msgBg.setVisible(false);msgFit=()=>{msgBg.setSize(W*T,Math.max(1,OY));};msgFit();   // the top bar no longer shows messages (they go to the chat box)
 
   // Inventory panel: 4 x 7 slots. Tap "Bag" (top right) to show or hide it.
   const panelTop=()=>Math.max(2,Math.round(OY+H*T-480));   // the big windows sit on the bottom bar
@@ -4681,7 +4710,8 @@ function create(){
   ftp.add(this.add.text(12,FTH-24,'Tap an item to make it. Red X closes.',HINT).setResolution(2));
   FTWd=FTW;FTHt=FTH;
   resetTxt=this.add.text(W*T-10,7,'',font).setOrigin(1,0).setVisible(false);   // the Reset save button is gone
-  logoutTxt=this.add.text(W*T-10,7,'Log out',font).setOrigin(1,0).setResolution(2).setAlpha(0.6).setDepth(398);
+  logoutTxt=this.add.text(W*T-10,7,'Log out',font).setOrigin(1,0).setResolution(2).setAlpha(0.6).setDepth(398).setVisible(false);   // Log out is in the More tab now
+  window.oakLogoutNow=()=>{stopChop();closeMenu();save();openStart();};
   const hadSave=load();
   try{houseRender();}catch(e){console.warn(e);}
   try{const D=DUNS[houseD()];if(hsSavedIn&&D){px=D.x0+HSEXIT[0];py=D.z0+HSEXIT[1]-1;player.setPosition(px*T+T/2,py*T+T/2+OY);if(stairHook)stairHook();}
@@ -5073,8 +5103,10 @@ function create(){
     const tName=this.add.text(8,5,'',{fontFamily:ff,fontSize:'14px',color:'#ffe066',fontStyle:'bold'}).setResolution(2);
     const tInfo=this.add.text(8,24,'',{fontFamily:ff,fontSize:'12px',color:'#f1e9c8',lineSpacing:3}).setResolution(2);
     const tipC=this.add.container(0,0,[tBg,tName,tInfo]).setScrollFactor(0).setDepth(1000).setVisible(false);
+    const hovBox=this.add.rectangle(0,0,T,T,0xffffff,0).setStrokeStyle(2,0xffe066,0.85).setDepth(390).setVisible(false);
     const hoverTip=p=>{
-      if(!p||p.wasTouch||menuC.visible||pinch){tipC.setVisible(false);return;}
+      hovBox.setVisible(false);
+      if(!p||p.wasTouch||menuC.visible||pinch||startOpen){tipC.setVisible(false);return;}
       if(sk.visible&&!gd.visible){
         // hovering a skill in the Skills window names it
         const lx=p.x-CX-SKX0,ly=p.y-CY-SKY0,c=Math.floor(lx/(SKCW+SKGAP)),r=Math.floor(ly/(SKCH+SKGAP));
@@ -5128,7 +5160,8 @@ function create(){
       }
       const blocked=(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||(sk.visible&&p.x<=CX+SKW&&p.y>=CY)||((chr.visible&&p.x<=CX+GCW&&p.y>=CY)||(bk.visible&&p.x<=CX+BKW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY)||(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)||(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)||(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY)||(shop.visible&&p.x>=SX&&p.x<=SX+SW)||p.y<OY||p.y>=OY+H*T||inZb(p);
       let m=null;
-      if(!blocked){const wp=p.positionToCamera(cam),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);m=mons.find(o=>o.alive&&o.x===tx&&o.y===ty)||null;}
+      if(!blocked){const wp=p.positionToCamera(cam),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);m=mons.find(o=>o.alive&&o.x===tx&&o.y===ty)||null;
+        const kd=p.isDown?'':tileKind(tx,ty);if(kd){hovBox.setPosition(tx*T+T/2,ty*T+T/2+OY).setStrokeStyle(2,kd==='fight'?0xff6b6b:0xffe066,0.85).setVisible(true);}}
       if(!m&&!blocked){
         const wp2=p.positionToCamera(cam),dx=Math.floor(wp2.x/T),dy=Math.floor((wp2.y-OY)/T),dd=ground.filter(d=>d.x===dx&&d.y===dy);
         if(dd.length){
@@ -5761,7 +5794,7 @@ function bookRender(){
   bkIdx=Math.max(0,Math.min(bkIdx,Math.max(0,n-1)));bkIdx-=bkIdx%2;
   bkL.setText(bkPg[bkIdx]||'');bkR.setText(bkPg[bkIdx+1]||'');
   bkNL.setText(String(bkIdx+1));bkNR.setText(bkIdx+1<n?String(bkIdx+2):'');
-  bkPrevT.setText(bkIdx>0?'< Back':'');if(bkPrevB)bkPrevB.setVisible(bkIdx>0);   // no empty Back box on the first pagebkNextT.setText(bkIdx+2>=n?'Close':'Next >');
+  bkPrevT.setText(bkIdx>0?'< Back':'');if(bkPrevB)bkPrevB.setVisible(bkIdx>0);/* no empty Back box on the first page */bkNextT.setText(bkIdx+2>=n?'Close':'Next >');
 }
 function bookOpen(text){
   [qp,chr,sk,cr,bk,smc,gd,spw,ftp,shop,dlg].forEach(o=>o.setVisible(false));
@@ -5800,6 +5833,7 @@ function openWcGate(tx,ty){
   scene.time.delayedCall(30000,closeG);
 }
 function tileAct(tx,ty){
+  try{mark(tx,ty);}catch(e){}
   if(grid[ty]&&grid[ty][tx]===SEALCH){sealedDoor(tx,ty);return;}
   if(houseTap(tx,ty))return;
   if(hwOn()){const pk=HW.pumps.find(q=>q.x===tx&&q.y===ty);if(pk){hwPick(pk);return;}}
@@ -5820,7 +5854,7 @@ function tileAct(tx,ty){
   }else if(ch==='.'){
     const path=bfs((x,y)=>x===tx&&y===ty);
     if(!path){msg("You can't get there.");return;}
-    mark(tx,ty);msg('');go(path,()=>pickup(tx,ty));
+    msg('');go(path,()=>pickup(tx,ty));
   }else if(ch in ROCKC){
     const t=trees[ty*MW+tx];
     const path=bfs((x,y)=>Math.abs(x-tx)+Math.abs(y-ty)===1);
@@ -7442,10 +7476,10 @@ function mpConnect(url){
 function mpUi(){
   if(MP.box)return;
   const st=document.createElement('style');
-  st.textContent='#mpBtn{position:fixed;left:8px;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:30;display:none;font:13px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;background:#2c2f38;border:1px solid #c9982a;border-radius:6px;padding:6px 10px;min-height:34px;cursor:pointer}'
+  st.textContent='#mpBtn{position:fixed;left:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:30;display:none;font:13px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;background:#2c2f38;border:1px solid #c9982a;border-radius:6px;padding:6px 10px;min-height:34px;cursor:pointer}'
    +'#mpBtn[aria-expanded="true"]{border-color:#ffe066}'
    +'#mpBadge{display:none;margin-left:6px;min-width:18px;padding:0 5px;border-radius:9px;background:#c0392b;color:#fff;font-size:11px;line-height:18px;text-align:center}'
-   +'#mpPanel{position:fixed;left:8px;top:calc(env(safe-area-inset-top,0px) + 96px);z-index:40;display:none;flex-direction:column;width:min(340px,calc(100vw - 16px));background:transparent;border:none;border-radius:8px;font:13px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;text-shadow:1px 1px 0 #000,-1px 0 0 #000,0 -1px 0 #000,0 1px 2px #000}'
+   +'#mpPanel{position:fixed;left:8px;top:calc(env(safe-area-inset-top,0px) + 48px);z-index:40;display:none;flex-direction:column;width:min(340px,calc(100vw - 16px));background:transparent;border:none;border-radius:8px;font:13px ui-monospace,Menlo,Consolas,monospace;color:#f1e9c8;text-shadow:1px 1px 0 #000,-1px 0 0 #000,0 -1px 0 #000,0 1px 2px #000}'
    +'#mpLog{height:min(180px,32vh);overflow-y:auto;padding:6px 8px;display:flex;flex-direction:column;gap:3px;overscroll-behavior:contain;-webkit-user-select:text;user-select:text}'
    +'#mpLog .ln{line-height:1.35;word-wrap:break-word;overflow-wrap:anywhere}#mpLog .nm{font-weight:700}#mpLog .sys{color:#d8d0b8;font-style:italic}#mpLog .gm{color:#ffe9a8}#mpLog .tm{color:#c8c0a8;font-size:11px;margin-right:4px}'
    +'#mpLog .empty{color:#a89a78}'
@@ -8680,6 +8714,7 @@ function moreMenu(show){
     const add=(label,ic,fn)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','menuitem');if(ic)b.append(ic);b.append(label);b.addEventListener('click',()=>{m.style.display='none';setTimeout(fn,0);});m.append(b);};
     add('Emotes',typeof emoteImg==='function'?emoteImg('smile',18):null,()=>{sndPanel(false);emoteMenu(true);placeAboveBar(document.getElementById('emMenu'));});
     add('Settings',null,()=>{emoteMenu(false);sndPanel(true);placeAboveBar(document.getElementById('sndMenu'));});
+    add('Log out',null,()=>{emoteMenu(false);sndPanel(false);if(window.oakLogoutNow)window.oakLogoutNow();});
     document.body.appendChild(m);
     // a tap anywhere else closes it (taps on the bottom bar are left to the More tab itself)
     document.addEventListener('pointerdown',e=>{if(m.style.display!=='flex'||m.contains(e.target))return;if(e.target===game.canvas&&e.clientY>=barTopPx())return;m.style.display='none';});
