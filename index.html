@@ -2545,7 +2545,7 @@ function qRender(){
       T2(20,y+66,'Reward: '+t.r+' coins, '+t.x+' '+TBSK[t.k][0]+' XP',{fontSize:'13px',color:'#ffe066',wordWrap:{width:QW-44}});
       T2(20,y+86,t.c?'Claimed':done?'Tap to claim!':'',{fontSize:'13px',color:t.c?'#8a8472':'#8fd27a',fontStyle:'bold'});
     });
-    T2(14,QH-26,'Tap a finished task to claim it. X closes.',{color:'#c9b27a'});
+    T2(14,QH-24,'Tap a finished task to claim it. X closes.',{fontSize:'12px',color:'#c9b27a'});
     return;
   }
   if(qView<0||!QUESTS[qView]){
@@ -2556,12 +2556,12 @@ function qRender(){
       T2(20,y+6,q.name,{fontSize:'15px',wordWrap:{width:QW-44}});
       T2(20,y+26,QSTAT[s][0],{fontSize:'13px',color:QSTAT[s][1]});
     });
-    T2(14,QH-26,'Tap a quest to see its steps.',{color:'#a89a78'});
+    T2(14,QH-24,'Tap a quest to see its steps.',{fontSize:'12px',color:'#c9b27a'});
     return;
   }
   const q=QUESTS[qView],s=q.st();qTitle.setText('');
   let y=12;
-  const title=T2(14,y,q.name,{fontSize:'18px',color:'#ffe066',fontStyle:'bold',wordWrap:{width:QW-56}});y+=title.height+4;
+  const title=T2(14,y,q.name,{fontSize:'16px',color:'#ffe066',fontStyle:'bold',wordWrap:{width:QW-56}});y+=title.height+4;
   const st=T2(14,y,QSTAT[s][0],{fontSize:'14px',color:QSTAT[s][1]});y+=st.height+8;
   const ds=T2(14,y,q.desc,{color:'#d8cfb0',wordWrap:{width:QW-28},lineSpacing:3});y+=ds.height+10;
   if(s===0){const sh=T2(14,y,q.start,{color:'#ffffff',wordWrap:{width:QW-28},lineSpacing:3});y+=sh.height+10;}
@@ -2577,7 +2577,7 @@ function qRender(){
   y+=6;
   const rw=T2(14,y,'Reward: '+q.reward,{color:'#ffe066',wordWrap:{width:QW-28},lineSpacing:3});y+=rw.height+10;
   if(s<2&&q.tip){const tp=T2(14,y,q.tip,{fontSize:'13px',color:'#a89a78',wordWrap:{width:QW-28},lineSpacing:3});y+=tp.height+8;}
-  T2(14,QH-26,'Tap X to go back.',{color:'#c9b27a'});
+  T2(14,QH-24,'Tap X to go back.',{fontSize:'12px',color:'#c9b27a'});
 }
 // ---- Task board: three small random jobs (kill, chop, mine, fish, cook, craft, forge, light fires), renewed every 24 hours of real time ----
 const TASK_MS=24*60*60*1000,TBCH='Ũ';
@@ -4492,11 +4492,13 @@ function create(){
 
   // Shop panel: opens when you tap the shopkeeper
   let SY=panelTop();const SX=10,SW=Math.max(240,Math.min(360,W*T-PW-6-SX-6)),SH=476,small={...font,fontSize:'14px'};SW0=SW;
+  // one look for every window: titles are bold gold, the help line at the bottom is small and muted
+  const TITLE={...small,fontSize:'16px',color:'#ffe066',fontStyle:'bold'},HINT={...small,fontSize:'12px',color:'#c9b27a'};
   shop=this.add.container(SX,SY).setDepth(950).setVisible(false);
   shop.add(this.add.rectangle(0,0,SW,SH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  shTitle=this.add.text(12,10,'Shop',small).setResolution(2);shop.add(shTitle);
+  shTitle=this.add.text(12,8,'Shop',TITLE).setResolution(2);shop.add(shTitle);
   shTabs=[];
-  shop.add(this.add.text(12,36,SW<330?'Right-click to examine. To sell, right-click a bag item.':'Right-click an item here to examine it. To sell: right-click an item in your bag.',{...small,fontSize:'11px',color:'#c9b27a',wordWrap:{width:SW-24}}).setResolution(2));
+  shop.add(this.add.text(12,36,SW<330?'Hold (or right-click) to examine. To sell, hold a bag item.':'Hold or right-click an item here to examine it. To sell: hold or right-click an item in your bag.',{...small,fontSize:'11px',color:'#c9b27a',wordWrap:{width:SW-24}}).setResolution(2));
   for(let i=0;i<SHVIS;i++){
     const by=SHY0+i*SHROW;
     const bg=this.add.rectangle(12,by,SW-34,40,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a);
@@ -4506,11 +4508,11 @@ function create(){
   }
   shTrack=this.add.rectangle(SW-11,SHY0,5,SHVIS*SHROW-4,0x3b3024).setOrigin(0);shop.add(shTrack);
   shBar=this.add.rectangle(SW-11,SHY0,5,20,0xc9b27a).setOrigin(0);shop.add(shBar);
-  shop.add(this.add.text(12,SH-26,'Tap outside to close.',small).setResolution(2));
+  shop.add(this.add.text(12,SH-24,'Red X closes.',HINT).setResolution(2));
   const DW=380,DH=330;
   dlg=this.add.container(SX,SY).setDepth(950).setVisible(false);
   dlg.add(this.add.rectangle(0,0,DW,DH,0x2a2218,0.97).setOrigin(0).setStrokeStyle(2,0xc9b27a));
-  dlgName=this.add.text(14,12,'',{...small,fontSize:'17px',color:'#ffe066',fontStyle:'bold'}).setResolution(2);
+  dlgName=this.add.text(14,12,'',TITLE).setResolution(2);
   dlgBody=this.add.text(14,46,'',{...small,fontSize:'16px',color:'#ffffff',wordWrap:{width:DW-28},lineSpacing:6}).setResolution(2);
   dlgHint=this.add.text(DW-12,17,'',{...small,fontSize:'11px',color:'#b9a97a'}).setOrigin(1,0).setResolution(2);
   dlg.add([dlgName,dlgBody,dlgHint]);
@@ -4546,7 +4548,7 @@ function create(){
   // Skills tab: its own panel in the same spot as Gear
   sk=this.add.container(CX,CY).setDepth(950).setVisible(false);
   sk.add(this.add.rectangle(0,0,SKW,SKH2,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  skCmb=this.add.text(14,10,'Skills',{...small,fontSize:'19px',color:'#ffe066',fontStyle:'bold'}).setResolution(2);
+  skCmb=this.add.text(14,8,'Skills',TITLE).setResolution(2);
   sk.add(skCmb);
   sk.add(this.add.rectangle(SKW-118,7,80,26,0x4a3c22).setOrigin(0).setStrokeStyle(2,0xb8892a));
   sk.add(this.add.text(SKW-78,20,'Titles',{...small,fontSize:'14px',color:'#ffe066'}).setOrigin(0.5).setResolution(2));
@@ -4561,16 +4563,16 @@ function create(){
     const f=this.add.rectangle(cx+8,cy+SKCH-10,0,6,SKCOL[k]).setOrigin(0);
     sk.add(f);skRows.push({num,f});
   }
-  sk.add(this.add.text(14,SKH2-26,'Tap a skill for its guide.',{...small,fontSize:'14px',color:'#a89a78'}).setResolution(2));
+  sk.add(this.add.text(14,SKH2-26,'Tap a skill for its guide.',HINT).setResolution(2));
   gd=this.add.container(CX,CY).setDepth(950).setVisible(false);
   gd.add(this.add.rectangle(0,0,GDW,GDH,0x1c150d,0.98).setOrigin(0).setStrokeStyle(2,0xc9b27a));
-  gdTitle=this.add.text(14,12,'',{...small,fontSize:'18px',color:'#ffe066',fontStyle:'bold',wordWrap:{width:GDW-28}}).setResolution(2);
+  gdTitle=this.add.text(14,12,'',{...TITLE,wordWrap:{width:GDW-28}}).setResolution(2);
   gdBody=this.add.text(14,66,'',{...small,fontSize:'16px',color:'#ffffff',wordWrap:{width:GDW-28},lineSpacing:6}).setResolution(2);
   gdTabs=[0,1].map(i=>{const t=this.add.text([12,128][i],64,'',small).setResolution(2);gd.add(t);return t;});
-  gdHint=this.add.text(14,GDH-40,'Tap X to go back.',{...small,fontSize:'14px',color:'#c9b27a',wordWrap:{width:GDW-28}}).setResolution(2);
+  gdHint=this.add.text(14,GDH-40,'Tap X to go back.',{...HINT,wordWrap:{width:GDW-28}}).setResolution(2);
   gd.add([gdTitle,gdBody,gdHint]);
   gdIc=this.add.image(GDW-34,32,'sk0').setScale(1.1).setVisible(false);gd.add(gdIc);
-  OBX=Math.round((W*T-OBW)/2);OBY=Math.round(OY+(H*T-OBH)/2);
+  OBW=Math.max(300,Math.min(500,Math.round(W*T)-12));OBX=Math.round((W*T-OBW)/2);OBY=Math.round(OY+(H*T-OBH)/2);
   bookW=this.add.container(OBX,OBY).setDepth(950).setVisible(false);
   {const ph=OBH-60,pw=(OBW-24)/2-1,mid=OBW/2,txt={...small,fontSize:'14px',color:'#3a2a14',wordWrap:{width:pw-28},lineSpacing:4},num={...small,fontSize:'11px',color:'#c9982a'};
    bookW.add(this.add.rectangle(0,0,OBW,OBH,0x5a3418).setOrigin(0).setStrokeStyle(3,0x2a1a0a));
@@ -4584,15 +4586,15 @@ function create(){
    bkL=this.add.text(24,30,'',txt).setResolution(2);bkR=this.add.text(mid+13,30,'',txt).setResolution(2);
    bkNL=this.add.text(12+pw/2,12+ph-16,'',num).setOrigin(0.5).setResolution(2);bkNR=this.add.text(mid+1+pw/2,12+ph-16,'',num).setOrigin(0.5).setResolution(2);
    bookW.add([bkL,bkR,bkNL,bkNR]);
-   bookW.add(this.add.rectangle(12,OBH-40,110,28,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
+   bkPrevB=this.add.rectangle(12,OBH-40,110,28,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a);bookW.add(bkPrevB);
    bookW.add(this.add.rectangle(OBW-122,OBH-40,110,28,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
    bkPrevT=this.add.text(67,OBH-26,'',{...small,color:'#ffe066'}).setOrigin(0.5).setResolution(2);
    bkNextT=this.add.text(OBW-67,OBH-26,'',{...small,color:'#ffe066'}).setOrigin(0.5).setResolution(2);
-   bookW.add([bkPrevT,bkNextT,this.add.text(mid,OBH-26,'Tap a page or scroll to flip',{...small,fontSize:'12px',color:'#c9b27a'}).setOrigin(0.5).setResolution(2)]);
+   bookW.add([bkPrevT,bkNextT,this.add.text(mid,OBH-26,OBW<460?'Tap to flip':'Tap a page or scroll to flip',{...small,fontSize:'12px',color:'#c9b27a'}).setOrigin(0.5).setResolution(2)]);
   }
   qp=this.add.container(CX,CY).setDepth(950).setVisible(false);
   qp.add(this.add.rectangle(0,0,QW,QH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  qTitle=this.add.text(14,10,'Quest Log',{...small,fontSize:'19px',color:'#ffe066',fontStyle:'bold'}).setResolution(2);qp.add(qTitle);
+  qTitle=this.add.text(14,8,'Quest Log',TITLE).setResolution(2);qp.add(qTitle);
   // Spells window: the spells your wand, staff and spellbook hold
   spX=W*T-SPW-6;spw=this.add.container(spX,CY).setDepth(950).setVisible(false);
   spw.add(this.add.rectangle(0,0,SPW,SPH,0x1c150d,0.98).setOrigin(0).setStrokeStyle(2,0xc9b27a));
@@ -4617,7 +4619,7 @@ function create(){
   // Craft tab: leather armour, magic gear, amulets and bowstrings
   cr=this.add.container(CX,CY).setDepth(950).setVisible(false);
   cr.add(this.add.rectangle(0,0,CRW,CRH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  cr.add(this.add.text(12,8,'Crafting bench',small).setResolution(2));
+  cr.add(this.add.text(12,7,'Crafting bench',TITLE).setResolution(2));
   crUp=this.add.text(CRW-80,6,'\u25B2',{...small,color:'#ffe066'}).setResolution(2);crDn=this.add.text(CRW-56,6,'\u25BC',{...small,color:'#ffe066'}).setResolution(2);
   cr.add([crUp,crDn]);
   crTabs=CRSHOW.map((c,i)=>{const t=this.add.text([12,76,140,204,284][i],30,CRCATS[c],small).setResolution(2);cr.add(t);return t;});
@@ -4630,7 +4632,7 @@ function create(){
   }
   cr.add(this.add.rectangle(CRW-11,60,5,CRVIS*CRP-4,0x3b3024).setOrigin(0));
   crBar=this.add.rectangle(CRW-11,60,5,20,0xc9b27a).setOrigin(0);cr.add(crBar);
-  cr.add(this.add.text(12,CRH-24,'Tap a tab, then an item.',{...small,fontSize:'12px',color:'#a89a78'}).setResolution(2));
+  cr.add(this.add.text(12,CRH-24,'Tap a tab, then an item.',HINT).setResolution(2));
   const SMH=394;
   smc=this.add.container(CX,CY).setDepth(950).setVisible(false);
   smc.add(this.add.rectangle(0,0,CRW,SMH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
@@ -4639,7 +4641,7 @@ function create(){
     const by=30+i*40;
     smc.add(this.add.rectangle(12,by,CRW-24,34,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
     const im=this.add.image(29,by+17,'iaxe1');smc.add(im);smImgs.push(im);
-    const t=this.add.text(48,by+3,'',small).setResolution(2);smc.add(t);smT.push(t);
+    const t=this.add.text(48,by+1,'',{...small,fontSize:'13px',lineSpacing:1}).setResolution(2);smc.add(t);smT.push(t);   // two lines that fit inside the 34px row
   }
   smHdr=this.add.text(12,352,'',{...small,fontSize:'13px',lineSpacing:3}).setResolution(2);
   smc.add(smHdr);
@@ -4649,7 +4651,7 @@ function create(){
   {const narrow=CX+CW+6>W*T-PW-6;BKC=narrow?6:7;BKP=narrow?35:41;BKZ=narrow?33:39;BKW=narrow?12*2+6*35:CW;BKB=narrow?30+11*35:406;}   // see bankClick
   bk=this.add.container(CX,CY).setDepth(950).setVisible(false);
   bk.add(this.add.rectangle(0,0,BKW,BKH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  bk.add(this.add.text(12,8,'Bank',small).setResolution(2));
+  bk.add(this.add.text(12,7,'Bank',TITLE).setResolution(2));
   for(let i=0;i<63;i++){
     const sx=12+(i%BKC)*BKP,sy=30+Math.floor(i/BKC)*BKP,hz=BKZ/2;
     const ic=this.add.image(sx+hz,sy+hz,'log').setVisible(false).setScale(BKZ<39?0.9:1);
@@ -4662,12 +4664,12 @@ function create(){
   bk.add(this.add.rectangle(126,BKB,96,28,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
   bkBtn=this.add.text(174,BKB+14,'',small).setOrigin(0.5).setResolution(2);
   bk.add(bkBtn);
-  bk.add(this.add.text(12,BKB+(BKW<300?31:36),'Tap a bank item to take it out.\nTap a bag item to put it in.',{...small,fontSize:BKW<300?'11px':'12px',lineSpacing:BKW<300?0:2}).setResolution(2));
+  bk.add(this.add.text(12,BKB+(BKW<300?31:36),'Tap a bank item to take it out.\nTap a bag item to put it in.',{...small,fontSize:BKW<300?'11px':'12px',color:'#c9b27a',lineSpacing:BKW<300?0:2}).setResolution(2));
 
   const FTW=CRW,FTH=58+5*FTP+34;
   ftp=this.add.container(CX,CY).setDepth(950).setVisible(false);
   ftp.add(this.add.rectangle(0,0,FTW,FTH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  ftp.add(this.add.text(12,8,'Fletching: tap to make',small).setResolution(2));
+  ftp.add(this.add.text(12,7,'Fletching',TITLE).setResolution(2));
   ftTabs=FTCATS.map((nmz,i)=>{const t=this.add.text([12,110,190,290][i],30,nmz,small).setResolution(2);ftp.add(t);return t;});
   FL.slice(0,5).forEach(([out],i)=>{
     const by=58+i*FTP;
@@ -4676,7 +4678,7 @@ function create(){
     const t=this.add.text(62,by+6,'',{...small,fontSize:'14px',lineSpacing:3,wordWrap:{width:FTW-24-60}}).setResolution(2);ftp.add(t);
     ftRows.push({im,t});
   });
-  ftp.add(this.add.text(12,FTH-24,'Tap outside to close.',small).setResolution(2));
+  ftp.add(this.add.text(12,FTH-24,'Tap an item to make it. Red X closes.',HINT).setResolution(2));
   FTWd=FTW;FTHt=FTH;
   resetTxt=this.add.text(W*T-10,7,'',font).setOrigin(1,0).setVisible(false);   // the Reset save button is gone
   logoutTxt=this.add.text(W*T-10,7,'Log out',font).setOrigin(1,0).setResolution(2).setAlpha(0.6).setDepth(398);
@@ -4707,7 +4709,7 @@ function create(){
   const WMW=360,WMH=476;
   const wm=this.add.container(CX,CY).setDepth(950).setVisible(false);wmHide=()=>wm.setVisible(false);
   wm.add(this.add.rectangle(0,0,WMW,WMH,0x2a2218,0.96).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  const wmTitle=this.add.text(12,8,'World map',small).setResolution(2);wm.add(wmTitle);
+  const wmTitle=this.add.text(12,7,'World map',TITLE).setResolution(2);wm.add(wmTitle);
   {
     const WC={s:'#1d5a50',v:'#5a30a8','~':'#3f7fc4',F:'#5aa0e0',G:'#5aa0e0',H:'#5aa0e0','Ń':'#7fe0d0',T:'#2e6b2a',O:'#2a5a24',Y:'#c2501f',R:'#8a8a8a',I:'#a0867a',M:'#9aa0a8','(':'#8a7ab0',')':'#7a9ab0',W:'#7a5a38',V:'#8b9096','!':'#b8860b','*':'#c28a52','+':'#6a4a9a',':':'#4b4458',L:'#8ab04a',P:'#b9b5ab'};
     const FC={dirt:'#9a7650',stone:'#b9b5ab',wood:'#b07a45',plank:'#9b6236',tile:'#e3dfd2',dfloor:'#3a3547',cavefloor:'#3b342c'};
@@ -4726,7 +4728,7 @@ function create(){
   const wmDot=this.add.rectangle(0,0,6,6,0xffffff).setStrokeStyle(1,0x000000);
   wm.add(wmDot);this.tweens.add({targets:wmDot,alpha:0.25,duration:450,yoyo:true,repeat:-1});
   wm.add(this.add.text(12,WMH-42,'White: you   Yellow: shop and bank   Red: boss',{...small,fontSize:'12px'}).setResolution(2));
-  wm.add(this.add.text(12,WMH-24,'Blue: altar. Tap to zoom, drag to look around.',{...small,fontSize:'12px'}).setResolution(2));
+  wm.add(this.add.text(12,WMH-24,'Blue: altar. Tap to zoom, drag to look around.',HINT).setResolution(2));
   const wDots=[],dDots=DUNS.map(()=>[]);
   {
     const dot=(x,y,col,L)=>{const r=this.add.rectangle(0,0,5,5,col).setStrokeStyle(1,0x000000);r.mx=x;r.my=y;wm.add(r);L.push(r);};
@@ -4822,6 +4824,18 @@ function create(){
   miniUp();
   const miniCovered=p=>(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY&&p.y<=CY+SPH);
   const inMini=p=>miniImg.visible&&!miniCovered(p)&&p.x>=MMX-2&&p.x<=MMX-2+MMPX&&p.y>=MMY-2&&p.y<=MMY-2+MMPY;
+  // Esc closes the game window on top, the same as its red X (HTML menus close themselves)
+  this.input.keyboard.on('keydown-ESC',()=>{
+    const domOpen=['sndMenu','emMenu','moreMenu','hsWin','trWin','hwWin','fzWin','ttlWin','welBox'].some(i=>{const e=document.getElementById(i);return e&&getComputedStyle(e).display!=='none';})||(MP.panel&&MP.panel.style.display==='flex');
+    if(domOpen)return;
+    if(menuC.visible){menuC.setVisible(false);return;}
+    if(wm.visible){wm.setVisible(false);ui();return;}
+    if(dlg.visible){dlg.setVisible(false);ui();return;}
+    if(bookW.visible){bookW.setVisible(false);ui();return;}
+    if(gd.visible){gd.setVisible(false);sk.setVisible(true);ui();return;}
+    if(qp.visible&&qView>=0){qView=-1;ui();return;}
+    for(const o of [shop,bk,cr,smc,ftp,qp,sk,chr,spw])if(o.visible){o.setVisible(false);ui();return;}
+  });
   // every window gets a red X in its top-right corner; windows no longer close when you tap outside them
   [[wm,WMW],[sk,SKW],[qp,QW],[bookW,OBW],[gd,GDW],[cr,CRW],[smc,CRW],[bk,BKW],[ftp,FTW],[shop,SW],[dlg,DW]].forEach(([c,w])=>{
     c.add(this.add.rectangle(w-30,4,26,22,0x7a2a1a).setOrigin(0).setStrokeStyle(1,0xe0b070));
@@ -4899,22 +4913,22 @@ function create(){
   // walking away from a bank, shop, crafting bench or anvil closes its window (one step is fine, two or more closes it)
   {let openAt=null;
    this.time.addEvent({delay:200,loop:true,callback:()=>{
-     const open=(bk&&bk.visible)||(shop&&shop.visible)||(cr&&cr.visible)||(smc&&smc.visible);
+     const open=(bk&&bk.visible)||(shop&&shop.visible)||(cr&&cr.visible)||(smc&&smc.visible)||(dlg&&dlg.visible);
      if(!open){openAt=null;return;}
      if(!openAt){openAt={x:px,y:py,d:curD};return;}
      if(curD!==openAt.d||Math.max(Math.abs(px-openAt.x),Math.abs(py-openAt.y))>1){
-       const what=bk.visible?'bank':shop.visible?'shop':cr.visible?'crafting bench':'anvil';
-       bk.setVisible(false);shop.setVisible(false);cr.setVisible(false);smc.setVisible(false);openAt=null;ui();
-       msg('You walk away from the '+what+'.');
+       const what=bk.visible?'bank':shop.visible?'shop':cr.visible?'crafting bench':smc.visible?'anvil':'';
+       bk.setVisible(false);shop.setVisible(false);cr.setVisible(false);smc.setVisible(false);dlg.setVisible(false);openAt=null;ui();
+       if(what)msg('You walk away from the '+what+'.');
      }
    }});}
   // Region names: a banner fades in when you walk into a new part of the world, and the name stays under the clock
   {
     const ff='ui-monospace, Menlo, Consolas, monospace';
     const bx=W*T/2,by=OY+Math.round(H*T*0.2);
-    const bTxt=this.add.text(bx,by,'',{fontFamily:'Georgia, "Times New Roman", serif',fontSize:'30px',fontStyle:'bold',color:'#ffe066',stroke:'#1b1208',strokeThickness:6}).setOrigin(0.5).setResolution(2).setDepth(960).setAlpha(0);
-    const bSub=this.add.text(bx,by-28,'',{fontFamily:ff,fontSize:'12px',color:'#f1e9c8',stroke:'#1b1208',strokeThickness:4,letterSpacing:3}).setOrigin(0.5).setResolution(2).setDepth(960).setAlpha(0);
-    const bL=this.add.rectangle(bx,by+24,10,2,0xc9b27a).setDepth(960).setAlpha(0);
+    const bTxt=this.add.text(bx,by,'',{fontFamily:'Georgia, "Times New Roman", serif',fontSize:'30px',fontStyle:'bold',color:'#ffe066',stroke:'#1b1208',strokeThickness:6}).setOrigin(0.5).setResolution(2).setDepth(940).setAlpha(0);
+    const bSub=this.add.text(bx,by-28,'',{fontFamily:ff,fontSize:'12px',color:'#f1e9c8',stroke:'#1b1208',strokeThickness:4,letterSpacing:3}).setOrigin(0.5).setResolution(2).setDepth(940).setAlpha(0);
+    const bL=this.add.rectangle(bx,by+24,10,2,0xc9b27a).setDepth(940).setAlpha(0);
     const rTxt=this.add.text(MMX-2+MMPX,MMY-2+MMPY+25,'',{fontFamily:ff,fontSize:'12px',color:'#f1e9c8',backgroundColor:'rgba(20,22,27,0.75)',padding:{x:5,y:2}}).setOrigin(1,0).setResolution(2).setDepth(802);
     this.regUi={rTxt,bTxt,bSub,bL};   // moved with the minimap and clock when the screen size changes
     let shown='',pend='',pendN=0,bTw=null;
@@ -4932,7 +4946,7 @@ function create(){
       if(nm!==pend){pend=nm;pendN=1;return;}
       if(++pendN<2)return;          // stay a moment before the banner shows, so walking along a border does not flicker
       shown=nm;pend='';pendN=0;
-      if(nm)show(nm,r.d?(nm==='Your House'?'HOME':'DUNGEON'):'ENTERING');
+      if(nm)msg(nm==='Your House'?'You enter your house.':'You enter '+nm+'.');   // a chat line instead of the big banner (show() is no longer used)
     };
     this.time.addEvent({delay:300,loop:true,callback:tick});
   }
@@ -5740,14 +5754,14 @@ function bookPages(text,obj,roomH){
   return out.length?out:['The pages are blank.'];
 }
 // The book window: an open book with text on both pages; flip with Next / Back, a tap on a page, or the mouse wheel
-let bookW,bkL,bkR,bkNL,bkNR,bkPrevT,bkNextT,bkIdx=0,bkPg=[];const OBW=500,OBH=340,OBROOM=OBH-60-42;
+let bookW,bkL,bkR,bkNL,bkNR,bkPrevT,bkNextT,bkIdx=0,bkPg=[];let bkPrevB=null,OBW=500;const OBH=340,OBROOM=OBH-60-42;   // OBW shrinks to fit a phone screen when the game starts
 let OBX=0,OBY=0;
 function bookRender(){
   const n=bkPg.length;
   bkIdx=Math.max(0,Math.min(bkIdx,Math.max(0,n-1)));bkIdx-=bkIdx%2;
   bkL.setText(bkPg[bkIdx]||'');bkR.setText(bkPg[bkIdx+1]||'');
   bkNL.setText(String(bkIdx+1));bkNR.setText(bkIdx+1<n?String(bkIdx+2):'');
-  bkPrevT.setText(bkIdx>0?'< Back':'');bkNextT.setText(bkIdx+2>=n?'Close':'Next >');
+  bkPrevT.setText(bkIdx>0?'< Back':'');if(bkPrevB)bkPrevB.setVisible(bkIdx>0);   // no empty Back box on the first pagebkNextT.setText(bkIdx+2>=n?'Close':'Next >');
 }
 function bookOpen(text){
   [qp,chr,sk,cr,bk,smc,gd,spw,ftp,shop,dlg].forEach(o=>o.setVisible(false));
@@ -7501,7 +7515,8 @@ function mpUi(){
   MP.box=box;MP.btn=btn;MP.input=inp;MP.panel=panel;
 }
 // the chat box is there whenever you are in the game, online or not (it also holds the game's messages)
-setInterval(()=>{try{if(typeof player==='undefined'||!player)return;if(!MP.box)mpUi();const show=!startOpen;if(MP.btn.style.display!==(show?'block':'none'))MP.btn.style.display=show?'block':'none';if(!show&&MP.chatOpen)MP.chatOpen(false);}catch(e){}},500);
+setInterval(()=>{try{if(typeof player==='undefined'||!player)return;if(!MP.box)mpUi();const show=!startOpen;if(MP.btn.style.display!==(show?'block':'none'))MP.btn.style.display=show?'block':'none';if(!show&&MP.chatOpen)MP.chatOpen(false);
+  const tb=document.getElementById('tutBar'),pn=MP.panel;if(pn){let top='';if(tb&&getComputedStyle(tb).display!=='none'){const r=tb.getBoundingClientRect(),q=MP.btn.getBoundingClientRect();if(r.bottom>q.bottom+6)top=Math.round(r.bottom+6)+'px';}if(pn.style.top!==top)pn.style.top=top;}}catch(e){}},500);
 // ---- Playing together inside Claude: everyone who has this game open at the same time shares a live "room".
 // Each player's spot, looks and last chat line travel as their room "presence"; nothing is stored, and each
 // player's progress still saves on their own device. If a game server address is set, that is used instead.
@@ -8685,14 +8700,7 @@ const WB={every:3600000,window:1200000,warn:300000,
 const wbSlot=now=>Math.floor((now||Date.now())/WB.every);
 const wbSpot=slot=>WB.spots[((slot*2654435761)>>>0)%WB.spots.length];
 const wbMon=()=>mons.find(m=>m.t.world);
-function wbBanner(text){
-  try{
-    let b=document.getElementById('wbBan');
-    if(!b){b=document.createElement('div');b.id='wbBan';b.style.cssText='position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 48px);transform:translate(-50%,-8px);z-index:42;max-width:min(520px,calc(100vw - 24px));padding:9px 16px;border-radius:8px;background:rgba(32,35,42,.95);border:1px solid #c9982a;border-left:4px solid #e0b040;color:#f1e9c8;font:14px/1.4 ui-monospace,Menlo,Consolas,monospace;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.5);pointer-events:none;opacity:0;transition:opacity .35s,transform .35s';document.body.appendChild(b);}
-    b.textContent=text;b.style.display='block';void b.offsetWidth;b.style.opacity='1';b.style.transform='translate(-50%,0)';
-    clearTimeout(WB.ban);WB.ban=setTimeout(()=>{b.style.opacity='0';b.style.transform='translate(-50%,-8px)';setTimeout(()=>{b.style.display='none';},450);},7000);
-  }catch(e){}
-}
+function wbBanner(text){msg(text);}   // events (boss spawns, Halloween, Fishing Frenzy) go to the chat box; no pop-up banner
 function wbSay(key,text){if(WB.said[key])return;WB.said[key]=1;msg(text);wbBanner(text);}
 function wbTick(){
   if(!player||startOpen)return;
