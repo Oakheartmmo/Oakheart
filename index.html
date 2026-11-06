@@ -857,7 +857,7 @@ const NKD=['+1 damage','+8% gathering success','+6 max health','+2 defense','+1 
 const RGD=['+3 max health','+5% gathering success','+1 damage','+1 defense','+1 damage, +3% gathering, +1 defense','+2 damage, +2 defense, lets you see in the dark'];   // ring powers
 const amDmg=()=>([1,0,0,0,1][gear.nk]||0)+([0,0,1,0,1,2][gear.rg]||0),amGath=()=>([0,.08,0,0,.04][gear.nk]||0)+([0,.05,0,0,.03][gear.rg]||0),amHp=()=>([0,0,6,0,0][gear.nk]||0)+([3,0,0,0,0][gear.rg]||0),amDef=()=>([0,0,0,2,1][gear.nk]||0)+([0,0,0,1,1,2][gear.rg]||0);
 const dmgPray=()=>amDmg()+(pOn('might')?2:0)+(pOn('piety')?3:0)+(Date.now()<mightUntil?3:0),spellPray=()=>amDmg()+(pOn('arcane')?2:0)+(pOn('piety')?3:0)+(Date.now()<focusUntil?4:0),defPray=()=>(pOn('skin')?2:0)+(pOn('piety')?3:0)+(Date.now()<skinUntil?3:0);
-const ammo={t:-1,n:0},skRows=[],SKCW=98,SKCH=62,SKGAP=6,SKX0=27,SKY0=44,SKROWS=6,SKW=SKX0*2+3*SKCW+2*SKGAP,SKH2=SKY0+SKROWS*SKCH+(SKROWS-1)*SKGAP+34;
+const ammo={t:-1,n:0},skRows=[],SKCW=44,SKCH=39,SKGAP=2,SKX0=8,SKY0=34,SKROWS=6,SKW=SKX0*2+3*SKCW+2*SKGAP,SKH2=SKY0+SKROWS*SKCH+(SKROWS-1)*SKGAP+22;
 // Skills window order: combat first, then gathering, then crafting (numbers are skill ids)
 const SKORD=[3,4,12,5,6,0,1,2,7,8,9,10,15,13,14,16,17,18];   // no Combat level tile: it shows on the Gear screen
 const SKCOL=[0x6fbf4a,0x4a9fd8,0xb0b4ba,0xd8574a,0xe0a030,0x5a8fd8,0xd84a8a,0xc0c4cc,0xff7a2a,0xc98a5a,0xb58a4a,0xffe066,0xb06be0,0xf0e6a0,0x8fd05a,0xc98a7a,0x8a8aa8,0xc9a46a,0xc03a3a];
@@ -866,7 +866,7 @@ const skHi=[];
 const skXpAll=()=>[xp,fxp,mxp,cxp,akxp,dxp,hxp,sxp,fmxp,ckxp,fkxp,0,mgxp,pxp,frxp,cfxp,thxp,cnxp,slxp],SKDIV=[50,50,50,100,100,100,40,50,50,50,50,1,50,PDIV,50,50,50,50,50];
 let dlgQuestR,dlgQuestT,dlgExtra=0,dlgBY={t:0,q:0,h:0},dlgHealR=null,dlgHealT=null,shTrack=null,dlgPrevT,qp,qTab,qView=-1,qObjs=[],qTitle,dlgFull='',dlgOff=0,dlgHint,DLG_W=280,DLG_H=230,dlg,dlgName,dlgBody,dlgNextT,dlgTradeR,dlgTradeT,dlgNpc=null,dlgIdx=0,shTitle,shTab=0,shOff=0,shRows=[],shTabs=[],shBar,shUp,shDn,crOff=0,crRows=[],crUp,crDn,crBar,crDrag=null,ftp,ftRows=[],ammoTxt,FTWd=340,FTHt=480;
 const ranged=()=>gear.bw>=0&&ammo.n>0;
-const ZMIN=0.75,ZMAX=2;let zoomLv=1,zoomSoft=false;const uiObjs=[];let menuScr={x:0,y:0};
+const ZMIN=0.75,ZMAX=2;let zoomLv=1,zoomSoft=false,RK=1,sharpGfx=true;try{sharpGfx=localStorage.getItem('oakSharp')!=='0';}catch(e){}window.oakRefit=null;const uiObjs=[];   // RK: real screen pixels drawn per game pixel (1, or 2 on sharp screens) - see fitReslet menuScr={x:0,y:0};
 let gdIc,gdOff=0,gdFull='',gdHint,gdK=-1,gdTab=0,gdTabs=[],gd,gdTitle,gdBody,topBar,botBar,resetTxt,logoutTxt,smUp,smDn;
 let MAXHP=20;
 // Defense per equipped piece (head, body, hands, feet); each point cuts the slime's hit chance by 3%
@@ -894,7 +894,7 @@ const SMITH=[
 let smOff=0; // how far the forge list is scrolled
 const SMCATS=['Tools','Weapons','Armor'];
 // Equipment slots: [key, x, y, label] inside the Gear panel
-const SSZ=48,SLOTS=[['hd',12,8,'Head'],['bd',12,62,'Body'],['hn',12,116,'Hands'],['ft',12,170,'Feet'],['am',12,224,'Ammo'],['cp',300,8,'Back'],['wp',300,62,'Weapon'],['sh',300,116,'Shield\n/ Book'],['nk',300,170,'Amulet'],['rg',156,176,'Ring'],['pt',300,224,'Pet']];
+const SSZ=34,SLOTS=[['hd',8,32,'Head'],['bd',8,69,'Body'],['hn',8,106,'Hands'],['ft',8,143,'Feet'],['am',8,180,'Ammo'],['cp',110,32,'Back'],['wp',110,69,'Weapon'],['sh',110,106,'Shield\n/ Book'],['nk',110,143,'Amulet'],['rg',59,106,'Ring'],['pt',110,180,'Pet']];   // Gear panel is 152 x 300, the bag's size
 const GT={hd0:'band',hd1:'hat',hd2:'helm',bd0:'tunic',bd1:'vest',bd2:'apron'};
 const AXES=['Bronze axe','Iron axe','Steel axe','Mithril axe','Adamant axe'],NETS=['Small net','Big net','Master net','Mithril-weave net','Adamant-weave net'],COST=[10,40,120];
 const PIKS=['Bronze pickaxe','Iron pickaxe','Steel pickaxe','Mithril pickaxe','Adamant pickaxe'],TOOLN={pt:['Baby groblin','Goblin pup','Wolf pup','Baby ogre','Chick','Calf','Pet rat','Piglet','Fawn','Garden snake','Spiderling','Bear cub','Mini wizard','Mini Warlord','Mini Rat King','Mini Frogking','Baby crab','Sand sprite','Gnome child','Elf child','Mini scarecrow'],axe:AXES,net:NETS,pik:PIKS,hd:['Lumberjack headband','Bucket hat','Miner helmet','Bronze helm','Iron helm','Steel helm','Mithril helm','Adamant helm','Top hat','Warlord crown'],bd:['Lumberjack tunic','Fisher vest','Miner apron','Bronze platebody','Iron platebody','Steel platebody','Mithril platebody','Adamant platebody'],wp:['Bronze sword','Iron sword','Steel sword','Mithril sword','Adamant sword'],sp:['Bronze spear','Iron spear','Steel spear','Mithril spear','Adamant spear','Red pitchfork'],wd:['Apprentice wand','Adept wand','Expert wand','Master wand','Archmage wand'],st:['Apprentice staff','Adept staff','Expert staff','Master staff','Archmage staff','Frog staff'],bk:['Apprentice spellbook','Adept spellbook','Expert spellbook','Master spellbook','Archmage spellbook'],fl:['Bronze flail','Iron flail','Steel flail','Mithril flail','Adamant flail'],tw:['Bronze 2H sword','Iron 2H sword','Steel 2H sword','Mithril 2H sword','Adamant 2H sword'],sh:['Bronze shield','Iron shield','Steel shield','Mithril shield','Adamant shield','Bone shield'],hn:['Leather gloves','Iron gauntlets','Mithril gauntlets','Adamant gauntlets'],ft:['Work boots','Iron-toe boots','Mithril-toe boots','Adamant-toe boots']},GC=[25,80];
@@ -1124,7 +1124,7 @@ function knock(o,fx,fy,amt){
 }
 // the bag button's place on screen, as a point in the world (it moves with the camera and the zoom)
 function bagPoint(){
-  try{const u=uiObjs.find(q=>q.o===logTxt);if(!u)return null;return scene.cameras.main.getWorldPoint(u.x,u.y-12);}catch(e){return null;}
+  try{const u=uiObjs.find(q=>q.o===logTxt);if(!u)return null;return scene.cameras.main.getWorldPoint(u.x*RK,(u.y-12)*RK);}catch(e){return null;}
 }
 function bagPulse(){
   try{if(!logTxt||logTxt._pl)return;logTxt._pl=1;const sx=logTxt.scaleX,sy=logTxt.scaleY;
@@ -1136,7 +1136,7 @@ function flyToBag(wx,wy,id){
     if(!scene||!logTxt)return;
     const tex=id==='coin'?'coin':icon(id);if(!tex||!scene.textures.exists(tex))return;
     const im=scene.add.image(wx,wy,tex).setDepth(790).setScale(0.8);
-    const z=scene.cameras.main.zoom;
+    const z=zoomLv;
     scene.tweens.addCounter({from:0,to:1,duration:560,ease:'Sine.easeIn',onUpdate:tw=>{
       const u=tw.getValue(),b=bagPoint()||{x:wx,y:wy};
       const x=wx+(b.x-wx)*u,y=wy+(b.y-wy)*u-Math.sin(Math.min(1,u*1.15)*Math.PI)*34/z;
@@ -1345,9 +1345,10 @@ function sndPanel(open){
     document.head.appendChild(st);
     b=document.createElement('button');b.id='sndBtn';b.type='button';b.title='Settings';b.setAttribute('aria-label','Settings');b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','sndMenu');
     m=document.createElement('div');m.id='sndMenu';m.setAttribute('role','dialog');m.setAttribute('aria-label','Sound');
-    m.innerHTML='<b>Settings</b><label for="sndMus">Music</label><input id="sndMus" type="range" min="0" max="100"><label for="sndFx">Effects</label><input id="sndFx" type="range" min="0" max="100"><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="sndShk" type="checkbox"> Screen shake</label><label style="display:flex;gap:8px;align-items:center;margin-top:4px"><input id="sndXp" type="checkbox"> XP drops</label><button type="button" class="mute"></button>';
+    m.innerHTML='<b>Settings</b><label for="sndMus">Music</label><input id="sndMus" type="range" min="0" max="100"><label for="sndFx">Effects</label><input id="sndFx" type="range" min="0" max="100"><label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input id="sndShk" type="checkbox"> Screen shake</label><label style="display:flex;gap:8px;align-items:center;margin-top:4px"><input id="sndXp" type="checkbox"> XP drops</label><label style="display:flex;gap:8px;align-items:center;margin-top:4px" title="Turn off if the game feels slow on your phone"><input id="sndSharp" type="checkbox"> Sharp graphics</label><button type="button" class="mute"></button>';
     document.body.append(b,m);
     const mus=m.querySelector('#sndMus'),fx=m.querySelector('#sndFx'),mu=m.querySelector('.mute');
+    const shp=m.querySelector('#sndSharp');shp.checked=sharpGfx;shp.addEventListener('change',()=>{sharpGfx=shp.checked;try{localStorage.setItem('oakSharp',sharpGfx?'1':'0');}catch(e){}if(window.oakRefit)window.oakRefit();});
     const xpc=m.querySelector('#sndXp');xpc.checked=showXpDrops;xpc.addEventListener('change',()=>{showXpDrops=xpc.checked;try{localStorage.setItem('oakXpDrops',showXpDrops?'1':'0');}catch(e){}});
     const shk=m.querySelector('#sndShk');shk.checked=juiceShake;shk.addEventListener('change',()=>{juiceShake=shk.checked;try{localStorage.setItem('oakShake',juiceShake?'1':'0');}catch(e){}if(juiceShake)shake(120,0.004);});
     mus.value=Math.round(SND.set.music*100);fx.value=Math.round(SND.set.fx*100);
@@ -1435,7 +1436,7 @@ function purge(id){    // remove every one of an item
 // Saving: stored in this browser on this device (localStorage)
 const KEY='woodcutter-save-v1';
 let savedPos=null,saveOK=false;
-let tabIc=[],tabHi=[],tabHov=[],moreTxt=null,wmPtr=null;   // wmPtr: drag and zoom on the world map   // the bottom menu: a picture and a highlight for each button
+let tabIc=[],tabHi=[],tabHov=[],moreTxt=null,wmPtr=null,qpPlace=null;   // qpPlace: moves the quest window between its small list size and its big reading size   // wmPtr: drag and zoom on the world map   // the bottom menu: a picture and a highlight for each button
 let welSeen=false;
 let wbK=0,ttlCur='',ttlReset=false;
 let tut=99;
@@ -1561,7 +1562,8 @@ let msgBg=null,msgFit=null;
 const ui=()=>{fixStacks();if(rightHook)rightHook();petUp();MAXHP=20+2*(hplvl()-1)+amHp();if(hp>MAXHP)hp=MAXHP;hpUi();tabMark();titleCheck();statTxt.setText('Skills').setColor(sk.visible?'#ffe066':'#f1e9c8');gtab.setText('Gear').setColor(chr.visible?'#ffe066':'#f1e9c8');logTxt.setText((inv.length+(coins>0&&inv.length<CAPMAX?1:0))+'/'+CAPMAX).setColor(bag.visible?'#ffe066':'#f1e9c8');if(selIdx>=inv.length||inv[selIdx]!==selId)selIdx=-1;if(selBox){selBox.setVisible(selIdx>=0);if(selIdx>=0)selBox.setPosition(4+(selIdx%4)*36,4+Math.floor(selIdx/4)*36);}slots.forEach((s,i)=>{s.setVisible(i<inv.length);if(i<inv.length)s.setTexture(icon(inv[i]));const q=i<inv.length&&STACKS.test(inv[i])?stackN(inv[i]):0;if(slotN[i]){slotN[i].setVisible(q>1);if(q>1)slotN[i].setText(q>=100000?'99k+':q>=10000?Math.floor(q/1000)+'k':String(q));}});{const cq=coins;pouchN.setText(cq>=100000?'99k+':cq>=10000?Math.floor(cq/1000)+'k':String(cq));pouchL.setText(cq>0?'Coins: '+cq.toLocaleString('en-US'):'');{const pi=inv.length,show=cq>0&&pi<CAPMAX,px0=4+(pi%4)*36,py0=4+Math.floor(pi/4)*36;pouchR.setVisible(show).setPosition(px0,py0);pouchI.setVisible(show).setPosition(px0+17,py0+17);pouchN.setVisible(show).setPosition(px0+32,py0+32);}}if(qTab)qTab.setText('Quests').setColor(qp&&qp.visible?'#ffe066':'#f1e9c8');if(qp&&qp.visible)qRender();ctab.setText(curSpell()?'Spells*':'Spells').setColor(spw&&spw.visible?'#ffe066':curSpell()?'#e8c8ff':'#f1e9c8');updateSpells();shopRefresh();
   dress();
   const a=lvl(),b=flvl(),k=(v,n)=>(v>=n?'[x] ':'[ ] ');
-  chrTxt.setText(APP.name+'\nTap a slot to take the item off.\nDefense '+def()+'     Combat level '+clvl()+'\nTrees +'+pc(boost('wc'))+'%  Fish +'+pc(boost('fish'))+'%  Rocks +'+pc(boost('mine'))+'%\nGloves +'+pc(gspeed())+'% speed   Boots +'+Math.round((200/walkMs()-1)*100)+'%\nWeapon +'+wpnBonus()+'   Bow +'+(gear.bw>=0?2*(gear.bw+1):0)+(ammo.n>0?'   Arrows '+ammo.n:'')+'\nMagic '+mglvl()+(eqMagic().length?'   '+eqMagic().map(id=>nm(id).split(' ').pop()+' '+chargeOf(id)+'/'+maxCharges(id)).join('  '):''));
+  const sg=v=>(v<0?'':'+')+v,bt=Math.round((200/walkMs()-1)*100);
+  chrTxt.setText('Defense '+def()+' Combat '+clvl()+'\nTrees +'+pc(boost('wc'))+'% Fish +'+pc(boost('fish'))+'%\nRocks +'+pc(boost('mine'))+'% Speed +'+pc(gspeed())+'%\nBoots '+sg(bt)+'% Weapon +'+wpnBonus()+'\nBow +'+(gear.bw>=0?2*(gear.bw+1):0)+(ammo.n>0?' Arrows '+ammo.n:'')+'\nMagic '+mglvl()+(eqMagic().length?' '+eqMagic().slice(0,1).map(id=>nm(id).split(' ').pop()+' '+chargeOf(id)+'/'+maxCharges(id)).join(''):''));
   updatePanels();
   save();};
 
@@ -1586,7 +1588,7 @@ function bfs(goal){
 }
 
 let gatherEvt=null,gatherObjs=[],gatherSpr=null;
-function stopChop(){gatherStop();if(chopEvt){chopEvt.remove();chopEvt=null;}if(fightEvt){fightEvt.remove();fightEvt=null;}if(fightMon){fightMon.busy=false;fightMon=null;}if(typeof SM!=='undefined'&&SM.fx!==-1){SM.fx=-1;if(RM.room)try{RM.room.presence({fx:-1}).catch(()=>{});}catch(e){}}}
+function stopChop(){gatherStop();if(useTool)holdTool('',-1);if(chopEvt){chopEvt.remove();chopEvt=null;}if(fightEvt){fightEvt.remove();fightEvt=null;}if(fightMon){fightMon.busy=false;fightMon=null;}if(typeof SM!=='undefined'&&SM.fx!==-1){SM.fx=-1;if(RM.room)try{RM.room.presence({fx:-1}).catch(()=>{});}catch(e){}}}
 
 // Stairs: ">" in the world leads down to "<" in the dungeon, and back
 function useStairs(){
@@ -1658,13 +1660,19 @@ function gatherFx(kind,tx,ty,spr){
   }catch(e){}
 }
 
+// Axes, nets and pickaxes work straight from the bag: gathering uses the best one you have,
+// equipped or in the bag, as long as you have the level for it. (Combat still only counts what you hold.)
+function bestTool(k){let b=getT(k);inv.forEach(i=>{if(kd(i)===k&&tr(i)>b&&!reqMsg(i))b=tr(i);});return b;}
+// while gathering, your character holds the tool being used (it goes back to normal when you stop)
+let useTool=null;
+function holdTool(k,t){const u=(t>=0&&getT(k)!==t)?{k,t}:null;if(JSON.stringify(u)!==JSON.stringify(useTool)){useTool=u;try{dress();}catch(e){}}}
 function startChop(t){
-  const ti=t.tier||0;
-  if(axe<0){msg('You need an axe. Equip one from your bag (tap Bag).');return;}
+  const ti=t.tier||0,at=bestTool('axe');
+  if(at<0){msg('You need an axe. Keep one in your bag.');return;}
   if(lvl()<NEEDL[ti]){msg('You need Woodcutting '+NEEDL[ti]+' to cut '+an(TREENM[ti])+'.');return;}
-  if(axe<ti){msg('You need a '+AXES[ti].toLowerCase()+' or better for '+an(TREENM[ti])+'.');return;}
+  if(at<ti){msg('You need a '+AXES[ti].toLowerCase()+' or better for '+an(TREENM[ti])+'.');return;}
   msg('You swing your axe at the '+TREENM[ti]+'...');gatherFx('wc',t.tx,t.ty,t.sprite);
-  chopEvt=scene.time.addEvent({delay:[1450,1200,950,700,550,450][axe+1]*(1-gspeed()),loop:true,callback:()=>{
+  holdTool('axe',at);chopEvt=scene.time.addEvent({delay:[1450,1200,950,700,550,450][at+1]*(1-gspeed()),loop:true,callback:()=>{
     if(!t.alive){stopChop();return;}
     if(Math.random()<Math.min(0.95,0.45+0.03*lvl()+boost('wc'))){
       const before=lvl();
@@ -1687,12 +1695,12 @@ function pickFish(ti){
   return L[0];
 }
 function startFish(ti,tx,ty){
-  ti=ti||0;
-  if(net<0){msg('You need a net. Equip one from your bag (tap Bag).');return;}
+  ti=ti||0;const nt=bestTool('net');
+  if(nt<0){msg('You need a net. Keep one in your bag.');return;}
   if(flvl()<NEEDL[ti]){msg('You need Fishing '+NEEDL[ti]+' to fish at a '+SPOTNM[ti]+'.');return;}
-  if(net<ti){msg('You need a '+NETS[ti].toLowerCase()+' or better here.');return;}
+  if(nt<ti){msg('You need a '+NETS[ti].toLowerCase()+' or better here.');return;}
   msg('You cast your net into the water...');if(tx!==undefined)gatherFx('fish',tx,ty);
-  chopEvt=scene.time.addEvent({delay:[1700,1400,1100,800,650,550][net+1]*(1-gspeed()),loop:true,callback:()=>{
+  holdTool('net',nt);chopEvt=scene.time.addEvent({delay:[1700,1400,1100,800,650,550][nt+1]*(1-gspeed()),loop:true,callback:()=>{
     if(inv.length>=CAPN()){stopChop();msg('Your bag is full. Tap an item in your bag to drop it.');return;}
     if(Math.random()<Math.min(0.95,0.4+0.03*flvl()+boost('fish')-0.05*ti)){
       const before=flvl(),pf=pickFish(ti);if(gatherObjs[0])flyToBag(gatherObjs[0].x,gatherObjs[0].y,pf[0]);inv.push(pf[0]);fxp+=Math.round(pf[2]*anglerBoost());taskEvt('fish',ti);if(gatherEvt&&gatherObjs[0])fxBurst(gatherObjs[0].x,gatherObjs[0].y,[0xcfeeff,0x6fb8e8,0xffffff],6,12,18);
@@ -1703,12 +1711,12 @@ function startFish(ti,tx,ty){
 }
 
 function startMine(t){
-  const ti=t.tier||0;
-  if(pik<0){msg('You need a pickaxe. Equip one from your bag (tap Bag).');return;}
+  const ti=t.tier||0,pt=bestTool('pik');
+  if(pt<0){msg('You need a pickaxe. Keep one in your bag.');return;}
   if(mlvl()<NEEDL[ti]){msg('You need Mining '+NEEDL[ti]+' to mine '+an(ROCKNM[ti])+'.');return;}
-  if(pik<pikNeed(ti)){msg('You need a '+PIKS[pikNeed(ti)].toLowerCase()+' or better for '+an(ROCKNM[ti])+'.');return;}
+  if(pt<pikNeed(ti)){msg('You need a '+PIKS[pikNeed(ti)].toLowerCase()+' or better for '+an(ROCKNM[ti])+'.');return;}
   msg('You swing your pickaxe at the '+ROCKNM[ti]+'...');gatherFx('mine',t.tx,t.ty,t.sprite);
-  chopEvt=scene.time.addEvent({delay:[1800,1500,1200,900,700,580][pik+1]*(1-gspeed()),loop:true,callback:()=>{
+  holdTool('pik',pt);chopEvt=scene.time.addEvent({delay:[1800,1500,1200,900,700,580][pt+1]*(1-gspeed()),loop:true,callback:()=>{
     if(!t.alive){stopChop();return;}
     if(inv.length>=CAPN()){stopChop();msg('Your bag is full. Tap an item in your bag to drop it.');return;}
     if(Math.random()<Math.min(0.95,0.35+0.03*mlvl()+boost('mine')-0.05*ti)){
@@ -1807,6 +1815,7 @@ function dress(){
     L.bow.setVisible(gear.bw>=0);if(gear.bw>=0)L.bow.setTexture('bw'+gear.bw);
     try{L.player.setTexture(BALD(gear.hd)&&scene.textures.exists('player_b')?'player_b':'player');}catch(e){}
     L.pik.setVisible(pik>=0);if(pik>=0)L.pik.setTexture('pik'+pik);[['head','hd'],['body','bd'],['hands','hn'],['feet','ft']].forEach(([l,k])=>{const v=gear[k];L[l].setVisible(v>=0);if(v>=0){L[l].setTexture(GT[k+v]||k+v);if(l==='head')hdFit(L[l]);}});try{if(player&&player.titleT)player.titleT.setY(player.L&&player.L.head.visible&&player.L.head.frame.height>T?-38:-24);}catch(e){}
+    if(useTool&&c===player){['axe','net','pik','weapon','bow'].forEach(k=>L[k].setVisible(false));L[useTool.k].setTexture(useTool.k+useTool.t).setVisible(true);}
     gripLayers(L,'grip');
     posePlayerLayers(L,gear.wp>=0&&gear.wt===3&&L.weapon.visible,SHIRTC[APP.shirt],'grip');
     staffFront(c,gear.wp>=0&&gear.wt===5&&L.weapon.visible);
@@ -1834,7 +1843,7 @@ const pc=x=>Math.round(x*100);
 const gspeed=()=>[0,.08,.16,.22,.28][gear.hn+1];
 const walkMs=()=>[240,205,170,150,132][gear.ft+1]*(Date.now()<hasteUntil?0.7:1);
 function boost(s){
-  let c=0.04*Math.max(0,s==='wc'?axe:s==='fish'?net:pik);
+  let c=0.04*Math.max(0,bestTool(s==='wc'?'axe':s==='fish'?'net':'pik'));
   ['hd','bd'].forEach(k=>{const b=GB[k+gear[k]];if(b&&b[0]===s)c+=b[1];});
   c+=amGath();
   if(Date.now()<boonUntil)c+=0.15;
@@ -2072,7 +2081,7 @@ function castUtility(sp){
 }
 
 let rightHook=null,spX=0,spw,spwInfo,spwRows=[],spwList=[],spwTitle,spwT2,spwTab=0,spwTabBg=[];
-const SPW=140,SPY0=36,SPST=44,SPBOX=40,SPH=SPY0+8*SPST+60;
+const SPW=152,SPY0=34,SPST=36,SPBOX=33,SPC=4,SPR=6,SPH=300;   // 152 x 300, the bag's size: 4 x 6 spell boxes
 // ----- Faith actions -----
 // a small burst of sparkles around the character when any skill levels up
 const skLevels=()=>skXpAll().map((x,i)=>i===11?0:lvOf(x,SKDIV[i]));
@@ -2196,8 +2205,8 @@ function updateSpells(){
 // which icon (index) is under a point inside the Magic bar, or -1
 function spwItemAt(lx,ly){
   const c=Math.floor((lx-6)/SPST),r=Math.floor((ly-SPY0)/SPST);
-  if(c<0||c>2||r<0||r>7||(lx-6)%SPST>SPBOX||(ly-SPY0)%SPST>SPBOX)return -1;
-  return r*3+c;
+  if(c<0||c>SPC-1||r<0||r>SPR-1||(lx-6)%SPST>SPBOX||(ly-SPY0)%SPST>SPBOX)return -1;
+  return r*SPC+c;
 }
 function spwThing(p,cy){   // cy: the top of the spells window, the same spot clicks measure from
   const i=spwItemAt(p.x-spX,p.y-(cy==null?OY+6:cy));if(i<0)return null;
@@ -2444,7 +2453,7 @@ function smith(i){
   let n=bars;for(let j=inv.length-1;j>=0&&n>0;j--)if(inv[j]===bid){inv.splice(j,1);n--;}
   const before=smlvl();
   inv.push(id);sxp+=xpg;taskEvt('smith');
-  msg('You forge a '+nm(id)+'.'+(smlvl()>before?' Smithing is now '+smlvl()+'!':' Equip it from your bag.'));
+  msg('You forge a '+nm(id)+'.'+(smlvl()>before?' Smithing is now '+smlvl()+'!':/^(axe|net|pik)\d/.test(id)?' It works straight from your bag.':' Equip it from your bag.'));
   ui();
 }
 
@@ -2471,7 +2480,7 @@ function npcOpen(c){
   dlgNpc=n;dlgIdx=0;dlg.setVisible(true);dlgShow();ui();
 }
 // ---- Quest log: lists every quest; tap one to see its steps ----
-const QW=360,QH=476,QROW=54,QSM={fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'14px',color:'#f1e9c8'};
+let QW=360,QH=476;const QROW=54,QLW=152,QLH=300,QSM={fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'14px',color:'#f1e9c8'};
 const QUESTS=[
  {name:'Firewood for the Shopkeeper',st:()=>quest,
   start:'Talk to the Shopkeeper in the kingdom shop to begin.',
@@ -2540,9 +2549,17 @@ const QUESTS=[
   reward:'A bone shield (+6 defense, needs Defense '+NEEDL[2]+'), 1200 coins, 500 Attack XP, 300 Defense XP and 300 Faith XP'}
 ];
 const QSTAT=[['Not started','#a89a78'],['In progress','#ffe066'],['Complete','#8fd27a']];
+let qRows=[],qpBg=null,qpXr=null,qpXt=null;
+// the quest window is small (the bag's size) for the list, and big for reading a quest's steps or the Task Board
+function qSize(){
+  const big=qView!==-1;QW=big?360:QLW;QH=big?476:QLH;
+  if(qpBg)qpBg.setSize(QW,QH);if(qpXr)qpXr.setX(QW-30);if(qpXt)qpXt.setX(QW-17);if(qTitle)qTitle.setX(big?14:8);
+  if(qpPlace)qpPlace(big);
+}
 function qRender(){
   if(!qp||!scene)return;
   qObjs.forEach(o=>o.destroy());qObjs=[];
+  qSize();
   const T2=(x,y,s,o)=>{const t=scene.add.text(x,y,s,{...QSM,...o}).setResolution(2);qp.add(t);qObjs.push(t);return t;};
   const R2=(x,y,w,h,c)=>{const r=scene.add.rectangle(x,y,w,h,c).setOrigin(0).setStrokeStyle(1,0x8a7a5a);qp.add(r);qObjs.push(r);return r;};
   if(qView===-2){
@@ -2563,14 +2580,14 @@ function qRender(){
     return;
   }
   if(qView<0||!QUESTS[qView]){
-    qView=-1;qTitle.setText('Quest Log');
+    qView=-1;qSize();qTitle.setText('Quests');
+    // the list is the bag's size: one box per quest, its name coloured by how far along it is
+    let y=32;qRows=[];
     QUESTS.forEach((q,i)=>{
-      const s=q.st(),y=48+i*QROW;
-      R2(10,y,QW-20,QROW-8,0x3b3024);
-      T2(20,y+6,q.name,{fontSize:'15px',wordWrap:{width:QW-44}});
-      T2(20,y+26,QSTAT[s][0],{fontSize:'13px',color:QSTAT[s][1]});
+      const s=q.st(),r=R2(6,y,QW-12,10,0x3b3024),t=T2(12,y+4,q.name,{fontSize:'11px',color:QSTAT[s][1],wordWrap:{width:QW-24},lineSpacing:0});
+      const h=t.height+8;r.setSize(QW-12,h);qRows.push([y,h]);y+=h+3;
     });
-    T2(14,QH-24,'Tap a quest to see its steps.',{fontSize:'12px',color:'#c9b27a'});
+    T2(8,QH-31,'Grey: new  Green: done\nYellow: in progress',{fontSize:'10px',color:'#a89a78',lineSpacing:0});
     return;
   }
   const q=QUESTS[qView],s=q.st();qTitle.setText('');
@@ -2622,17 +2639,17 @@ function tbMake(){
       return{k:'kill',t:t.name,n,r:25+Math.round(n*(3+L*0.9)),x:Math.round(n*t.xp*0.5)};
     },
     chop:()=>{
-      const a=[0,1,2,3,4].filter(i=>lvl()>=NEEDL[i]&&axe>=i);if(!a.length)return null;
+      const a=[0,1,2,3,4].filter(i=>lvl()>=NEEDL[i]&&bestTool('axe')>=i);if(!a.length)return null;
       const i=pick(a),n=Math.max(6,R(10,20)-2*i);
       return{k:'chop',t:i,n,r:20+n*(3+3*i),x:Math.round(n*WCXP[i]*0.5)};
     },
     mine:()=>{
-      const a=[0,1,2,3,4].filter(i=>pik>=0&&mlvl()>=NEEDL[i]&&pik>=pikNeed(i));if(!a.length)return null;
+      const a=[0,1,2,3,4].filter(i=>bestTool('pik')>=0&&mlvl()>=NEEDL[i]&&bestTool('pik')>=pikNeed(i));if(!a.length)return null;
       const i=pick(a),n=Math.max(4,R(6,14)-i);
       return{k:'mine',t:i,n,r:25+n*(5+4*i),x:Math.round(n*MNXP[i]*0.5)};
     },
     fish:()=>{
-      const a=[0,1,2,4].filter(i=>net>=i&&flvl()>=NEEDL[i]);if(!a.length)return null;
+      const a=[0,1,2,4].filter(i=>bestTool('net')>=i&&flvl()>=NEEDL[i]);if(!a.length)return null;
       const i=pick(a),n=R(8,16);
       return{k:'fish',t:i,n,r:25+n*(4+4*i),x:n*12*(i+1)};
     },
@@ -3179,7 +3196,7 @@ const sayLine=m=>{const L=CHAT[m.t.tex]||CHAT.man;return L[Math.floor(Math.rando
 // a speech bubble above someone's head: wraps onto lines, stays long enough to read, follows them and stays on screen
 function bubble(m,text,col){
   if(m.say){try{m.say.t.destroy();m.say.tw.stop();}catch(e){}m.say=null;}
-  const t=scene.add.text(m.c.x,m.c.y-30,text,{fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'14px',color:col||'#ffffff',backgroundColor:'rgba(0,0,0,0.72)',padding:{x:6,y:4},align:'center',wordWrap:{width:180,useAdvancedWrap:true}}).setOrigin(0.5,1).setResolution(2).setDepth(900);
+  const t=scene.add.text(m.c.x,m.c.y-30,text,{fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'12px',color:col||'#ffffff',stroke:'#14100a',strokeThickness:3,padding:{x:2,y:2},align:'center',wordWrap:{width:190,useAdvancedWrap:true}}).setOrigin(0.5,1).setResolution(2).setDepth(900);
   const hold=Math.min(7000,2200+text.length*70);   // longer lines stay up longer
   const place=()=>{
     const cam=scene.cameras.main,v=cam.worldView,w=t.width/2+4;
@@ -4556,43 +4573,44 @@ function create(){
   dlgNextT=this.add.text(DW/2,DH-29,'Next',small).setOrigin(0.5).setResolution(2);dlg.add(dlgNextT);
   dlgPrevT=this.add.text(24,DH-29,'',{...small,color:'#c9b27a'}).setOrigin(0,0.5).setResolution(2);dlg.add(dlgPrevT);
   DLG_W=DW;DLG_H=DH;
-  const GW=330,GH=440,GDW=360,GDH=476,CW=360,GCW=360,CH=476,SKH=436,CRH=58+CRVIS*CRP+30,CX=10;let CY=panelTop();CRW=Math.max(300,Math.min(500,Math.round(W*T)-CX-10));
-  chr=this.add.container(CX,CY).setDepth(950).setVisible(false);
+  const GW=330,GH=440,GDW=360,GDH=476,CW=360,GCW=152,CH=300,SKH=436,CRH=58+CRVIS*CRP+30,CX=10;let CY=panelTop();CRW=Math.max(300,Math.min(500,Math.round(W*T)-CX-10));
+  chr=this.add.container(CX,BY).setDepth(950).setVisible(false);
   chr.add(this.add.rectangle(0,0,GCW,CH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  chr.add(this.add.rectangle(GCW/2,76,136,136,0x4f8a34).setStrokeStyle(1,0x8a7a5a));
-  chr.add(makeDoll(GCW/2,76,4));
+  chr.add(this.add.text(8,7,'Gear',TITLE).setResolution(2));
+  chr.add(this.add.rectangle(GCW/2,64,60,62,0x4f8a34).setStrokeStyle(1,0x8a7a5a));
+  chr.add(makeDoll(GCW/2,64,1.75));
   SLOTS.forEach(([kd2,sx,sy,lb])=>{
     chr.add(this.add.rectangle(sx,sy,SSZ,SSZ,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
-    const lt=this.add.text(sx+SSZ/2,sy+SSZ/2,lb,{...small,fontSize:'12px'}).setOrigin(0.5).setResolution(2),ic=this.add.image(sx+SSZ/2,sy+SSZ/2,'ihd0').setScale(1.5).setVisible(false);
+    const lt=this.add.text(sx+SSZ/2,sy+SSZ/2,lb,{...small,fontSize:'9px',align:'center'}).setOrigin(0.5).setResolution(2),ic=this.add.image(sx+SSZ/2,sy+SSZ/2,'ihd0').setScale(1.05).setVisible(false);
     chr.add([lt,ic]);gSl[kd2]={lt,ic};
   });
   
   
   
-  ammoTxt=this.add.text(12+SSZ-3,224+SSZ-3,'',{...small,fontSize:'13px',stroke:'#000000',strokeThickness:3}).setOrigin(1,1).setResolution(2);
+  {const a=SLOTS.find(q=>q[0]==='am');ammoTxt=this.add.text(a[1]+SSZ-2,a[2]+SSZ-2,'',{...small,fontSize:'11px',stroke:'#000000',strokeThickness:3}).setOrigin(1,1).setResolution(2);}
   chr.add(ammoTxt);
-  chrTxt=this.add.text(12,284,'',{...small,lineSpacing:5,wordWrap:{width:GCW-24}}).setResolution(2);
+  chrTxt=this.add.text(8,215,'',{...small,fontSize:'11px',lineSpacing:0}).setResolution(2);
   chr.add(chrTxt);
 
   // Skills tab: its own panel in the same spot as Gear
-  sk=this.add.container(CX,CY).setDepth(950).setVisible(false);
+  sk=this.add.container(CX,BY).setDepth(950).setVisible(false);
   sk.add(this.add.rectangle(0,0,SKW,SKH2,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
-  skCmb=this.add.text(14,8,'Skills',TITLE).setResolution(2);
+  skCmb=this.add.text(8,7,'Skills',TITLE).setResolution(2);
   sk.add(skCmb);
-  sk.add(this.add.rectangle(SKW-118,7,80,26,0x4a3c22).setOrigin(0).setStrokeStyle(2,0xb8892a));
-  sk.add(this.add.text(SKW-78,20,'Titles',{...small,fontSize:'14px',color:'#ffe066'}).setOrigin(0.5).setResolution(2));
+  sk.add(this.add.rectangle(SKW-78,5,44,22,0x4a3c22).setOrigin(0).setStrokeStyle(2,0xb8892a));
+  sk.add(this.add.text(SKW-56,16,'Titles',{...small,fontSize:'10px',color:'#ffe066'}).setOrigin(0.5).setResolution(2));
   for(let k=0;k<SKICON.length;k++){
     if(k===11){skRows.push({num:{setText(){}},f:{setSize(){}}});continue;}
     const sl=SKORD.indexOf(k),cx=SKX0+(sl%3)*(SKCW+SKGAP),cy=SKY0+Math.floor(sl/3)*(SKCH+SKGAP);
     sk.add(this.add.rectangle(cx,cy,SKCW,SKCH,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a));
-    sk.add(this.add.image(cx+28,cy+26,skHi[k]||SKICON[k]).setScale(skHi[k]&&skHi[k]!==SKICON[k]?0.6:1.18));
-    const num=this.add.text(cx+SKCW-10,cy+26,'',{...small,fontSize:'24px',color:'#ffe066',fontStyle:'bold'}).setOrigin(1,0.5).setResolution(2);
+    sk.add(this.add.image(cx+12,cy+16,skHi[k]||SKICON[k]).setScale(skHi[k]&&skHi[k]!==SKICON[k]?0.4:0.8));
+    const num=this.add.text(cx+SKCW-3,cy+16,'',{...small,fontSize:'14px',color:'#ffe066',fontStyle:'bold'}).setOrigin(1,0.5).setResolution(2);
     sk.add(num);
-    sk.add(this.add.rectangle(cx+8,cy+SKCH-10,SKCW-16,6,0x1c150d).setOrigin(0));
-    const f=this.add.rectangle(cx+8,cy+SKCH-10,0,6,SKCOL[k]).setOrigin(0);
+    sk.add(this.add.rectangle(cx+4,cy+SKCH-7,SKCW-8,4,0x1c150d).setOrigin(0));
+    const f=this.add.rectangle(cx+4,cy+SKCH-7,0,4,SKCOL[k]).setOrigin(0);
     sk.add(f);skRows.push({num,f});
   }
-  sk.add(this.add.text(14,SKH2-26,'Tap a skill for its guide.',HINT).setResolution(2));
+  sk.add(this.add.text(8,SKH2-19,'Tap one for its guide.',{...HINT,fontSize:'11px'}).setResolution(2));
   gd=this.add.container(CX,CY).setDepth(950).setVisible(false);
   gd.add(this.add.rectangle(0,0,GDW,GDH,0x1c150d,0.98).setOrigin(0).setStrokeStyle(2,0xc9b27a));
   gdTitle=this.add.text(14,12,'',{...TITLE,wordWrap:{width:GDW-28}}).setResolution(2);
@@ -4621,20 +4639,20 @@ function create(){
    bkNextT=this.add.text(OBW-67,OBH-26,'',{...small,color:'#ffe066'}).setOrigin(0.5).setResolution(2);
    bookW.add([bkPrevT,bkNextT,this.add.text(mid,OBH-26,OBW<460?'Tap to flip':'Tap a page or scroll to flip',{...small,fontSize:'12px',color:'#c9b27a'}).setOrigin(0.5).setResolution(2)]);
   }
-  qp=this.add.container(CX,CY).setDepth(950).setVisible(false);
-  qp.add(this.add.rectangle(0,0,QW,QH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a));
+  qp=this.add.container(CX,BY).setDepth(950).setVisible(false);
+  qpBg=this.add.rectangle(0,0,QW,QH,0x2a2218,0.95).setOrigin(0).setStrokeStyle(2,0x8a7a5a);qp.add(qpBg);
   qTitle=this.add.text(14,8,'Quest Log',TITLE).setResolution(2);qp.add(qTitle);
   // Spells window: the spells your wand, staff and spellbook hold
-  spX=W*T-SPW-6;spw=this.add.container(spX,CY).setDepth(950).setVisible(false);
+  spX=W*T-SPW-6;spw=this.add.container(spX,BY).setDepth(950).setVisible(false);
   spw.add(this.add.rectangle(0,0,SPW,SPH,0x1c150d,0.98).setOrigin(0).setStrokeStyle(2,0xc9b27a));
   spwTabBg=[0,1].map(k=>{const b2=this.add.rectangle(6+k*44,6,42,24,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a);spw.add(b2);return b2;});
   spwTitle=this.add.text(6+21,18,'Magic',{...small,fontSize:'11px',color:'#e8c8ff'}).setOrigin(0.5).setResolution(2);
   spwT2=this.add.text(50+21,18,'Faith',{...small,fontSize:'11px',color:'#7a6f58'}).setOrigin(0.5).setResolution(2);
   spw.add([spwTitle,spwT2]);
   for(let i=0;i<24;i++){
-    const bx=6+(i%3)*SPST,by=SPY0+Math.floor(i/3)*SPST;
+    const bx=6+(i%SPC)*SPST,by=SPY0+Math.floor(i/SPC)*SPST;
     const bg=this.add.rectangle(bx,by,SPBOX,SPBOX,0x3b3024).setOrigin(0).setStrokeStyle(1,0x8a7a5a);
-    const ic=this.add.image(bx+SPBOX/2,by+SPBOX/2,'sp_spark').setScale(1.25);
+    const ic=this.add.image(bx+SPBOX/2,by+SPBOX/2,'sp_spark').setScale(1.03);
     const dim=this.add.rectangle(bx,by,SPBOX,SPBOX,0x000000,0.6).setOrigin(0);
     const cn=this.add.text(bx+SPBOX-3,by+SPBOX-2,'',{...small,fontSize:'11px',color:'#ffffff',stroke:'#000000',strokeThickness:3}).setOrigin(1,1).setResolution(2);
     const on=this.add.text(bx+1,by+1,'ON',{...small,fontSize:'9px',color:'#0d2a0a',fontStyle:'bold',backgroundColor:'#8dff7a',padding:{x:2,y:0}}).setResolution(2).setVisible(false);
@@ -4642,7 +4660,7 @@ function create(){
     this.tweens.add({targets:sel,alpha:{from:1,to:0.7},duration:700,yoyo:true,repeat:-1});
     spw.add([bg,ic,dim,cn,sel,on]);spwRows.push({bg,ic,dim,cn,on,sel});
   }
-  spwInfo=this.add.text(6,SPY0+8*SPST+2,'',{...small,fontSize:'10px',color:'#ffe066',lineSpacing:2,wordWrap:{width:SPW-10}}).setResolution(2);
+  spwInfo=this.add.text(6,SPY0+SPR*SPST+2,'',{...small,fontSize:'10px',color:'#ffe066',lineSpacing:2,wordWrap:{width:SPW-10}}).setResolution(2);
   spw.add(spwInfo);
 
   // Craft tab: leather armour, magic gear, amulets and bowstrings
@@ -4852,7 +4870,7 @@ function create(){
   };
   this.time.addEvent({delay:250,loop:true,callback:miniUp});
   miniUp();
-  const miniCovered=p=>(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY&&p.y<=CY+SPH);
+  const miniCovered=p=>(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=BY&&p.y<=BY+SPH);
   const inMini=p=>miniImg.visible&&!miniCovered(p)&&p.x>=MMX-2&&p.x<=MMX-2+MMPX&&p.y>=MMY-2&&p.y<=MMY-2+MMPY;
   // Esc closes the game window on top, the same as its red X (HTML menus close themselves)
   this.input.keyboard.on('keydown-ESC',()=>{
@@ -4868,11 +4886,11 @@ function create(){
   });
   // every window gets a red X in its top-right corner; windows no longer close when you tap outside them
   [[wm,WMW],[sk,SKW],[qp,QW],[bookW,OBW],[gd,GDW],[cr,CRW],[smc,CRW],[bk,BKW],[ftp,FTW],[shop,SW],[dlg,DW]].forEach(([c,w])=>{
-    c.add(this.add.rectangle(w-30,4,26,22,0x7a2a1a).setOrigin(0).setStrokeStyle(1,0xe0b070));
-    c.add(this.add.text(w-17,15,'X',{...small,fontSize:'15px',color:'#ffffff',fontStyle:'bold'}).setOrigin(0.5).setResolution(2));
+    const xr=this.add.rectangle(w-30,4,26,22,0x7a2a1a).setOrigin(0).setStrokeStyle(1,0xe0b070),xt=this.add.text(w-17,15,'X',{...small,fontSize:'15px',color:'#ffffff',fontStyle:'bold'}).setOrigin(0.5).setResolution(2);
+    c.add([xr,xt]);if(c===qp){qpXr=xr;qpXt=xt;}
   });
-  chr.add(this.add.rectangle(GCW-30,CH-30,26,22,0x7a2a1a).setOrigin(0).setStrokeStyle(1,0xe0b070));
-  chr.add(this.add.text(GCW-17,CH-19,'X',{...small,fontSize:'15px',color:'#ffffff',fontStyle:'bold'}).setOrigin(0.5).setResolution(2));
+  chr.add(this.add.rectangle(GCW-30,4,26,22,0x7a2a1a).setOrigin(0).setStrokeStyle(1,0xe0b070));
+  chr.add(this.add.text(GCW-17,15,'X',{...small,fontSize:'15px',color:'#ffffff',fontStyle:'bold'}).setOrigin(0.5).setResolution(2));
   menuC=this.add.container(0,0).setDepth(950).setVisible(false);
   this.input.mouse.disableContextMenu();
   this.input.on('pointermove',p=>{const i=menuRow(p);if(menuHl){menuHl.setVisible(i>=0);if(i>=0)menuHl.y=MHEAD+i*MROW;}});
@@ -4922,7 +4940,7 @@ function create(){
    const SEE=[1.3,3,4,5,6,7.5];   // how many tiles you can see: no light, torch, iron, steel, mithril and magic lantern
    let lastD=-2,lastL=-2,plLt=-1,snuffUntil=0,snuffNext=0;
    const eyes=this.add.image(0,0,'glowtex').setTint(0x7fe8ff).setBlendMode('ADD').setDepth(392).setVisible(false);
-   const hole=(wx,wy,tiles)=>{const c=this.cameras.main,v=c.worldView,z=c.zoom;brush.setScale(tiles*T*z*2/256).setPosition((wx-v.x)*z,(wy-v.y)*z-OY);darkRT.erase(brush);};
+   const hole=(wx,wy,tiles)=>{const c=this.cameras.main,v=c.worldView,z=zoomLv;brush.setScale(tiles*T*z*2/256).setPosition((wx-v.x)*z,(wy-v.y)*z-OY);darkRT.erase(brush);};
    this.events.on('update',()=>{
      const dark=darkHere();plLt=-1;if(dark)inv.forEach(o=>{if(/^lt\d$/.test(o))plLt=Math.max(plLt,tr(o));});
      if(curD!==lastD||(dark&&plLt!==lastL)){
@@ -5109,7 +5127,7 @@ function create(){
       if(!p||p.wasTouch||menuC.visible||pinch||startOpen){tipC.setVisible(false);return;}
       if(sk.visible&&!gd.visible){
         // hovering a skill in the Skills window names it
-        const lx=p.x-CX-SKX0,ly=p.y-CY-SKY0,c=Math.floor(lx/(SKCW+SKGAP)),r=Math.floor(ly/(SKCH+SKGAP));
+        const lx=p.x-CX-SKX0,ly=p.y-BY-SKY0,c=Math.floor(lx/(SKCW+SKGAP)),r=Math.floor(ly/(SKCH+SKGAP));
         if(lx>=0&&ly>=0&&c>=0&&c<3&&r>=0&&r<SKROWS&&lx-c*(SKCW+SKGAP)<=SKCW&&ly-r*(SKCH+SKGAP)<=SKCH&&SKORD[r*3+c]!==undefined){
           const k=SKORD[r*3+c],XPS=skXpAll(),lv=k===11?clvl():lvOf(XPS[k],SKDIV[k]);
           tName.setText(['Woodcutting','Fishing','Mining','Attack','Archery','Defense','Hitpoints','Smithing','Firemaking','Cooking','Fletching','Combat level','Magic','Faith','Farming','Crafting','Thieving','Construction','Slayer'][k]).setColor('#ffe066');
@@ -5122,8 +5140,8 @@ function create(){
         }else tipC.setVisible(false);
         return;
       }
-      if(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY&&p.y<=CY+SPH){
-        const t=spwThing(p,CY);
+      if(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=BY&&p.y<=BY+SPH){
+        const t=spwThing(p,BY);
         if(t){const tp=spwTip(t);tName.setText(tp[0]).setColor('#ffe066');tInfo.setWordWrapWidth(220,true);tInfo.setText(tp[1]);
           const w=Math.max(tName.width,tInfo.width)+16,h=24+tInfo.height+8;tBg.setSize(w,h);
           const x=Math.max(2,Math.min(p.x-w-10,W*T-w-2)),y=Math.max(OY+2,Math.min(p.y,OY+H*T-h));
@@ -5158,12 +5176,12 @@ function create(){
         if(c>=0&&c<BKC&&r>=0&&r<Math.ceil(63/BKC)&&(lx-12)%BKP<=BKZ&&(ly-30)%BKP<=BKZ&&i<ids.length){itemTip(ids[i],bank[ids[i]],false);return;}
         tipC.setVisible(false);return;
       }
-      const blocked=(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||(sk.visible&&p.x<=CX+SKW&&p.y>=CY)||((chr.visible&&p.x<=CX+GCW&&p.y>=CY)||(bk.visible&&p.x<=CX+BKW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY)||(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)||(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)||(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY)||(shop.visible&&p.x>=SX&&p.x<=SX+SW)||p.y<OY||p.y>=OY+H*T||inZb(p);
+      const blocked=(bag.visible&&p.x>=BX&&p.x<=BX+PW&&p.y>=BY&&p.y<=BY+PH)||((sk.visible&&p.x>=CX&&p.x<=CX+SKW&&p.y>=BY&&p.y<=BY+SKH2)||(qp.visible&&p.x>=CX&&p.x<=CX+QW&&p.y>=(qView===-1?BY:CY)&&p.y<=(qView===-1?BY:CY)+QH))||((chr.visible&&p.x>=CX&&p.x<=CX+GCW&&p.y>=BY&&p.y<=BY+CH)||(bk.visible&&p.x<=CX+BKW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY)||(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)||(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)||(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=BY&&p.y<=BY+SPH)||(shop.visible&&p.x>=SX&&p.x<=SX+SW)||p.y<OY||p.y>=OY+H*T||inZb(p);
       let m=null;
-      if(!blocked){const wp=p.positionToCamera(cam),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);m=mons.find(o=>o.alive&&o.x===tx&&o.y===ty)||null;
+      if(!blocked){const wp=cam.getWorldPoint(p.x*RK,p.y*RK),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);m=mons.find(o=>o.alive&&o.x===tx&&o.y===ty)||null;
         const kd=p.isDown?'':tileKind(tx,ty);if(kd){hovBox.setPosition(tx*T+T/2,ty*T+T/2+OY).setStrokeStyle(2,kd==='fight'?0xff6b6b:0xffe066,0.85).setVisible(true);}}
       if(!m&&!blocked){
-        const wp2=p.positionToCamera(cam),dx=Math.floor(wp2.x/T),dy=Math.floor((wp2.y-OY)/T),dd=ground.filter(d=>d.x===dx&&d.y===dy);
+        const wp2=cam.getWorldPoint(p.x*RK,p.y*RK),dx=Math.floor(wp2.x/T),dy=Math.floor((wp2.y-OY)/T),dd=ground.filter(d=>d.x===dx&&d.y===dy);
         if(dd.length){
           tName.setText(dd.length>1?dd.length+' items':(dd[0].id==='coin'?(dd[0].n>1?dd[0].n+' coins':'Coin'):nm(dd[0].id))).setColor('#ffe066');
           tInfo.setText('Right-click to take\nor walk here');
@@ -5195,7 +5213,7 @@ function create(){
   const setZoom=z=>{
     z=Math.max(ZMIN,Math.min(ZMAX,z));
     z=Math.round(z*32)/32;   // a whole number of screen pixels per map tile keeps the picture steady
-    zoomLv=z;cam.setZoom(z);closeMenu();
+    zoomLv=z;cam.setZoom(z*RK);closeMenu();
     // Zoomed out the map is shrunk: smooth sampling and un-rounded scrolling look much cleaner than hard pixels
     try{
       const soft=z<1;
@@ -5207,13 +5225,15 @@ function create(){
       cam.roundPixels=!soft;
     }catch(e){}
     const cx=W*T/2,cy=(OY+H*T+BOT)/2;
-    uiObjs.forEach(u=>u.o.setScale(u.sx/z,u.sy/z).setPosition(cx+(u.x-cx)/z,cy+(u.y-cy)/z));
+    uiObjs.forEach(u=>u.o.setScale(u.sx/z,u.sy/z).setPosition(RK*cx+(u.x-cx)/z,RK*cy+(u.y-cy)/z));
     try{localStorage.setItem('woodcutter-zoom',String(z));}catch(e){}
   };
   const ent=o=>uiObjs.find(u=>u.o===o);
+  // (a slide-in that's still running would carry the window back to where it was, so it's stopped first)
+  qpPlace=big=>{const u=ent(qp),y=big?CY:BY;if(!u||u.y===y)return;u.y=y;u.x=CX;if(qp._ft){qp._ft.stop();qp._ft=null;}const z=zoomLv,cx=W*T/2,cy=(OY+H*T+BOT)/2;u.o.setPosition(RK*cx+(u.x-cx)/z,RK*cy+(u.y-cy)/z);};
   const rightLay=force=>{
     const nb=W*T-PW-6-(spw.visible?SPW+8:0);spX=W*T-SPW-6;
-    const u=ent(spw);if(u){u.x=spX;u.y=CY;}
+    const u=ent(spw);if(u){u.x=spX;u.y=BY;}
     if(nb!==BX||force){BX=nb;const b=ent(bag);if(b){b.x=BX;b.y=BY;}if(!force)setZoom(zoomLv);}
   };
   rightHook=()=>rightLay(false);
@@ -5239,7 +5259,7 @@ function create(){
     topBar.setSize(W*T,OY);botBar.setSize(W*T,BOT);
     const put=(o,x,y)=>{const u=ent(o);if(u){u.x=x;u.y=y;}};
     CY=panelTop();BY=Math.max(2,Math.round(OY+H*T-PH-4));SY=CY;
-    [chr,sk,gd,qp,cr,smc,bk,ftp,wm].forEach(o=>put(o,CX,CY));put(shop,SX,SY);put(dlg,SX,SY);
+    [gd,cr,smc,bk,ftp,wm].forEach(o=>put(o,CX,CY));[chr,sk].forEach(o=>put(o,CX,BY));put(qp,CX,qView===-1?BY:CY);   // menus sit on the bottom bar like the bagput(shop,SX,SY);put(dlg,SX,SY);
     barLay();
     put(nightOv,0,OY);nightOv.setSize(W*T,H*T);if(darkRT){put(darkRT,0,OY);darkRT.resize(W*T,H*T);}rightLay(true);put(mapBtn[0],W*T-40,OY+H*T-106);put(mapBtn[1],W*T-25,OY+H*T-91);
     zb.forEach((o,k)=>{const i=k>>1;put(o,k%2===0?W*T-40:W*T-40+15,OY+H*T-70+i*36+(k%2===0?0:14));});
@@ -5247,6 +5267,30 @@ function create(){
     setZoom(zoomLv);
   };
   this.scale.on('resize',relayout);
+  // Sharp screens: the game used to draw a small picture that the browser stretched to fill the screen (about 2.7x on
+  // phones), which made text and edges soft. Now the canvas holds RK times more pixels (RK = 2 when the screen has room
+  // for it, else 1) and the camera zooms by RK to fill it. Taps, windows and the map all still use the same game pixels.
+  const fitRes=()=>{
+    try{
+      const cv=this.game.canvas,b=cv.getBoundingClientRect(),gs=this.scale.gameSize,lw=gs.width,lh=gs.height;
+      if(!b.width||!lw)return;
+      const k=sharpGfx?Math.max(1,Math.min(2,Math.floor(b.width*(window.devicePixelRatio||1)/lw+0.15))):1;   // Settings > Sharp graphics off: always 1
+      const w=Math.round(lw*k),h=Math.round(lh*k);
+      const rd=this.game.renderer;
+      // the engine puts its own drawing size back to normal whenever the window changes size (a phone's address bar
+      // sliding away does it), so its size is checked too - missing that left half the screen black
+      if(k===RK&&cv.width===w&&cv.height===h&&rd.width===w&&rd.height===h&&cam.width===w&&cam.height===h)return;
+      RK=k;
+      if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+      rd.resize(w,h);cam.setSize(w,h);setZoom(zoomLv);
+    }catch(e){}
+  };
+  this.scale.on('resize',()=>fitRes());window.oakRefit=fitRes;
+  // right before every frame: a quick size check (no measuring), fixed at once so a resize never shows as a black area
+  this.game.events.on('prerender',()=>{const gs=this.scale.gameSize,w=Math.round(gs.width*RK),h=Math.round(gs.height*RK),rd=this.game.renderer,cv=this.game.canvas;
+    if(rd.width!==w||rd.height!==h||cv.width!==w||cv.height!==h||cam.width!==w||cam.height!==h)fitRes();});
+  this.time.addEvent({delay:1000,loop:true,callback:fitRes});   // full re-measure: screen turned, window moved to another monitor...
+  fitRes();
   barLay();
   let z0=1;try{z0=+localStorage.getItem('woodcutter-zoom')||1;}catch(e){}
   setZoom(z0);
@@ -5258,7 +5302,7 @@ function create(){
 
   const ctxAt=p=>{
       let opts=null;
-      if(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY&&p.y<=CY+SPH){const t=spwThing(p,CY);if(t)opts=spwOptions(t);}
+      if(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=BY&&p.y<=BY+SPH){const t=spwThing(p,BY);if(t)opts=spwOptions(t);}
       else if(cr.visible&&p.x>=CX&&p.x<=CX+CRW&&p.y>=CY&&p.y<=CY+CRH){
         // crafting bench: right-click or hold a recipe to make it or examine the result
         const lx=p.x-CX,ly=p.y-CY,i=Math.floor((ly-58)/CRP),r=i>=0&&i<CRVIS?crList()[crOff+i]:null;
@@ -5296,8 +5340,8 @@ function create(){
           opts.push(['Examine '+nm(id),()=>msg(examine(id))]);
           }
         }
-      }else if(!((sk.visible&&p.x<=CX+SKW&&p.y>=CY)||((chr.visible&&p.x<=CX+GCW&&p.y>=CY)||(bk.visible&&p.x<=CX+BKW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY))&&!(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)&&!(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)&&!(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY)&&!(shop.visible&&p.x>=SX&&p.x<=SX+SW)&&p.y>=OY&&p.y<OY+H*T){
-        const wp=p.positionToCamera(cam),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);
+      }else if(!(((sk.visible&&p.x>=CX&&p.x<=CX+SKW&&p.y>=BY&&p.y<=BY+SKH2)||(qp.visible&&p.x>=CX&&p.x<=CX+QW&&p.y>=(qView===-1?BY:CY)&&p.y<=(qView===-1?BY:CY)+QH))||((chr.visible&&p.x>=CX&&p.x<=CX+GCW&&p.y>=BY&&p.y<=BY+CH)||(bk.visible&&p.x<=CX+BKW&&p.y>=CY))||((cr.visible||smc.visible)&&p.x<=CX+CRW&&p.y>=CY))&&!(ftp.visible&&p.x<=CX+FTWd&&p.y>=CY)&&!(dlg.visible&&p.x>=SX&&p.x<=SX+DLG_W)&&!(gd.visible&&p.x<=CX+GDW&&p.y>=CY)||(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=BY&&p.y<=BY+SPH)&&!(shop.visible&&p.x>=SX&&p.x<=SX+SW)&&p.y>=OY&&p.y<OY+H*T){
+        const wp=cam.getWorldPoint(p.x*RK,p.y*RK),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);
         if(tx>=0&&tx<MW&&ty>=0&&ty<MH)opts=worldOptions(tx,ty);
       }
       if(opts)openMenu(p.x,p.y,opts);
@@ -5329,10 +5373,10 @@ function create(){
       if(smc.visible&&xh(CX,CY,CRW)){smc.setVisible(false);ui();return;}
       if(bk.visible&&xh(CX,CY,BKW)){bk.setVisible(false);ui();return;}
       if(gd.visible&&xh(CX,CY,GDW)){gd.setVisible(false);sk.setVisible(true);ui();return;}
-      if(chr.visible&&xh(CX,CY+CH-34,GCW)){chr.setVisible(false);ui();return;}
-      if(sk.visible&&xh(CX,CY,SKW)){sk.setVisible(false);ui();return;}
+      if(chr.visible&&xh(CX,BY,GCW)){chr.setVisible(false);ui();return;}
+      if(sk.visible&&xh(CX,BY,SKW)){sk.setVisible(false);ui();return;}
       if(bookW.visible&&xh(OBX,OBY,OBW)){bookW.setVisible(false);ui();return;}
-      if(qp.visible&&xh(CX,CY,QW)){if(qView>=0)qView=-1;else qp.setVisible(false);ui();return;}
+      if(qp.visible&&xh(CX,qView===-1?BY:CY,QW)){if(qView>=0)qView=-1;else qp.setVisible(false);ui();return;}
       if(cr.visible&&xh(CX,CY,CRW)){cr.setVisible(false);ui();return;}
       if(shop.visible&&xh(SX,SY,SW)){shop.setVisible(false);ui();return;}
       if(dlg.visible&&xh(SX,SY,DLG_W)){dlg.setVisible(false);ui();return;}
@@ -5343,8 +5387,9 @@ function create(){
       else bookFlip(lx<OBW/2?-1:1);
       return;
     }
-    if(qp.visible&&p.x>=CX&&p.x<=CX+QW&&p.y>=CY&&p.y<=CY+QH){
-      if(qView===-1){const i=Math.floor((p.y-CY-48)/QROW);if(i>=0&&i<QUESTS.length&&(p.y-CY-48)-i*QROW<=QROW-8){qView=i;qRender();}}
+    const qY=qView===-1?BY:CY;
+    if(qp.visible&&p.x>=CX&&p.x<=CX+QW&&p.y>=qY&&p.y<=qY+QH){
+      if(qView===-1){const ly=p.y-qY,i=qRows.findIndex(([y,h])=>ly>=y&&ly<=y+h);if(i>=0){qView=i;qRender();}}
       else if(qView===-2){const i=Math.floor((p.y-CY-68)/118);if(i>=0&&i<tbTasks.length&&(p.y-CY-68)-i*118<=108)tbClaim(i);}
       return;
     }
@@ -5368,14 +5413,14 @@ function create(){
     if(bk.visible){
       if(p.x>=CX&&p.x<=CX+BKW&&p.y>=CY&&p.y<=CY+BKH){bankClick(p.x-CX,p.y-CY);return;}
     }
-    if(chr.visible&&p.x>=CX&&p.x<=CX+GCW&&p.y>=CY&&p.y<=CY+CH){
-      const lx=p.x-CX,ly=p.y-CY;
+    if(chr.visible&&p.x>=CX&&p.x<=CX+GCW&&p.y>=BY&&p.y<=BY+CH){
+      const lx=p.x-CX,ly=p.y-BY;
       SLOTS.forEach(([k,sx,sy])=>{if(lx>=sx&&lx<=sx+SSZ&&ly>=sy&&ly<=sy+SSZ){if(k==='am')ammoOff();else unequip(k==='wp'?(heldKey()||'wp'):(k==='sh'&&gear.sh<0&&gear.bk>=0)?'bk':k);}});
       
       return;
     }
-    if(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=CY&&p.y<=CY+SPH){
-      const lx=p.x-spX,ly=p.y-CY;
+    if(spw.visible&&p.x>=spX&&p.x<=spX+SPW&&p.y>=BY&&p.y<=BY+SPH){
+      const lx=p.x-spX,ly=p.y-BY;
       if(ly>=6&&ly<=30){spwTab=lx<50?0:1;ui();return;}
       const it=spwItemAt(lx,ly);
       if(it>=0){if(spwTab===1)prayerClick(it);else if(spwList[it])spellClick(spwList[it]);}
@@ -5384,9 +5429,9 @@ function create(){
     if(gd.visible){
       if(GDTABS[gdK]&&p.x>=CX&&p.x<=CX+GDW&&p.y>=CY+58&&p.y<CY+94){openGuide(gdK,p.x-CX<120?0:1);return;}
       if(p.x>=CX&&p.x<=CX+GDW&&p.y>=CY&&p.y<=CY+GDH)return;}
-    if(sk.visible&&p.x>=CX&&p.x<=CX+SKW&&p.y>=CY&&p.y<=CY+SKH2){
-      if(p.x-CX>=SKW-120&&p.x-CX<=SKW-36&&p.y-CY<=36){titlesOpen();return;}
-      const lx=p.x-CX-SKX0,ly=p.y-CY-SKY0,c=Math.floor(lx/(SKCW+SKGAP)),r=Math.floor(ly/(SKCH+SKGAP));
+    if(sk.visible&&p.x>=CX&&p.x<=CX+SKW&&p.y>=BY&&p.y<=BY+SKH2){
+      if(p.x-CX>=SKW-78&&p.x-CX<=SKW-34&&p.y-BY<=28){titlesOpen();return;}
+      const lx=p.x-CX-SKX0,ly=p.y-BY-SKY0,c=Math.floor(lx/(SKCW+SKGAP)),r=Math.floor(ly/(SKCH+SKGAP));
       if(lx>=0&&ly>=0&&c>=0&&c<3&&r>=0&&r<SKROWS&&lx-c*(SKCW+SKGAP)<=SKCW&&ly-r*(SKCH+SKGAP)<=SKCH&&SKORD[r*3+c]!==undefined){sk.setVisible(false);openGuide(SKORD[r*3+c]);}
       return;
     }
@@ -5454,7 +5499,7 @@ function create(){
       }
       return;
     }
-    const wp=p.positionToCamera(cam),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);
+    const wp=cam.getWorldPoint(p.x*RK,p.y*RK),tx=Math.floor(wp.x/T),ty=Math.floor((wp.y-OY)/T);
     if(tx<0||tx>=MW||ty<0||ty>=MH)return;
     tileAct(tx,ty);
   };
@@ -7423,7 +7468,7 @@ function mpAdd(p){
 function mpBubble(c,text){
   try{
     if(c.bubble){c.bubble.destroy();c.bubble=null;}
-    const t=scene.add.text(0,c.titleT?-48:-38,text,{fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'11px',color:'#111111',backgroundColor:'#f4f1e4',padding:{x:4,y:2},wordWrap:{width:150},align:'center'}).setOrigin(0.5,1).setResolution(2);
+    const t=scene.add.text(0,c.titleT?-48:-38,text,{fontFamily:'ui-monospace, Menlo, Consolas, monospace',fontSize:'12px',color:'#fff7d6',stroke:'#14100a',strokeThickness:3,padding:{x:2,y:2},wordWrap:{width:150},align:'center'}).setOrigin(0.5,1).setResolution(2);
     c.add(t);c.bubble=t;
     scene.time.delayedCall(5000,()=>{if(c.bubble===t){t.destroy();c.bubble=null;}});
   }catch(e){}
@@ -8349,7 +8394,7 @@ function fzKill(sp,scatter){
 }
 function fzStart(){
   if(FZ.on)return;
-  if(net<0){msg('Hold a net first: tap one in your bag. Fenn sells nets too.');return;}
+  if(bestTool('net')<0){msg('You need a net in your bag. Fenn sells them.');return;}
   FZ.on=true;FZ.end=Date.now()+FZ.len;FZ.pts=0;FZ.combo=0;FZ.last=0;FZ.catches=0;FZ.golden=0;FZ.next=0;
   fzSpawn();fzSpawn();
   msg('The Fishing Frenzy begins! Tap the glowing spots on the lake. Catches in a row build your combo.');
@@ -8366,13 +8411,13 @@ function fzStop(why){
   fzBar();titleCheck();save();ui();
 }
 function fzGo(sp){   // walk next to a glowing spot and fish it
-  if(net<0){msg('Hold a net first: tap one in your bag.');return;}
+  if(bestTool('net')<0){msg('You need a net in your bag.');return;}
   const path=bfs((x,y)=>Math.abs(x-sp.x)+Math.abs(y-sp.y)===1);
   if(!path){msg("You can't reach that spot.");return;}
   go(path,()=>{
     if(!FZ.on||!FZ.spots.includes(sp)){msg('That spot is gone. Try another!');return;}
-    stopChop();FZ.fishing=sp;
-    chopEvt=scene.time.addEvent({delay:[1050,950,850,750,650][Math.max(0,net)]*(1-gspeed()),loop:true,callback:()=>{
+    stopChop();FZ.fishing=sp;const fnt=bestTool('net');holdTool('net',fnt);
+    chopEvt=scene.time.addEvent({delay:[1050,950,850,750,650][Math.max(0,fnt)]*(1-gspeed()),loop:true,callback:()=>{
       if(!FZ.on||!FZ.spots.includes(sp)){stopChop();return;}
       if(Math.random()<Math.min(0.92,0.62+0.01*flvl()+boost('fish'))){
         const now=Date.now();
@@ -8452,13 +8497,13 @@ const TUT={box:[20,128,49,149],start:[28,139],did:{},arrow:null,skipArm:0,
   steps:[null,
    {t:'Talk to the Island Guide',npc:'Island Guide'},
    {t:'Chop a tree: tap one of the trees',ev:'chop',ok:()=>xp>0,at:'tree'},
-   {t:'Catch a fish: tap the net in your Bag to hold it, then tap the ripples by the shore',ev:'fish',ok:()=>fxp>0,at:'fish'},
+   {t:'Catch a fish: with the net in your bag, tap the ripples by the shore',ev:'fish',ok:()=>fxp>0,at:'fish'},
    {t:'Cook your fish: tap the logs in your Bag to light a fire, then tap the fire',ev:'cook',ok:()=>ckxp>0,at:'cook'},
    {t:'Defeat a chicken in the pen',ev:'kill',at:'chicken'},
    {t:'Talk to the Ferryman on the dock to sail to the mainland',npc:'Ferryman'}],
   talk:{
    'Island Guide':["Welcome to Oakheart! This little island is where every adventurer starts.","Tap the ground to walk. Tap people to talk to them, and right-click (or press and hold) anything to see everything you can do with it.","Your bag, skills, gear, quests and spells open from the buttons along the bottom.","Let's get you ready for the mainland: chop a tree, catch and cook a fish, and win a fight. The arrow will show you where to go.","The other teachers here have extra tips (mining, smithing, banking) if you want them. If you have played before, tap Skip at the top to sail straight to the mainland."],
-   'Survival Expert':["Out here you need to look after yourself.","Tap a tree to chop it with your axe. Then open your Bag and tap the logs to light a fire.","Next, catch a fish. Tools work from your hands: tap the net in your Bag to hold it, then tap the ripples by the shore.","Cook the fish on your fire. Cooked fish heals you when you eat it."],
+   'Survival Expert':["Out here you need to look after yourself.","Tap a tree to chop it with your axe. Then open your Bag and tap the logs to light a fire.","Next, catch a fish. Tools work straight from your bag: just tap the ripples by the shore.","Cook the fish on your fire. Cooked fish heals you when you eat it."],
    'Mining Instructor':["Ah, a new face! Rocks hold ore, and ore makes metal.","Tap the pickaxe in your Bag to hold it, then tap one of the copper rocks to mine it.","Then tap the furnace to smelt your ore into a bronze bar, and tap the anvil to forge the bar into a knife."],
    'Combat Instructor':["Time to learn to fight. Tap a chicken in the pen to attack it.","Your health is shown at the bottom left. If it gets low, walk away and eat some cooked food from your bag.","Stronger monsters live on the mainland. Train up before you take them on!"],
    'Ferryman':["All aboard for the mainland! The Kingdom of Nero awaits.","Here are 50 coins to get you started. Good luck, adventurer!"]}};
